@@ -22,6 +22,10 @@ package ai.susi.mind;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -34,7 +38,11 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonPath;
+import ai.susi.mind.SusiAction.RenderType;
+import ai.susi.mind.SusiMind.Reaction;
+import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.api.susi.ConsoleService;
+import ai.susi.tools.DateParser;
 import ai.susi.tools.TimeoutMatcher;
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.Prolog;
@@ -134,12 +142,41 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        //flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?(*)\\h*?"), (flow, matcher) -> {
-        //    String time = matcher.group(1);
-        //    String reflection = matcher.group(2);
-        //    SusiThought queue = flow.mindmeld(true);
-        //    return recall;
-        //});
+        flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?(.*)\\h*?"), (flow, matcher) -> {
+            String time = matcher.group(1);
+            String reflection = matcher.group(2);
+            final AtomicLong delay = new AtomicLong(0);
+            final Date date = new Date();
+            try {
+                delay.set(Long.parseLong(time));
+                date.setTime(System.currentTimeMillis() + delay.get());
+            } catch (NumberFormatException e) {
+                try {
+                    date.setTime(DateParser.parse(time, 0).getTime().getTime());
+                    delay.set(date.getTime() - System.currentTimeMillis());
+                } catch (ParseException ee) {
+                    // we just fail here
+                }
+            }
+            SusiMind.Reaction reaction = null;
+            SusiThought mindstate = flow.mindmeld(true);
+            mindlevels: for (SusiMind mind: flow.getMinds()) {
+                try {
+                    reaction = mind.new Reaction(reflection, flow.getLanguage(), flow.getClientIdentity(), false, mindstate, flow.getMinds());
+                    break mindlevels;
+                } catch (ReactionException e) {
+                    continue mindlevels;
+                }
+            }
+            if (reaction == null) return new SusiThought(); // fail
+            SusiThought queued = reaction.getMindstate();
+            reaction.getActions().forEach(action -> {
+                // add a delay to the actions
+                action.setLongAttr("queue_delay", delay.get());
+                action.setDateAttr("queue_date", date);
+            });
+            return queued;
+        });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String remember = matcher.group(1), matching = matcher.group(2);
             return see(flow, flow.unify("%1% AS " + remember, false, 0), flow.unify(matching, false, 0), Pattern.compile("(.*)"));
