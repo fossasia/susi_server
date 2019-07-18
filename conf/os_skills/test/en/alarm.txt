@@ -1,3 +1,3 @@
-set alarm
-!queue: 1234 `play metallica`
-alarm set
+set alarm in one minute
+!plan 60000: starting a planned music alarm `play metallica`
+alarm set in one minute to play music
