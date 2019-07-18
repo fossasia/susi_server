@@ -177,8 +177,8 @@ public class SusiIntent implements Cloneable {
             int depth,
             SusiSkill.ID skillid) throws SusiActionException {
     	assert skillid != null;
-    	assert utterances != null;
-    	assert utterances.size() > 0;
+    	assert utterances != null : "utterances is null in " + skillid.getPath();
+    	assert utterances.size() > 0 : "utterance size is 0 in " + skillid.getPath();
     	
         this.utterances = new ArrayList<>();
         for (SusiUtterance u: utterances) this.utterances.add(u);

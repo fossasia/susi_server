@@ -1,3 +1,0 @@
-set alarm
-!queue 1234 `play metallica`
-alarm set

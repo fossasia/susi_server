@@ -34,7 +34,6 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiMind.ReactionException;
-import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
 import ai.susi.tools.TimeoutMatcher;
 
@@ -53,14 +52,14 @@ import ai.susi.tools.TimeoutMatcher;
  * We need a declaration to express this; a logic in the client to perform this and an expression in the skills to declare this.
  */
 public class SusiAction {
-    
+
     public static class SusiActionException extends Exception {
         private static final long serialVersionUID = -754075705722756817L;
         public SusiActionException(String message) {
             super(message);
         }
     }
-    
+
     public static enum RenderType {
         answer(196),   // show or say a text
         stop(255),     // stop any actions that are running right now
@@ -91,33 +90,33 @@ public class SusiAction {
         io,             // set an IO status on connected IoT device
         shuffle         // shuffle the current playlist
         ;
-    
+
         private final int score;
-        
+
         private RenderType() {
             this.score = 128;
         }
         private RenderType(int score) {
             this.score = score;
         }
-        
+
         public String action() {
             String name = this.name();
             int p = name.indexOf('_');
             return p < 0 ? name : name.substring(0, p);
         }
-        
+
         public String context() {
             String name = this.name();
             int p = name.indexOf('_');
             return p < 0 ? null : name.substring(p + 1);
         }
-        
+
         public int getScore() {
             return this.score;
         }
     }
-    
+
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer,    // a sentence which may end a conversation
@@ -127,9 +126,9 @@ public class SusiAction {
             return this.ordinal();
         }
     }
-    
+
     private final static Random random = new Random(System.currentTimeMillis());
-    
+
     private JSONObject json;
 
     /**
@@ -281,7 +280,7 @@ public class SusiAction {
         if (language != SusiLanguage.unknown) json.put("language", language.name());
         return json;
     }
-    
+
     /**
      * anchor action: draw a single anchor with descriptive text as anchor text
      * @param link the link
@@ -295,7 +294,7 @@ public class SusiAction {
             .put("text", text);
         return json;
     }
-    
+
     /**
      * Get the render type. That can be used to filter specific information from the action JSON object
      * to create specific activities like 'saying' a sentence, painting a graph and so on.
@@ -312,7 +311,7 @@ public class SusiAction {
         if (this.getRenderType() != RenderType.answer) return DialogType.answer;
         return getDialogType(getPhrases());
     }
-    
+
     public static DialogType getDialogType(Collection<String> phrases) {
         DialogType type = DialogType.reply;
         for (String phrase: phrases) {
@@ -321,7 +320,7 @@ public class SusiAction {
         }
         return type;
     }
-    
+
     public static DialogType getDialogType(String phrase) {
         if (phrase.indexOf('?') > 3) { // the question mark must not be at the beginning
             return phrase.indexOf(". ") >= 0 ? DialogType.reply : DialogType.question;
@@ -347,7 +346,7 @@ public class SusiAction {
         return phrasesCache;
     }
     private ArrayList<String> phrasesCache = null;
-    
+
     /**
      * if the action contains more String attributes where these strings are named, they can be retrieved here
      * @param attr the name of the string attribute
@@ -361,7 +360,7 @@ public class SusiAction {
         this.json.put(attr, value);
         return this;
     }
-    
+
     /**
      * If the action contains integer attributes, they can be retrieved here
      * @param attr the name of the integer attribute
@@ -370,16 +369,16 @@ public class SusiAction {
     public int getIntAttr(String attr) {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
-    
+
     public long getLongAttr(String attr) {
         return this.json.has(attr) ? this.json.getLong(attr) : 0L;
     }
-    
+
     public SusiAction setIntAttr(String attr, int value) {
         this.json.put(attr, value);
         return this;
     }
-    
+
     public SusiAction setLongAttr(String attr, long value) {
         this.json.put(attr, value);
         return this;
@@ -387,18 +386,18 @@ public class SusiAction {
 
     public Date getDateAttr(String attr) throws ParseException {
         String d = this.getStringAttr(attr);
-        return DateParser.FORMAT_RFC1123.parse(d);
+        return DateParser.parse(d, 0).getTime();
     }
 
     public SusiAction setDateAttr(String attr, Date date) {
-        String d = DateParser.formatRFC1123(date);
+        String d = DateParser.formatISO8601(date);
         return setStringAttr(attr, d);
     }
 
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern reflection = Pattern.compile(".*?`([^`]*?)`.*?");
-    
+
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
      * a thought deduction using variable templates. I.e. "$name$" inside an action string would
@@ -412,7 +411,7 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      * @throws ReactionException
      */
-    public List<SusiAction> execution(SusiArgument thoughts, ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... minds) throws ReactionException {
+    public List<SusiAction> execution(SusiArgument thoughts, boolean debug) throws ReactionException {
         List<SusiAction> actions = new ArrayList<>();
         actions.add(this);
         if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
@@ -425,7 +424,7 @@ public class SusiAction {
             boolean invisibleAssignmentSuccess = true;
             boolean reflectionSuccess = true;
             Matcher m;
-            
+
             eval: while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
 
                 // unification of the phrase with the thoughts
@@ -437,7 +436,7 @@ public class SusiAction {
                     unificationSuccess = true;
                     expression = unification;
                 }
-                
+
                 // assignments: set variables from the result expressions.
                 // These can be a visible assignment or an invisible assignment
                 // assignment must be done in advance of reflections
@@ -452,7 +451,7 @@ public class SusiAction {
                     thoughts.think(new SusiThought().addObservation(variable, observation));
                     visibleAssignmentSuccess = true;
                 }
-                
+
                 invisibleAssignmentSuccess = false;
                 invisibleAssignment: while (new TimeoutMatcher(m = blind_assignment.matcher(expression)).matches()) {
                     String observation = m.group(1);
@@ -463,7 +462,7 @@ public class SusiAction {
                     thoughts.think(new SusiThought().addObservation(variable, observation));
                     invisibleAssignmentSuccess = true;
                 }
-                
+
                 // reflection: evaluate contents from the answers expressions as recursion.
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
@@ -473,9 +472,9 @@ public class SusiAction {
                     SusiMind.Reaction reaction = null;
                     ReactionException ee = null;
                     SusiThought mindstate = thoughts.mindmeld(true);
-                    mindlevels: for (SusiMind mind: minds) {
+                    mindlevels: for (SusiMind mind: thoughts.getMinds()) {
                         try {
-                            reaction = mind.new Reaction(observation, language, identity, debug, mindstate, minds);
+                            reaction = mind.new Reaction(observation, thoughts.getLanguage(), thoughts.getClientIdentity(), debug, mindstate, thoughts.getMinds());
                             break mindlevels;
                         } catch (ReactionException e) {
                             ee = e;
@@ -492,7 +491,7 @@ public class SusiAction {
                 }
 
             }
-            
+
             // if anything is left after this process, it is our expression
             if (expression != null && expression.length() > 0) {
                 // the expression is answered to the communication partner
@@ -529,7 +528,7 @@ public class SusiAction {
         }
         return actions;
     }
-    
+
     /**
      * An action is backed with a JSON data structure. That can be retrieved here.
      * @return the json structure of the action
@@ -543,7 +542,7 @@ public class SusiAction {
         }
         return j;
     }
-    
+
     /**
      * toString
      * @return return the json representation of the object as a string

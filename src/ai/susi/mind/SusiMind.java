@@ -79,7 +79,7 @@ public class SusiMind {
         public final boolean os;  // only custom skills or skills in os minds may declare wildcard answers. 
 
         public Layer(String name, File path, boolean os) {
-            assert path.exists();
+            assert path.exists() : "does not exist: " + path.toString();
             this.name = name;
             this.path = path;
             this.os = os;

@@ -38,8 +38,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonPath;
-import ai.susi.mind.SusiAction.RenderType;
-import ai.susi.mind.SusiMind.Reaction;
+import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.DateParser;
@@ -142,7 +141,7 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?\\h\\h+?(.*)\\h*?"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?(.*)\\h*?"), (flow, matcher) -> {
             String time = matcher.group(1);
             String reflection = matcher.group(2);
             final AtomicLong delay = new AtomicLong(0);
@@ -158,6 +157,24 @@ public class SusiInference {
                     // we just fail here
                 }
             }
+
+            JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
+            List<SusiAction> plannedActions;
+            try {
+                plannedActions = new SusiAction(actionj).execution(flow, false);
+            } catch (ReactionException | SusiActionException e) {
+                return new SusiThought(); // empty thought as fail
+            }
+            plannedActions.forEach(action -> {
+                // add a delay to the actions
+                action.setLongAttr("queue_delay", delay.get());
+                action.setDateAttr("queue_date", date);
+            });
+
+            SusiThought queued = flow.mindmeld(true);
+            queued.addActions(plannedActions);
+
+            /*
             SusiMind.Reaction reaction = null;
             SusiThought mindstate = flow.mindmeld(true);
             mindlevels: for (SusiMind mind: flow.getMinds()) {
@@ -175,6 +192,7 @@ public class SusiInference {
                 action.setLongAttr("queue_delay", delay.get());
                 action.setDateAttr("queue_date", date);
             });
+            */
             return queued;
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
