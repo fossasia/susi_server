@@ -189,7 +189,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         skillMetrics.put("latest", modifiedDateData);
 
         // Get skills based on ratings
-        DAO.sortByAvgStar(jsonValues, false);
+        DAO.sortByMostRating(jsonValues, false);
 
         JSONArray ratingsData = getSlicedArray(jsonValues, count);
         skillMetrics.put("rating", ratingsData);
@@ -207,7 +207,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         skillMetrics.put("feedback", feedbackData);
 
         // Get skills based on ratings
-        DAO.sortByAvgStar(staffPicksList, false);
+        DAO.sortByMostRating(staffPicksList, false);
 
         JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
         skillMetrics.put("staffPicks", staffPicksArray);
@@ -225,7 +225,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     }
                 }
                 // Get skills based on ratings of a particular group
-                DAO.sortByAvgStar(groupJsonValues, false);
+                DAO.sortByMostRating(groupJsonValues, false);
 
                 JSONArray topGroup = new JSONArray();
                 topGroup = getSlicedArray(groupJsonValues, count);
