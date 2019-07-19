@@ -1,3 +1,20 @@
 set alarm in one minute
 !plan 60000: starting a planned music alarm `play metallica`
 alarm set in one minute to play music
+
+countdown
+!plan 10000: twelve
+!plan 20000: eleven
+!plan 30000: ten
+!plan 40000: nine
+!plan 50000: ignition sequence starts
+!plan 70000: six
+!plan 80000: five
+!plan 90000: four
+!plan 100000: three
+!plan 110000: two
+!plan 120000: one
+!plan 130000: zero
+!plan 140000: all engines running
+!plan 160000: liftoff, we have a liftoff!
+starting countdown
