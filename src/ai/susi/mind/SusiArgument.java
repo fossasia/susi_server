@@ -20,7 +20,6 @@
 package ai.susi.mind;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -261,14 +260,13 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * @return a new thought containing an action object which resulted from the argument computation
      */
     public SusiThought finding(ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... mind) throws ReactionException {
-        final Collection<JSONObject> actions = new ArrayList<>();
         for (SusiAction action: this.getActionsClone()) { // we need a clone here because we modify the actions object inside the loop
-            action.execution(this, debug).forEach(a -> actions.add(a.toJSONClone()));
+            action.execution(this, debug);
         }
         // the 'execution' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
-        answer.put("actions", actions);
+        answer.put("actions", getActionsJSON());
         List<String> skillpaths = new ArrayList<>();
         this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
@@ -291,6 +289,12 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         List<SusiAction> actionClone = new ArrayList<>();
         actionClone.addAll(this.actions);
         return actionClone;
+    }
+    
+    public JSONArray getActionsJSON() {
+        JSONArray a = new JSONArray();
+        this.actions.forEach(action -> a.put(action.toJSONClone()));
+        return a;
     }
 
     public JSONObject toJSON() {

@@ -408,12 +408,9 @@ public class SusiAction {
      * @param client the client requesting the answer
      * @param language the language of the client
      * @param minds a hierarchy of minds which overlap each other. top mind is the first element in the list of minds
-     * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      * @throws ReactionException
      */
-    public List<SusiAction> execution(SusiArgument thoughts, boolean debug) throws ReactionException {
-        List<SusiAction> actions = new ArrayList<>();
-        actions.add(this);
+    public void execution(SusiArgument thoughts, boolean debug) throws ReactionException {
         if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -425,7 +422,7 @@ public class SusiAction {
             boolean reflectionSuccess = true;
             Matcher m;
 
-            eval: while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
+            while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
 
                 // unification of the phrase with the thoughts
                 // this prepares reflection elements to be instantiated before the reflection is called
@@ -483,7 +480,7 @@ public class SusiAction {
                     }
                     if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
-                    reaction.getActions().forEach(action -> {if (action.getRenderType() != RenderType.answer) actions.add(action);}); // we add only non-answer actions, because the answer actions are added as expression!
+                    //reaction.getActions().forEach(action -> {if (action.getRenderType() != RenderType.answer) thoughts.addAction(action);}); // we add only non-answer actions, because the answer actions are added as expression!
                     List<String> expressions = reaction.getExpressions();
                     expression = expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + expression.substring(m.end(1) + 1);
                     expression = expression.trim();
@@ -526,7 +523,6 @@ public class SusiAction {
             v = Math.min(100, Math.max(0, v));
             this.json.put("volume", Integer.toString(v));
         }
-        return actions;
     }
 
     /**
@@ -548,6 +544,6 @@ public class SusiAction {
      * @return return the json representation of the object as a string
      */
     public String toString() {
-        return toJSONClone().toString();
+        return toJSONClone().toString(2);
     }
 }

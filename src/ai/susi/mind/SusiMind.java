@@ -180,9 +180,9 @@ public class SusiMind {
     }
 
     public SusiMind learn(SusiSkill skill, SusiSkill.ID skillid, boolean acceptFocusSkills) {
-    	assert skill != null;
-    	assert skillid != null;
-    	
+        assert skill != null;
+        assert skillid != null;
+        
         // handle focus skills
         if (!acceptFocusSkills && skill.getOn() != null && skill.getOn().length > 0) {
             String[] on = skill.getOn();
@@ -468,9 +468,9 @@ public class SusiMind {
                 continue ideatest; // consider only sound arguments
             }
             try {
-            	answer = argument.finding(identity, userLanguage, debug, minds);
-            	 // a valid idea
-            	break;
+                answer = argument.finding(identity, userLanguage, debug, minds);
+                 // a valid idea
+                break;
             } catch (ReactionException e) {
                 // a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
                 continue ideatest;
@@ -512,7 +512,7 @@ public class SusiMind {
         SusiThought thought = null;
         int mindcount = 0;
         while (thought == null && mindcount < mindLayers.length) {
-        	thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
+            thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
         }
         return thought;
     }
@@ -522,7 +522,7 @@ public class SusiMind {
         private SusiThought mindstate;
 
         public Reaction(String query, SusiLanguage userLanguage, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) throws ReactionException {
-        	this.mindstate = react(query, userLanguage, identity, debug, observation, minds);
+            this.mindstate = react(query, userLanguage, identity, debug, observation, minds);
             if (this.mindstate == null) throw new ReactionException("no thoughts generated"); // that should be semantically correct if the deduction fails
             this.actions = this.mindstate.getActions(false);
             if (actions.isEmpty()) throw new ReactionException("this mind has no idea what it should do.");
@@ -533,11 +533,11 @@ public class SusiMind {
         }
 
         public List<String> getExpressions() {
-        	final List<String> expresssions = new ArrayList<>();
-        	this.actions.forEach(action -> {
-        		String a = action.getStringAttr("expression");
-        		if (a != null) expresssions.add(a);
-        	});
+            final List<String> expresssions = new ArrayList<>();
+            this.actions.forEach(action -> {
+                String a = action.getStringAttr("expression");
+                if (a != null) expresssions.add(a);
+            });
             return expresssions;
         }
 
