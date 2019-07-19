@@ -906,8 +906,8 @@ public class DAO {
         return skillCreationTime;
     }
 
-    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
-        // Get skills based on ratings
+    public static void sortByMostRating(List<JSONObject> jsonValues, boolean ascending) {
+        // Get skills based on most ratings
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
@@ -935,6 +935,33 @@ public class DAO {
                     } else {
                         return ascending ? 1 : -1;
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByTopRating(List<JSONObject> jsonValues, boolean ascending) {
+        // Get skills based on top ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    float avgA = starsAObject.getFloat("avg_star");
+                    float avgB = starsBObject.getFloat("avg_star");
+                    return ascending ? Float.compare(avgA, avgB) : Float.compare(avgB, avgA);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
