@@ -56,7 +56,7 @@ public class EmailSettingsService extends AbstractAPIHandler implements APIHandl
 
         // For testing email through admin
         String receiverEmail = call.get("receiver_email", null);
-
+        String smtpHost = call.get("smtp_host", null);
         JSONObject result = new JSONObject();
 
         if (receiverEmail != null) {
@@ -82,6 +82,7 @@ public class EmailSettingsService extends AbstractAPIHandler implements APIHandl
         DAO.setConfig("smtp.host.port", port);
         DAO.setConfig("smtp.sender.username", username);
         DAO.setConfig("smtp.sender.password", password);
+        DAO.setConfig("smtp.host.name", smtpHost);
         result.put("accepted", true);
         result.put("Successfully updated mail settings", true);
         return new ServiceResponse(result);
