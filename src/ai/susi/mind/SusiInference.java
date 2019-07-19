@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -161,19 +160,19 @@ public class SusiInference {
             JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
             try {
                 SusiAction planned_utterance = new SusiAction(actionj);
-                planned_utterance.execution(flow, false);
-                flow.addAction(planned_utterance);
+                SusiThought planned_thought = flow.applyAction(planned_utterance); // this also instantiates the answer in the planned_utterance
+                planned_thought.addAction(planned_utterance); // we want the planned_utterance as well as part of the flow
+                planned_thought.getActions(true).forEach(action -> {
+                    // add a delay to the actions
+                    action.setLongAttr("plan_delay", delay.get());
+                    action.setDateAttr("plan_date", date);
+                });
+                flow.think(planned_thought);
             } catch (ReactionException | SusiActionException e) {
                 return new SusiThought(); // empty thought as fail
             }
-            flow.getActions().forEach(action -> {
-                // add a delay to the actions
-                action.setLongAttr("plan_delay", delay.get());
-                action.setDateAttr("plan_date", date);
-            });
 
             SusiThought queued = flow.mindmeld(true);
-
             return queued;
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
