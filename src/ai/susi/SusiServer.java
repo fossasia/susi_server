@@ -492,6 +492,7 @@ public class SusiServer {
                 ListSkillService.class,
                 ListPrivateSkillService.class,
                 AddNewDevice.class,
+                ListDeviceService.class,
                 RemoveUserDevices.class,
                 ModifyUserDevices.class,
                 DisableSkillService.class,
