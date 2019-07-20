@@ -283,7 +283,7 @@ public class SusiSkill {
 
                 // parse bang types and answer lines
                 int thenpos;
-                if (line.startsWith("!" /*bang!*/) && (thenpos = line.indexOf(':')) > 0) {
+                if (line.startsWith("!" /*bang!*/) && (thenpos = line.lastIndexOf(':')) > 0) {
                     String head = line.substring(1, thenpos).trim().toLowerCase();
                     String tail = line.substring(thenpos + 1).trim();
                     int paramspace = head.indexOf(' ');
