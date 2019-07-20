@@ -306,9 +306,9 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // reflection: evaluate contents from the answers expressions as recursion.
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
-                while (new TimeoutMatcher(m = SusiAction.reflection.matcher(expression)).matches()) {
+                while ((m = appropriateReflectionMatcher(expression)) != null) {
                     String observation = m.group(1);
-                    if (observation.indexOf('>') > 0 || observation.indexOf('`') > 0) continue;  // there is an assignment or unresolved reflection in the value
+                    if (observation.indexOf('>') > 0) continue;  // there is an assignment in the value
                     SusiMind.Reaction reaction = null;
                     ReactionException ee = null;
                     SusiThought mindstate = this.mindmeld(true);
@@ -373,6 +373,27 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         return deducedThought;
     }
 
+    private Matcher appropriateReflectionMatcher(String expression) {
+        Matcher nested_matcher = SusiAction.reflection_nested.matcher(expression);
+        Matcher parallel_matcher = SusiAction.reflection_parallel.matcher(expression);
+        if (!nested_matcher.matches() && !parallel_matcher.matches()) return null;
+        if (nested_matcher.matches() && !parallel_matcher.matches()) return nested_matcher;
+        if (!nested_matcher.matches() && parallel_matcher.matches()) return parallel_matcher;
+        // both match; find some good reasons to choose from one
+        String nested_observation = nested_matcher.group(1);
+        if (nested_observation.length() == 0) return parallel_matcher;
+        String nested_observation_trim = nested_observation.trim();
+        if (nested_observation_trim.length() == 0) return parallel_matcher;
+        String parallel_observation = parallel_matcher.group(1);
+        if (parallel_observation.length() == 0) return nested_matcher;
+        String parallel_observation_trim = parallel_observation.trim();
+        if (parallel_observation_trim.length() == 0) return nested_matcher;
+        // beside these trivial heuristics above, we can see that mostly reflection phrases should not have superfluous spaces at the end
+        if (nested_observation.length() == nested_observation_trim.length() && parallel_observation.length() != parallel_observation_trim.length()) return nested_matcher;
+        if (nested_observation.length() != nested_observation_trim.length() && parallel_observation.length() == parallel_observation_trim.length()) return parallel_matcher;
+        // we don't know :(
+        return nested_matcher;
+    }
 
     /**
      * An argument is constructed using a skill which may contain a set of intents.

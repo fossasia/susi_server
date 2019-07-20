@@ -393,7 +393,8 @@ public class SusiAction {
 
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
-    final static Pattern reflection = Pattern.compile(".*?`([^`]*?)`.*?");
+    final static Pattern reflection_parallel = Pattern.compile(".*?`([^`]*?)`.*?");
+    final static Pattern reflection_nested = Pattern.compile(".*?`(.*)`.*?");
 
     /**
      * An action is backed with a JSON data structure. That can be retrieved here.
