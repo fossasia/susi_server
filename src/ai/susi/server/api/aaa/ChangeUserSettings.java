@@ -36,6 +36,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by saurabh on 20/6/17.
@@ -86,6 +87,15 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
         boolean flag = false;
         for (int i = 0; i < possibleKeys.length; i++) {
             String value = query.get(possibleKeys[i], null);
+            if(possibleKeys[i].equals("userName") && value != null){
+                String usernamePattern = DAO.getConfig("users.username.regex", "^(.{5,51})$");
+                String usernamePatternTooltip = DAO.getConfig("users.username.regex.tooltip",
+                "Enter atleast 5 character, upto 51 character");
+                Pattern pattern = Pattern.compile(usernamePattern);
+                if(!pattern.matcher(value).matches()) {
+                    throw new APIException(400, usernamePatternTooltip);
+                }
+            }
             if(value != null){
                 settings.put(possibleKeys[i], value);
                 flag = true;
@@ -96,7 +106,8 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
         }
         if (authorization.getIdentity() == null) {
             throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
-        } else {
+        }
+        else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             for (Map.Entry<String, String> entry : settings.entrySet()) {
                 String key = entry.getKey();
