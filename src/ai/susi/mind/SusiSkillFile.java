@@ -53,7 +53,9 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
     }
 
     public static SusiSkillFile load(File f) throws IOException {
-        SusiSkillFile skillfile = new SusiSkillFile(new BufferedReader(new FileReader(f)));
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        SusiSkillFile skillfile = new SusiSkillFile(br);
+        br.close();
         return skillfile;
     }
 
