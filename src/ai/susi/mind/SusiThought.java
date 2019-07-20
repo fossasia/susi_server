@@ -138,7 +138,7 @@ public class SusiThought extends JSONObject {
     }
 
     public boolean isFailed() {
-        return getData().length() == 0;
+        return getData().length() == 0 && getActions(true).size() == 0;
     }
 
     public boolean hasEmptyObservation(String key) {
