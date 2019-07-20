@@ -140,17 +140,21 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?(.*)\\h*?"), (flow, matcher) -> {
-            String time = matcher.group(1);
-            String reflection = matcher.group(2);
+        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
+            String time = flow.unify(matcher.group(1), false, 0);
+            String reflection = flow.unify(matcher.group(2), false, 0);
             final AtomicLong delay = new AtomicLong(0);
             final Date date = new Date();
+            SusiThought mindstate = flow.mindmeld(true);
+            String timezoneOffsets = mindstate.getObservation("timezoneOffset");
+            int timezoneOffset = 0;
+            if (timezoneOffsets != null) try {timezoneOffset = Integer.parseInt(timezoneOffsets);} catch (NumberFormatException e) {}
             try {
                 delay.set(Long.parseLong(time));
                 date.setTime(System.currentTimeMillis() + delay.get());
             } catch (NumberFormatException e) {
                 try {
-                    date.setTime(DateParser.parse(time, 0).getTime().getTime());
+                    date.setTime(DateParser.parse(time, timezoneOffset).getTime().getTime());
                     delay.set(date.getTime() - System.currentTimeMillis());
                 } catch (ParseException ee) {
                     // we just fail here
