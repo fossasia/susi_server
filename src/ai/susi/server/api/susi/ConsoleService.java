@@ -35,6 +35,7 @@ import ai.susi.server.UserRole;
 import ai.susi.tools.HttpClient;
 import api.external.transit.BahnService;
 import api.external.transit.BahnService.NoStationFoundException;
+import ai.susi.json.JsonTray;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -152,23 +153,30 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiThought json = new SusiThought();
             try {
                 String query = matcher.group(2);
-                String appid = DAO.getConfig("wolframalpha.appid", "");
+                JsonTray apiKeys = DAO.apiKeys;
+                JSONObject publicKeys = apiKeys.getJSONObject("public");
+                if(publicKeys.has("wolframalphaKey")) {
+                    String appid = publicKeys.getString("wolframalphaKey");
+                }
+                else {
+                    String appid = DAO.getConfig("wolframalpha.appid", "");
+                }
                 String serviceURL = "https://api.wolframalpha.com/v2/query?input=$query$&format=plaintext&output=JSON&appid=" + appid;
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
-                JSONObject wa = new JSONObject(serviceResponse);
-                JSONArray pods = wa.getJSONObject("queryresult").getJSONArray("pods");
-                // get the relevant pod
-                JSONObject subpod = pods.getJSONObject(1).getJSONArray("subpods").getJSONObject(0);
-                String response = subpod.getString("plaintext");
-                int p = response.indexOf('\n');
-                if (p >= 0) response = response.substring(0, p);
-                p = response.lastIndexOf('|');
-                if (p >= 0) response = response.substring(p + 1).trim();
-                subpod.put("plaintext", response);
-                json.setQuery(query);
-                SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-                json.setData(transfer.conclude(new JSONArray().put(subpod)));
-                json.setHits(json.getCount());
+                    JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
+                    JSONObject wa = new JSONObject(serviceResponse);
+                    JSONArray pods = wa.getJSONObject("queryresult").getJSONArray("pods");
+                    // get the relevant pod
+                    JSONObject subpod = pods.getJSONObject(1).getJSONArray("subpods").getJSONObject(0);
+                    String response = subpod.getString("plaintext");
+                    int p = response.indexOf('\n');
+                    if (p >= 0) response = response.substring(0, p);
+                    p = response.lastIndexOf('|');
+                    if (p >= 0) response = response.substring(p + 1).trim();
+                    subpod.put("plaintext", response);
+                    json.setQuery(query);
+                    SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                    json.setData(transfer.conclude(new JSONArray().put(subpod)));
+                    json.setHits(json.getCount());
             } catch (Throwable e) {
                 // probably a time-out or a json error
                 DAO.severe(e);
