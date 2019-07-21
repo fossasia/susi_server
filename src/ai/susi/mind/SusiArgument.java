@@ -20,15 +20,18 @@
 package ai.susi.mind;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+import java.util.regex.Matcher;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.mind.SusiAction.RenderType;
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.ClientIdentity;
+import ai.susi.tools.TimeoutMatcher;
 
 /**
  * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
@@ -44,7 +47,6 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
 
     // working data
     private final ArrayList<SusiThought> recall;
-    private final List<SusiAction> actions;
     private final List<SusiSkill.ID> skills;
 
     /**
@@ -55,14 +57,12 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         this.language = language;
         this.minds = minds;
         this.recall = new ArrayList<>();
-        this.actions = new ArrayList<>();
         this.skills = new ArrayList<>();
     }
 
     public SusiArgument clone() {
         SusiArgument c = new SusiArgument(this.identity, this.language, this.minds);
         this.recall.forEach(thought -> c.recall.add(thought));
-        this.actions.forEach(action -> c.actions.add(action));
         this.skills.forEach(skill -> c.skills.add(skill));
         return c;
     }
@@ -171,7 +171,6 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      */
     public SusiArgument think(SusiThought thought) {
         this.recall.add(thought);
-        this.actions.addAll(thought.getActions(true));
         return this;
     }
 
@@ -227,16 +226,173 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         };
     }
 
+    private final static Random random = new Random(System.currentTimeMillis());
+
     /**
-     * Every argument may have a set of (re-)actions assigned.
-     * Those (re-)actions are methods to do something with the argument.
-     * @param action one (re-)action on this argument
-     * @return the argument
+     * Action descriptions are templates for data content. Strings may refer to arguments from
+     * a thought deduction using variable templates. I.e. "$name$" inside an action string would
+     * refer to an data entity in an thought argument which has the name "name". Applying the
+     * Action to a thought will instantiate such variable templates and produces a new String
+     * attribute named "expression"
+     * @param thoughts an argument from previously applied inferences
+     * @param client the client requesting the answer
+     * @param language the language of the client
+     * @param minds a hierarchy of minds which overlap each other. top mind is the first element in the list of minds
+     * @throws ReactionException
      */
-    public SusiArgument addAction(final SusiAction action) {
-        assert action != null;
-        this.actions.add(action);
-        return this;
+    
+    /**
+     * Actions are templates containing variables which can be instantiated with data from an argument.
+     * Applying an action will result in side-effects within the action:
+     * - the action gets variables instantiated.
+     * The application may also have side-effects on the argument itself:
+     * - variable assignments from inside of answer statements may enrich the argument thought chain
+     * - resolving reflections inside answer statement may create more actions which are added to the argument
+     * @param action
+     * @return
+     * @throws ReactionException
+     */
+    public SusiThought applyAction(final SusiAction action) throws ReactionException {
+        SusiThought deducedThought = new SusiThought();
+        if (action.getRenderType() == RenderType.answer && action.hasAttr("phrases")) {
+            // transform the answer according to the data
+            ArrayList<String> a = action.getPhrases();
+            String expression = a.get(random.nextInt(a.size()));
+
+            boolean unificationSuccess = true;
+            boolean visibleAssignmentSuccess = true;
+            boolean invisibleAssignmentSuccess = true;
+            boolean reflectionSuccess = true;
+            Matcher m;
+
+            while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
+
+                // unification of the phrase with the thoughts
+                // this prepares reflection elements to be instantiated before the reflection is called
+                unificationSuccess = false;
+                if (expression.indexOf('$') >= 0) {
+                    String unification = this.unify(expression, false, Integer.MAX_VALUE);
+                    if (unification == null) throw new ReactionException("expression '" + expression + "' cannot be unified with thoughts");
+                    unificationSuccess = true;
+                    expression = unification;
+                }
+
+                // assignments: set variables from the result expressions.
+                // These can be a visible assignment or an invisible assignment
+                // assignment must be done in advance of reflections
+                // because the reflection may use the assigned variables.
+                visibleAssignmentSuccess = false;
+                visibleAssignment: while (new TimeoutMatcher(m = SusiAction.visible_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue visibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    deducedThought.addObservation(variable, observation);
+                    visibleAssignmentSuccess = true;
+                }
+
+                invisibleAssignmentSuccess = false;
+                invisibleAssignment: while (new TimeoutMatcher(m = SusiAction.blind_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue invisibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    deducedThought.addObservation(variable, observation);
+                    invisibleAssignmentSuccess = true;
+                }
+
+                // reflection: evaluate contents from the answers expressions as recursion.
+                // Susi is asking itself in another thinking request.
+                reflectionSuccess = false;
+                while ((m = appropriateReflectionMatcher(expression)) != null) {
+                    String observation = m.group(1);
+                    if (observation.indexOf('>') > 0) continue;  // there is an assignment in the value
+                    SusiMind.Reaction reaction = null;
+                    ReactionException ee = null;
+                    SusiThought mindstate = this.mindmeld(true);
+                    mindlevels: for (SusiMind mind: this.getMinds()) {
+                        try {
+                            reaction = mind.new Reaction(observation, this.getLanguage(), this.getClientIdentity(), false, mindstate, this.getMinds());
+                            break mindlevels;
+                        } catch (ReactionException e) {
+                            ee = e;
+                            continue mindlevels;
+                        }
+                    }
+                    if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
+                    deducedThought = reaction.getMindstate();
+                    List<SusiAction> reactionActions = new ArrayList<>();
+                    reaction.getActions().forEach(reactionAction -> {
+                        // we add only non-answer actions, because the answer actions are added within the expression (see below)!
+                        if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
+                    }); 
+                    List<String> expressions = reaction.getExpressions();
+                    expression = expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + expression.substring(m.end(1) + 1);
+                    expression = expression.trim();
+                    reflectionSuccess = true;
+                }
+
+            }
+
+            // if anything is left after this process, it is our expression
+            if (expression != null && expression.length() > 0) {
+                // the expression is answered to the communication partner
+                action.setStringAttr("expression", expression);
+                //this.json.put("language", language.name());
+            }
+        }
+        if (action.getRenderType() == RenderType.websearch && action.hasAttr("query")) {
+            action.setStringAttr("query", this.unify(action.getStringAttr("query"), false, Integer.MAX_VALUE));
+        }
+        if (action.getRenderType() == RenderType.anchor && action.hasAttr("link") && action.hasAttr("text")) {
+            action.setStringAttr("link", this.unify(action.getStringAttr("link"), false, Integer.MAX_VALUE));
+            action.setStringAttr("text", this.unify(action.getStringAttr("text"), false, Integer.MAX_VALUE));
+        }
+        if (action.getRenderType() == RenderType.map && action.hasAttr("latitude") && action.hasAttr("longitude") && action.hasAttr("zoom")) {
+            action.setStringAttr("latitude", this.unify(action.getStringAttr("latitude"), false, Integer.MAX_VALUE));
+            action.setStringAttr("longitude", this.unify(action.getStringAttr("longitude"), false, Integer.MAX_VALUE));
+            action.setStringAttr("zoom", this.unify(action.getStringAttr("zoom"), false, Integer.MAX_VALUE));
+        }
+        if ((action.getRenderType() == RenderType.video_play || action.getRenderType() == RenderType.audio_play) && action.hasAttr("identifier")) {
+            action.setStringAttr("identifier", this.unify(action.getStringAttr("identifier"), false, Integer.MAX_VALUE));
+        }
+        if ((action.getRenderType() == RenderType.audio_volume) && action.hasAttr("volume")) {
+            String volume = this.unify(action.getStringAttr("volume"), false, Integer.MAX_VALUE);
+            int p = volume.indexOf(' ');
+            if (p >= 0) volume = volume.substring(0, p).trim();
+            int v = 50;
+            try {
+                v = Integer.parseInt(volume);
+            } catch (NumberFormatException e) {
+            }
+            v = Math.min(100, Math.max(0, v));
+            action.setStringAttr("volume", Integer.toString(v));
+        }
+        return deducedThought;
+    }
+
+    private Matcher appropriateReflectionMatcher(String expression) {
+        Matcher nested_matcher = SusiAction.reflection_nested.matcher(expression);
+        Matcher parallel_matcher = SusiAction.reflection_parallel.matcher(expression);
+        if (!nested_matcher.matches() && !parallel_matcher.matches()) return null;
+        if (nested_matcher.matches() && !parallel_matcher.matches()) return nested_matcher;
+        if (!nested_matcher.matches() && parallel_matcher.matches()) return parallel_matcher;
+        // both match; find some good reasons to choose from one
+        String nested_observation = nested_matcher.group(1);
+        if (nested_observation.length() == 0) return parallel_matcher;
+        String nested_observation_trim = nested_observation.trim();
+        if (nested_observation_trim.length() == 0) return parallel_matcher;
+        String parallel_observation = parallel_matcher.group(1);
+        if (parallel_observation.length() == 0) return nested_matcher;
+        String parallel_observation_trim = parallel_observation.trim();
+        if (parallel_observation_trim.length() == 0) return nested_matcher;
+        // beside these trivial heuristics above, we can see that mostly reflection phrases should not have superfluous spaces at the end
+        if (nested_observation.length() == nested_observation_trim.length() && parallel_observation.length() != parallel_observation_trim.length()) return nested_matcher;
+        if (nested_observation.length() != nested_observation_trim.length() && parallel_observation.length() == parallel_observation_trim.length()) return parallel_matcher;
+        // we don't know :(
+        return nested_matcher;
     }
 
     /**
@@ -261,14 +417,15 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * @return a new thought containing an action object which resulted from the argument computation
      */
     public SusiThought finding(ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... mind) throws ReactionException {
-        final Collection<JSONObject> actions = new ArrayList<>();
-        for (SusiAction action: this.getActionsClone()) { // we need a clone here because we modify the actions object inside the loop
-            action.execution(this, debug).forEach(a -> actions.add(a.toJSONClone()));
+        // all actions must be instantiated with variables from this arguments
+        for (SusiAction action: this.getActionsClone()) { // we need a clone from the here (but not from the actions itself) because we modify/extend the actions list object inside the loop
+            SusiThought t = this.applyAction(action); // apply but not add - these actions are already here in this argument
+            if (!t.isFailed()) this.think(t);
         }
-        // the 'execution' method has a possible side-effect on the argument - it can append objects to it
+        // the 'applyAction' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
-        answer.put("actions", actions);
+        answer.put("actions", getActionsJSON());
         List<String> skillpaths = new ArrayList<>();
         this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
@@ -283,14 +440,16 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.
      */
-    public List<SusiAction> getActions() {
-        return this.actions;
-    }
-
     public List<SusiAction> getActionsClone() {
         List<SusiAction> actionClone = new ArrayList<>();
-        actionClone.addAll(this.actions);
+        this.recall.forEach(thought -> thought.getActions(true).forEach(action -> actionClone.add(action)));
         return actionClone;
+    }
+
+    public JSONArray getActionsJSON() {
+        JSONArray a = new JSONArray();
+        getActionsClone().forEach(action -> a.put(action.toJSONClone()));
+        return a;
     }
 
     public JSONObject toJSON() {
@@ -298,7 +457,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         JSONArray recallJson = new JSONArray();
         this.recall.forEach(thought -> recallJson.put(thought));
         JSONArray actionsJson = new JSONArray();
-        this.actions.forEach(action -> actionsJson.put(action.toJSONClone()));
+        getActionsClone().forEach(action -> actionsJson.put(action.toJSONClone()));
         JSONArray skillJson = new JSONArray();
         this.skills.forEach(skill -> skillJson.put(skill));
         json.put("recall", recallJson);

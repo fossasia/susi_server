@@ -53,6 +53,7 @@ public class GetEmailSettings extends AbstractAPIHandler implements APIHandler {
         String port = DAO.getConfig("smtp.host.port", "");
         String smtpUserName = DAO.getConfig("smtp.sender.username", "");
         String smtpPassword = DAO.getConfig("smtp.sender.password", "");
+        String smtpHost = DAO.getConfig("smtp.host.name", "");
         JSONObject result = new JSONObject();
         JSONObject settingsObj = new JSONObject();
 
@@ -66,6 +67,7 @@ public class GetEmailSettings extends AbstractAPIHandler implements APIHandler {
         settingsObj.put("port", port);
         settingsObj.put("smtpUserName", smtpUserName);
         settingsObj.put("smtpPassword", smtpPassword);
+        settingsObj.put("smtpHost", smtpHost);
         try {
             result.put("accepted", true);
             result.put("settings", settingsObj);

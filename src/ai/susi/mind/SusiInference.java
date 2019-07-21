@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,7 +80,7 @@ public class SusiInference {
     }
 
     public SusiInference(String expression, Type type) {
-    	assert expression != null;
+        assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);
@@ -141,17 +140,21 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?(.*)\\h*?"), (flow, matcher) -> {
-            String time = matcher.group(1);
-            String reflection = matcher.group(2);
+        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
+            String time = flow.unify(matcher.group(1), false, 0);
+            String reflection = flow.unify(matcher.group(2), false, 0);
             final AtomicLong delay = new AtomicLong(0);
             final Date date = new Date();
+            SusiThought mindstate = flow.mindmeld(true);
+            String timezoneOffsets = mindstate.getObservation("timezoneOffset");
+            int timezoneOffset = 0;
+            if (timezoneOffsets != null) try {timezoneOffset = Integer.parseInt(timezoneOffsets);} catch (NumberFormatException e) {}
             try {
                 delay.set(Long.parseLong(time));
                 date.setTime(System.currentTimeMillis() + delay.get());
             } catch (NumberFormatException e) {
                 try {
-                    date.setTime(DateParser.parse(time, 0).getTime().getTime());
+                    date.setTime(DateParser.parse(time, timezoneOffset).getTime().getTime());
                     delay.set(date.getTime() - System.currentTimeMillis());
                 } catch (ParseException ee) {
                     // we just fail here
@@ -159,40 +162,21 @@ public class SusiInference {
             }
 
             JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
-            List<SusiAction> plannedActions;
             try {
-                plannedActions = new SusiAction(actionj).execution(flow, false);
+                SusiAction planned_utterance = new SusiAction(actionj);
+                SusiThought planned_thought = flow.applyAction(planned_utterance); // this also instantiates the answer in the planned_utterance
+                planned_thought.addAction(planned_utterance); // we want the planned_utterance as well as part of the flow
+                planned_thought.getActions(true).forEach(action -> {
+                    // add a delay to the actions
+                    action.setLongAttr("plan_delay", delay.get());
+                    action.setDateAttr("plan_date", date);
+                });
+                flow.think(planned_thought);
             } catch (ReactionException | SusiActionException e) {
                 return new SusiThought(); // empty thought as fail
             }
-            plannedActions.forEach(action -> {
-                // add a delay to the actions
-                action.setLongAttr("queue_delay", delay.get());
-                action.setDateAttr("queue_date", date);
-            });
 
             SusiThought queued = flow.mindmeld(true);
-            queued.addActions(plannedActions);
-
-            /*
-            SusiMind.Reaction reaction = null;
-            SusiThought mindstate = flow.mindmeld(true);
-            mindlevels: for (SusiMind mind: flow.getMinds()) {
-                try {
-                    reaction = mind.new Reaction(reflection, flow.getLanguage(), flow.getClientIdentity(), false, mindstate, flow.getMinds());
-                    break mindlevels;
-                } catch (ReactionException e) {
-                    continue mindlevels;
-                }
-            }
-            if (reaction == null) return new SusiThought(); // fail
-            SusiThought queued = reaction.getMindstate();
-            reaction.getActions().forEach(action -> {
-                // add a delay to the actions
-                action.setLongAttr("queue_delay", delay.get());
-                action.setDateAttr("queue_date", date);
-            });
-            */
             return queued;
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
