@@ -245,10 +245,11 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	private String getVerificationMailContent(String token, String userId) throws APIException {
 
 		String hostUrl = DAO.getConfig("host.url", null);
+		String frontendUrl = DAO.getConfig("mail.frontendurl", "https://susi.ai");
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
 		// redirect user to accounts verify-account route
-		String verificationLink = "https://susi.ai/verify-account?access_token=" + token
+		String verificationLink = frontendUrl + "/verify-account?access_token=" + token
 				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
