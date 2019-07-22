@@ -93,7 +93,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             result.put("message", "Invalid credentials.");
             throw new APIException(HttpStatus.UNPROCESSABLE_ENTITY_422, "Invalid credentials");
         } else {
-            String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
+            String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[a-z])(?=.*\\W).{8,64})$");
 
             Pattern pattern = Pattern.compile(passwordPattern);
 
