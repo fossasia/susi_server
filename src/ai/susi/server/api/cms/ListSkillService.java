@@ -413,7 +413,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 String[] traverseTimeObjectKeys = {"lastModifiedTime", "creationTime", "lastAccessTime"};
 
                 for(String timeKey: traverseTimeObjectKeys){
-                    String ratingTime = skillObj.get(timeKey).toString().substring(8, 16);
+                    String ratingTime = skillObj.get(timeKey).toString().substring(0, 8);
                     JSONObject timeObj = new JSONObject();
                     switch(timeKey) {
                         case "lastModifiedTime":

@@ -148,7 +148,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   }
 
                   if(accounting.getJSON().has("signupTime")) {
-                    String signupTime = accounting.getJSON().getString("signupTime").substring(8, 16);
+                    String signupTime = accounting.getJSON().getString("signupTime").substring(0, 8);
                     if(signupOverTimeObj.has(signupTime)){
                       int count = signupOverTimeObj.getInt(signupTime);
                       signupOverTimeObj.put(signupTime, count + 1);
@@ -161,7 +161,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   }
 
                   if(accounting.getJSON().has("lastLoginTime")) {
-                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime").substring(8, 16);
+                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime").substring(0, 8);
                     if(lastLoginOverTimeObj.has(lastLoginTime)){
                       int count = lastLoginOverTimeObj.getInt(lastLoginTime);
                       lastLoginOverTimeObj.put(lastLoginTime, count + 1);
