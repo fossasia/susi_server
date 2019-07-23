@@ -409,31 +409,34 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             JSONObject lastAccessOverTimeObj = new JSONObject();
             for(String skillKey: Objects.requireNonNull(JSONObject.getNames(skillObject))){
                 JSONObject skillObj = skillObject.getJSONObject(skillKey);
-
-                String[] traverseTimeObjectKeys = {"lastModifiedTime", "creationTime", "lastAccessTime"};
-
-                for(String timeKey: traverseTimeObjectKeys){
-                    String ratingTime = skillObj.get(timeKey).toString().substring(0, 8);
-                    JSONObject timeObj = new JSONObject();
-                    switch(timeKey) {
-                        case "lastModifiedTime":
-                            timeObj = lastModifiedOverTimeObj;
-                            break;
-                        case "creationTime":
-                            timeObj = creationOverTimeObj;
-                            break;
-                        case "lastAccessTime":
-                            timeObj = lastAccessOverTimeObj;
-                            break;
+                if(skillObj.has("lastModifiedTime")) {
+                    String lastModifiedTime = skillObj.get("lastModifiedTime").toString().substring(0, 8);
+                    if(lastModifiedOverTimeObj.has(lastModifiedTime)) {
+                        lastModifiedOverTimeObj.put(lastModifiedTime, lastModifiedOverTimeObj.getInt(lastModifiedTime) + 1);
                     }
-
-                    if(timeObj.has(ratingTime)){
-                        timeObj.put(ratingTime, timeObj.getInt(ratingTime)+1);
-                    }
-                    else{
-                        timeObj.put(ratingTime, 1);
+                    else {
+                        lastModifiedOverTimeObj.put(lastModifiedTime, 1);
                     }
                 }
+                if(skillObj.has("creationTime")) {
+                    String creationOverTime = skillObj.get("creationTime").toString().substring(0, 8);
+                    if(creationOverTimeObj.has(creationOverTime)) {
+                        creationOverTimeObj.put(creationOverTime, creationOverTimeObj.getInt(creationOverTime) + 1);
+                    }
+                    else {
+                        creationOverTimeObj.put(creationOverTime, 1);
+                    }
+                }
+                if(skillObj.has("lastAccessTime")) {
+                    String lastAccessTime = skillObj.get("lastAccessTime").toString().substring(0, 8);
+                    if(lastAccessOverTimeObj.has(lastAccessTime)) {
+                        lastAccessOverTimeObj.put(lastAccessTime, lastAccessOverTimeObj.getInt(lastAccessTime) + 1);
+                    }
+                    else {
+                        lastAccessOverTimeObj.put(lastAccessTime, 1);
+                    }
+                }
+
             }
             List<JSONObject> lastModifiedOverTimeList = new ArrayList<JSONObject>();
             List<JSONObject> creationOverTimeList = new ArrayList<JSONObject>();
