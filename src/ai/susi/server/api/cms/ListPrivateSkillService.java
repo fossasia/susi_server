@@ -4,7 +4,6 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -45,11 +44,10 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
 
         JsonTray chatbot = DAO.chatbot;
         JSONObject botDetailsObject = chatbot.toJSON();
-        JSONArray botDetailsArray = new JSONArray();
         JSONObject keysObject = new JSONObject();
         JSONObject groupObject = new JSONObject();
         JSONObject languageObject = new JSONObject();
-        JSONObject botObject = new JSONObject();
+        List<JSONObject> botList = new ArrayList<JSONObject>();
         JSONObject result = new JSONObject();
 
         Iterator Key = botDetailsObject.keys();
@@ -89,8 +87,7 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
                             botDetails.put("name", bot_name);
                             botDetails.put("language", language_name);
                             botDetails.put("group", group_name);
-                            botDetailsArray.put(botDetails);
-                            botObject.put(bot_name,botDetails);
+                            botList.add(botDetails);
                         }
                     } else {
                         Iterator botNames = languageObject.keys();
@@ -106,8 +103,7 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
                             botDetails.put("name", bot_name);
                             botDetails.put("language", language_name);
                             botDetails.put("group", group_name);
-                            botDetailsArray.put(botDetails);
-                            botObject.put(bot_name,botDetails);
+                            botList.add(botDetails);
                         }
                     }
                 }
@@ -115,7 +111,7 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
         }
 
         try {
-            result.put("chatbots", botObject);
+            result.put("chatbots", botList);
             result.put("accepted", true);
             result.put("message", "Success: Fetched all Private Skills");
             return new ServiceResponse(result);
