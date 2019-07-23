@@ -3,6 +3,7 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by chetankaushik on 31/05/17.
@@ -85,12 +87,14 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             int inactiveUsers = 0;
             page = (page - 1) * 50;
             List<JSONObject> userList = new ArrayList<JSONObject>();
+            JSONObject lastLoginOverTimeObj = new JSONObject();
+            JSONObject signupOverTimeObj = new JSONObject();
+  
             //authorized.forEach(client -> userList.add(client.toJSON()));
             for (Client client : authorized) {
                 String email = client.toString().substring(6); 
                 if (searchTerm == null || email.contains(searchTerm)){
                   JSONObject json = client.toJSON();
-
                   // generate client identity to get user role
                   ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
                   Authorization authorization = DAO.getAuthorization(identity);
@@ -144,15 +148,29 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   }
 
                   if(accounting.getJSON().has("signupTime")) {
-                      json.put("signupTime", accounting.getJSON().getString("signupTime"));
+                    String signupTime = accounting.getJSON().getString("signupTime").substring(0, 8);
+                    if(signupOverTimeObj.has(signupTime)){
+                      int count = signupOverTimeObj.getInt(signupTime);
+                      signupOverTimeObj.put(signupTime, count + 1);
+                    }
+                    else {
+                      signupOverTimeObj.put(signupTime, 0);
+                    }
                   } else {
-                      json.put("signupTime", "");
+                      json.put("signupOverTime", "");
                   }
 
                   if(accounting.getJSON().has("lastLoginTime")) {
-                      json.put("lastLoginTime", accounting.getJSON().getString("lastLoginTime"));
+                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime").substring(0, 8);
+                    if(lastLoginOverTimeObj.has(lastLoginTime)){
+                      int count = lastLoginOverTimeObj.getInt(lastLoginTime);
+                      lastLoginOverTimeObj.put(lastLoginTime, count + 1);
+                    }
+                    else {
+                      lastLoginOverTimeObj.put(lastLoginTime, 1);
+                    }
                   } else {
-                      json.put("lastLoginTime", "");
+                      json.put("lastLoginOverTime", "");
                   }
 
                   if(accounting.getJSON().has("devices")) {
@@ -191,6 +209,22 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             userStats.put("totalUsers", keysArray.length);
             if (call.get("getUserStats", false) == true) {
               try {
+                List<JSONObject> lastLoginOverTimeList = new ArrayList<JSONObject>();
+                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))){
+                  JSONObject timeObj = new JSONObject();
+                  timeObj.put("timeStamp", timeStamp);
+                  timeObj.put("count", lastLoginOverTimeObj.getInt(timeStamp));
+                  lastLoginOverTimeList.add(timeObj);
+                }
+                List<JSONObject> signupOverTimeList = new ArrayList<JSONObject>();
+                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))){
+                  JSONObject timeObj = new JSONObject();
+                  timeObj.put("timeStamp", timeStamp);
+                  timeObj.put("count", signupOverTimeObj.getInt(timeStamp));
+                  signupOverTimeList.add(timeObj);
+                }
+                  result.put("lastLoginOverTime", lastLoginOverTimeList);
+                  result.put("signupOverTime", signupOverTimeList);
                   result.put("userStats", userStats);
                   result.put("accepted", true);
                   result.put("message", "Success: Fetched all users stats!");

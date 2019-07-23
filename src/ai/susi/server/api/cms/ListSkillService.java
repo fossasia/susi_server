@@ -56,6 +56,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         String userId = null;
         Boolean shouldReturnSkillStats = false;
+        Boolean shouldReturnSkillDataOverTime = false;
         String privateSkill = call.get("private", null);
         if (call.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless
                                                       // equivalent of sessions for browsers
@@ -69,8 +70,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 String userRole = authorization.getUserRole().toString().toLowerCase();
                 if (userRole.equals("user") || userRole.equals("reviewer")) {
                     shouldReturnSkillStats = false;
+                    shouldReturnSkillDataOverTime = false;
                 } else {
                     shouldReturnSkillStats = true;
+                    shouldReturnSkillDataOverTime = true;
                 }
                 userId = identity.getUuid();
             }
@@ -398,6 +401,67 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             skillStats.put("staffPicks", staffPicks);
             skillStats.put("systemSkills", systemSkills);
             json.put("skillStats", skillStats);
+        }
+
+        if(shouldReturnSkillDataOverTime) {
+            JSONObject lastModifiedOverTimeObj = new JSONObject();
+            JSONObject creationOverTimeObj = new JSONObject();
+            JSONObject lastAccessOverTimeObj = new JSONObject();
+            for(String skillKey: Objects.requireNonNull(JSONObject.getNames(skillObject))){
+                JSONObject skillObj = skillObject.getJSONObject(skillKey);
+                if(skillObj.has("lastModifiedTime")) {
+                    String lastModifiedTime = skillObj.get("lastModifiedTime").toString().substring(0, 8);
+                    if(lastModifiedOverTimeObj.has(lastModifiedTime)) {
+                        lastModifiedOverTimeObj.put(lastModifiedTime, lastModifiedOverTimeObj.getInt(lastModifiedTime) + 1);
+                    }
+                    else {
+                        lastModifiedOverTimeObj.put(lastModifiedTime, 1);
+                    }
+                }
+                if(skillObj.has("creationTime")) {
+                    String creationOverTime = skillObj.get("creationTime").toString().substring(0, 8);
+                    if(creationOverTimeObj.has(creationOverTime)) {
+                        creationOverTimeObj.put(creationOverTime, creationOverTimeObj.getInt(creationOverTime) + 1);
+                    }
+                    else {
+                        creationOverTimeObj.put(creationOverTime, 1);
+                    }
+                }
+                if(skillObj.has("lastAccessTime")) {
+                    String lastAccessTime = skillObj.get("lastAccessTime").toString().substring(0, 8);
+                    if(lastAccessOverTimeObj.has(lastAccessTime)) {
+                        lastAccessOverTimeObj.put(lastAccessTime, lastAccessOverTimeObj.getInt(lastAccessTime) + 1);
+                    }
+                    else {
+                        lastAccessOverTimeObj.put(lastAccessTime, 1);
+                    }
+                }
+
+            }
+            List<JSONObject> lastModifiedOverTimeList = new ArrayList<JSONObject>();
+            List<JSONObject> creationOverTimeList = new ArrayList<JSONObject>();
+            List<JSONObject> lastAccessOverTimeList = new ArrayList<JSONObject>();
+            for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastModifiedOverTimeObj))){
+              JSONObject timeObj = new JSONObject();
+              timeObj.put("timeStamp", timeStamp);
+              timeObj.put("count", lastModifiedOverTimeObj.getInt(timeStamp));
+              lastModifiedOverTimeList.add(timeObj);
+            }
+            for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(creationOverTimeObj))){
+                JSONObject timeObj = new JSONObject();
+                timeObj.put("timeStamp", timeStamp);
+                timeObj.put("count", creationOverTimeObj.getInt(timeStamp));
+                lastModifiedOverTimeList.add(timeObj);
+            }
+            for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastAccessOverTimeObj))){
+                JSONObject timeObj = new JSONObject();
+                timeObj.put("timeStamp", timeStamp);
+                timeObj.put("count", lastAccessOverTimeObj.getInt(timeStamp));
+                lastModifiedOverTimeList.add(timeObj);
+            }
+            json.put("lastModifiedOverTime", lastModifiedOverTimeList);
+            json.put("creationOverTime", creationOverTimeList);
+            json.put("lastAccessOverTime", lastAccessOverTimeList);
         }
 
         json.put("model", model_name).put("group", group_name).put("language", language_list);
