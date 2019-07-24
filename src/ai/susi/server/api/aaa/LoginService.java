@@ -213,7 +213,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 						throw new APIException(422, "Invalid value for 'valid_seconds'");
 					}
 
-					if(checkTwoOrMoreInvalidLogins(post, authorization, permissions) ){
+					if(checkOneOrMoreInvalidLogins(post, authorization, permissions) ){
 						String gRecaptchaResponse = post.get("g-recaptcha-response", null);
 						boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
 						if(!isRecaptchaVerified){
@@ -424,7 +424,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 	}
 
-	private boolean checkTwoOrMoreInvalidLogins(Query post, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
+	private boolean checkOneOrMoreInvalidLogins(Query post, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 		Accounting accouting = DAO.getAccounting(authorization.getIdentity());
 		JSONObject invalidLogins = accouting.getRequests().getRequests(this.getClass().getCanonicalName());
 		long period = permissions.getLong("periodSeconds", 600) * 1000; // get time period in which wrong logins are counted (e.g. the last 10 minutes)
@@ -432,7 +432,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		for(String key : invalidLogins.keySet()){
 			if(Long.parseLong(key, 10) > System.currentTimeMillis() - period) counter++;
 		}
-		if(counter >= 2){
+		if(counter > 0){
 			return true;
 		}
 		return false;
