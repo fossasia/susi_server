@@ -25,6 +25,7 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.IO;
 import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.VerifyRecaptcha;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -181,6 +182,13 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		if (authentication.getIdentity() != null) {
 			throw new APIException(422, "email is already taken");
+		}
+
+		//check for recaptcha validation
+		String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+		boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+		if(!isRecaptchaVerified){
+			throw new APIException(422, "Please verify recaptcha");
 		}
 
 		// create new id
