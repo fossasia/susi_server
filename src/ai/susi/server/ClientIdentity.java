@@ -94,6 +94,10 @@ public class ClientIdentity extends Client {
     		return Digest.encodeMD5Hex(super.getName());
     	}
     }
+
+    public String getUuidByEmail(String email) {
+    	return Digest.encodeMD5Hex(email);
+    }
     
     public String[] getLookupKeys() {
     	// if this is an email identity then we have two lookup keys:
