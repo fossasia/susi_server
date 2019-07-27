@@ -210,14 +210,14 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             if (call.get("getUserStats", false) == true) {
               try {
                 List<JSONObject> lastLoginOverTimeList = new ArrayList<JSONObject>();
-                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))){
+                for(String timeStamp: JSONObject.getNames(lastLoginOverTimeObj)) {
                   JSONObject timeObj = new JSONObject();
                   timeObj.put("timeStamp", timeStamp);
                   timeObj.put("count", lastLoginOverTimeObj.getInt(timeStamp));
                   lastLoginOverTimeList.add(timeObj);
                 }
                 List<JSONObject> signupOverTimeList = new ArrayList<JSONObject>();
-                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))){
+                for(String timeStamp:JSONObject.getNames(lastLoginOverTimeObj)) {
                   JSONObject timeObj = new JSONObject();
                   timeObj.put("timeStamp", timeStamp);
                   timeObj.put("count", signupOverTimeObj.getInt(timeStamp));
