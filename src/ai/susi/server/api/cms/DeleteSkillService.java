@@ -49,7 +49,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         String model_name = call.get("model", "general");
         String access_token = call.get("access_token", null);
         String privateSkill = call.get("private", null);
-        String emailId = call.get("email", null);
+        String uuid = call.get("uuid", null);
         String userId = null;
         // extract userid and check for user role
         ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, access_token);
@@ -60,8 +60,8 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             Authorization authorization = DAO.getAuthorization(identity);
             UserRole userRole = authorization.getUserRole();
             userId = identity.getUuid();
-            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && emailId != null) {
-                userId = identity.getUuidByEmail(emailId);
+            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && uuid != null) {
+                userId = uuid;
             }
             if (privateSkill == null) {
                 // if deleting a public skill, the person should be admin or superadmin

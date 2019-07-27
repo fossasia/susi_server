@@ -87,6 +87,7 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
                             botDetails.put("name", bot_name);
                             botDetails.put("language", language_name);
                             botDetails.put("group", group_name);
+                            botDetails.put("key", key_name);
                             botList.add(botDetails);
                         }
                     } else {
@@ -103,6 +104,7 @@ public class ListPrivateSkillService extends AbstractAPIHandler implements APIHa
                             botDetails.put("name", bot_name);
                             botDetails.put("language", language_name);
                             botDetails.put("group", group_name);
+                            botDetails.put("key", key_name);
                             botList.add(botDetails);
                         }
                     }
