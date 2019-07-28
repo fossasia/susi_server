@@ -148,7 +148,9 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   }
 
                   if(accounting.getJSON().has("signupTime")) {
-                    String signupTime = accounting.getJSON().getString("signupTime").substring(0, 8);
+                    String signupTime = accounting.getJSON().getString("signupTime");
+                    json.put("signupTime", signupTime);
+                    signupTime = signupTime.substring(0, 8);
                     if(signupOverTimeObj.has(signupTime)){
                       int count = signupOverTimeObj.getInt(signupTime);
                       signupOverTimeObj.put(signupTime, count + 1);
@@ -157,11 +159,13 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                       signupOverTimeObj.put(signupTime, 0);
                     }
                   } else {
-                      json.put("signupOverTime", "");
+                      json.put("signupTime", "");
                   }
 
                   if(accounting.getJSON().has("lastLoginTime")) {
-                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime").substring(0, 8);
+                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime");
+                    json.put("lastLoginTime", lastLoginTime);
+                    lastLoginTime = lastLoginTime.substring(0, 8);
                     if(lastLoginOverTimeObj.has(lastLoginTime)){
                       int count = lastLoginOverTimeObj.getInt(lastLoginTime);
                       lastLoginOverTimeObj.put(lastLoginTime, count + 1);
@@ -170,7 +174,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                       lastLoginOverTimeObj.put(lastLoginTime, 1);
                     }
                   } else {
-                      json.put("lastLoginOverTime", "");
+                      json.put("lastLoginTime", "");
                   }
 
                   if(accounting.getJSON().has("devices")) {
