@@ -82,37 +82,37 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         Part imagePart = req.getPart("image");
 
         if (req.getParameter("access_token") != null) {
-            if(!req.getParameter("skill").isEmpty()) {
-                if (imagePart == null) {
-                    json.put("accepted", false);
-                    json.put("message", "Image not given");
-                } else {
-                    String userId = null;
-                    if (req.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
-                        ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
-                        Authentication authentication = DAO.getAuthentication(credential);
-                        // check if access_token is valid
-                        if (authentication.getIdentity() != null) {
-                            ClientIdentity identity = authentication.getIdentity();
-                            userEmail = identity.getName();
-                            userId = identity.getUuid();
-                        }
+            if (!req.getParameter("skill").isEmpty()) {
+                String userId = null;
+                if (req.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the
+                                                                // stateless equivalent of sessions for browsers
+                    ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token,
+                            req.getParameter("access_token"));
+                    Authentication authentication = DAO.getAuthentication(credential);
+                    // check if access_token is valid
+                    if (authentication.getIdentity() != null) {
+                        ClientIdentity identity = authentication.getIdentity();
+                        userEmail = identity.getName();
+                        userId = identity.getUuid();
                     }
-                    if (userId != null) {
+                }
+                if (userId != null) {
                     // if client sends private=1 then it is a private skill
                     File private_skill_dir = null;
                     String privateSkill = req.getParameter("private");
-                    if(privateSkill != null){
-                        private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+                    if (privateSkill != null) {
+                        private_skill_dir = new File(DAO.private_skill_watch_dir, userId);
                     }
-                    InputStream imagePartContent = imagePart.getInputStream();
-
+                    InputStream imagePartContent = null;
+                    if (imagePart != null) {
+                        imagePartContent = imagePart.getInputStream();
+                    }
                     String model_name = req.getParameter("model");
                     if (model_name == null) {
                         model_name = "general";
                     }
                     File model = new File(DAO.model_watch_dir, model_name);
-                    if(privateSkill != null){
+                    if (privateSkill != null) {
                         model = private_skill_dir;
                     }
                     String group_name = req.getParameter("group");
@@ -127,85 +127,74 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     File language = new File(group, language_name);
                     String skill_name = req.getParameter("skill");
                     File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
-
                     String image_name = req.getParameter("image_name");
-
-
-
                     String imagePath = language.getPath() + File.separator + "images";
-                    if (image_name == null) {
-                        // Checking for
-                        json.put("accepted", false);
-                        json.put("message", "The Image name are not given or Image with same name is already present ");
-
+                    // Checking for file existence
+                    json.put("accepted", false);
+                    if (skill.exists()) {
+                        json.put("message", "The '" + skill + "' already exists.");
                     } else {
-                        // Checking for file existence
-                        json.put("accepted", false);
-                        if (skill.exists()) {
-                            json.put("message", "The '" + skill + "' already exists.");
-                        } else {
-                            // Reading Content for skill
-                            String content = req.getParameter("content");
-                            if (content == null) content = "";
+                        // Reading Content for skill
+                        String content = req.getParameter("content");
+                        if (content == null)
+                            content = "";
 
+                        if (imagePart != null) {
                             // Reading content for image
                             Image image = ImageIO.read(imagePartContent);
                             BufferedImage bi = createResizedCopy(image, 512, 512, true);
-
                             // Checks if images directory exists or not. If not then create one
-                            if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
+                            if (!Files.exists(Paths.get(imagePath)))
+                                new File(imagePath).mkdirs();
                             File p = new File(imagePath + File.separator + image_name);
-                            if (p.exists()) p.delete();
+                            if (p.exists())
+                                p.delete();
                             ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
+                        }
 
-                            // Writing Skills Data in File
-                            try (FileWriter Skillfile = new FileWriter(skill)) {
-                                Skillfile.write(content);
-                                String path = null;
-                                if(privateSkill != null){
-                                    path = skill.getPath().replace(private_skill_dir.toString(), "users");
-                                } else {
-                                    path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
-                                }
-                                // Set the creationTime in the metadata
-                                updateSkillInfo(model_name, group_name, language_name, skill_name);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                json.put("message", "error: " + e.getMessage());
-                            }
-
-                            //Add to git
-                            if (privateSkill != null){
-                                storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
-                                SkillTransactions.addAndPushCommit(true, "Created " + skill_name, userEmail);
-                                json.put("accepted", true);
+                        // Writing Skills Data in File
+                        try (FileWriter Skillfile = new FileWriter(skill)) {
+                            Skillfile.write(content);
+                            String path = null;
+                            if (privateSkill != null) {
+                                path = skill.getPath().replace(private_skill_dir.toString(), "users");
                             } else {
-                                SkillTransactions.addAndPushCommit(false, "Created " + skill_name, userEmail);
-                                json.put("accepted", true);
+                                path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                             }
-
+                            // Set the creationTime in the metadata
+                            updateSkillInfo(model_name, group_name, language_name, skill_name);
+                        } catch (IOException e) {
+                            json.put("message", "error: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                        // Add to git
+                        if (privateSkill != null) {
+                            storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
+                            SkillTransactions.addAndPushCommit(true, "Created " + skill_name, userEmail);
+                            json.put("accepted", true);
+                        } else {
+                            SkillTransactions.addAndPushCommit(false, "Created " + skill_name, userEmail);
+                            json.put("accepted", true);
                         }
                     }
+                } else {
+                    json.put("message", "Access token not valid");
+                    json.put("accepted", false);
                 }
-                else {
-                    json.put("message","Access token not valid");
-                    json.put("accepted",false);
-                }
-                }
+                // Ithe
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
                 resp.getWriter().write(json.toString());
             } else {
                 json.put("message", "Skill name is not given");
-                json.put("accepted",false);
+                json.put("accepted", false);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
                 resp.getWriter().write(json.toString());
             }
-        }
-        else{
-            json.put("message","Access token are not given");
-            json.put("accepted",false);
+        } else {
+            json.put("message", "Access token are not given");
+            json.put("accepted", false);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
