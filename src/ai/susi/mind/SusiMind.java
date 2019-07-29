@@ -557,27 +557,31 @@ public class SusiMind {
         }
     }
 
-    // Function overloading - if duration parameter is not passed then use 7 as default value.
+    // Function overloading - if duration parameter is not passed then use 7 as
+    // default value.
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
-        return getSkillMetadata(model, group, language, skillname, 7);
+        return getSkillMetadata(model, group, language, skillname, 7, DAO.model_watch_dir);
     }
 
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
+        return getSkillMetadata(model, group, language, skillname, 7, DAO.model_watch_dir);
+    }
 
-        JSONObject skillMetadata = new JSONObject(true)
-                .put("model", model)
-                .put("group", group)
-                .put("language", language);
-        File modelpath = new File(DAO.model_watch_dir, model);
+    public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration,
+            File parentDirectory) {
+        JSONObject skillMetadata = new JSONObject(true).put("model", model).put("group", group).put("language",
+                language);
+        File modelpath = new File(parentDirectory, model);
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
         File skillpath = DAO.getSkillFileInLanguage(languagepath, skillname, false);
         DateFormat dateFormatType = DateParser.iso8601Format;
-        skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
+        skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right
+                                                                // name
 
         // default values
         skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
-        skillMetadata.put("descriptions",JSONObject.NULL);
+        skillMetadata.put("descriptions", JSONObject.NULL);
         skillMetadata.put("image", JSONObject.NULL);
         skillMetadata.put("author", JSONObject.NULL);
         skillMetadata.put("author_url", JSONObject.NULL);
@@ -601,21 +605,24 @@ public class SusiMind {
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : getSkillMetadata().entrySet()) {
             SusiSkill skill = entry.getValue();
             SusiSkill.ID skillid = entry.getKey();
-            if (skillid.hasModel(model) &&
-                    skillid.hasGroup(group) &&
-                    skillid.hasLanguage(language) &&
-                    skillid.hasName(skillname)) {
-                skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
+            if (skillid.hasModel(model) && skillid.hasGroup(group) && skillid.hasLanguage(language)
+                    && skillid.hasName(skillname)) {
+                skillMetadata.put("skill_name", skill.getSkillName() == null ? JSONObject.NULL : skill.getSkillName());
                 skillMetadata.put("protected", skill.getProtectedSkill());
-                skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
-                skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
-                skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
-                skillMetadata.put("author", skill.getAuthor()  ==null ? JSONObject.NULL:skill.getAuthor());
-                skillMetadata.put("author_url", skill.getAuthorURL() ==null ? JSONObject.NULL:skill.getAuthorURL());
-                skillMetadata.put("author_email", skill.getAuthorEmail() ==null ? JSONObject.NULL:skill.getAuthorEmail());
-                skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
+                skillMetadata.put("developer_privacy_policy",
+                        skill.getDeveloperPrivacyPolicy() == null ? JSONObject.NULL
+                                : skill.getDeveloperPrivacyPolicy());
+                skillMetadata.put("descriptions",
+                        skill.getDescription() == null ? JSONObject.NULL : skill.getDescription());
+                skillMetadata.put("image", skill.getImage() == null ? JSONObject.NULL : skill.getImage());
+                skillMetadata.put("author", skill.getAuthor() == null ? JSONObject.NULL : skill.getAuthor());
+                skillMetadata.put("author_url", skill.getAuthorURL() == null ? JSONObject.NULL : skill.getAuthorURL());
+                skillMetadata.put("author_email",
+                        skill.getAuthorEmail() == null ? JSONObject.NULL : skill.getAuthorEmail());
+                skillMetadata.put("terms_of_use",
+                        skill.getTermsOfUse() == null ? JSONObject.NULL : skill.getTermsOfUse());
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
-                skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
+                skillMetadata.put("examples", skill.getExamples() == null ? JSONObject.NULL : skill.getExamples());
                 skillMetadata.put("skill_rating", DAO.getSkillRating(model, group, language, skillname));
                 skillMetadata.put("supported_languages", DAO.getSupportedLanguages(model, group, language, skillname));
                 skillMetadata.put("reviewed", DAO.getSkillReviewStatus(model, group, language, skillname));
@@ -625,7 +632,8 @@ public class SusiMind {
                 skillMetadata.put("usage_count", DAO.getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
                 skillMetadata.put("lastModifiedTime", DAO.getSkillModifiedTime(model, group, language, skillname));
-                skillMetadata.put("creationTime", DAO.getSkillCreationTime(model, group, language, skillname, skillpath));
+                skillMetadata.put("creationTime",
+                        DAO.getSkillCreationTime(model, group, language, skillname, skillpath));
             }
         }
 
@@ -637,8 +645,8 @@ public class SusiMind {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(attr!=null){
-            skillMetadata.put("lastAccessTime" , attr.lastAccessTime());
+        if (attr != null) {
+            skillMetadata.put("lastAccessTime", attr.lastAccessTime());
         }
         return skillMetadata;
     }

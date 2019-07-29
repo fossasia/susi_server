@@ -87,6 +87,8 @@ public class GetReportSkillService extends AbstractAPIHandler implements APIHand
                                 if (call.get("search", null) != null) {
                                     String skill_name = call.get("search", null);
                                     if (languageName.has(skill_name)) {
+                                        JSONObject skillMetadata = DAO.susi.getSkillMetadata(key, group_name,
+                                                language_name, skill_name);
                                         skillName = languageName.getJSONObject(skill_name);
                                         reports = skillName.getJSONArray("reports");
                                         List<JSONObject> updatedReportList = new ArrayList<JSONObject>();
@@ -101,7 +103,10 @@ public class GetReportSkillService extends AbstractAPIHandler implements APIHand
                                         skillObj.put("group", group_name);
                                         skillObj.put("language", language_name);
                                         skillObj.put("model", key);
-
+                                        skillObj.put("editable", skillMetadata.getBoolean("editable"));
+                                        skillObj.put("reviewed", skillMetadata.getBoolean("reviewed"));
+                                        skillObj.put("author", skillMetadata.get("author"));
+                                        skillObj.put("type", "Public");
                                         skillObj.put("reports", updatedReportList);
                                         reportList.add(skillObj);
                                     }
@@ -109,6 +114,8 @@ public class GetReportSkillService extends AbstractAPIHandler implements APIHand
                                     for (String skill_name : JSONObject.getNames(languageName)) {
                                         skillName = languageName.getJSONObject(skill_name);
                                         if (languageName.has(skill_name)) {
+                                            JSONObject skillMetadata = DAO.susi.getSkillMetadata(key, group_name,
+                                                    language_name, skill_name);
                                             JSONObject skillObj = new JSONObject();
                                             reports = skillName.getJSONArray("reports");
                                             List<JSONObject> updatedReportList = new ArrayList<JSONObject>();
@@ -122,7 +129,10 @@ public class GetReportSkillService extends AbstractAPIHandler implements APIHand
                                             skillObj.put("group", group_name);
                                             skillObj.put("language", language_name);
                                             skillObj.put("model", key);
-
+                                            skillObj.put("editable", skillMetadata.getBoolean("editable"));
+                                            skillObj.put("reviewed", skillMetadata.getBoolean("reviewed"));
+                                            skillObj.put("author", skillMetadata.get("author"));
+                                            skillObj.put("type", "Public");
                                             skillObj.put("reports", updatedReportList);
                                             reportList.add(skillObj);
                                         }
