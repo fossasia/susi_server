@@ -75,7 +75,7 @@ public class SkillsToBeDeleted extends AbstractAPIHandler implements APIHandler 
             String[] strArray = str.split("/");
             String group_name = strArray[8];
             String language_name = strArray[9];
-            String skill_name = strArray[10].substring(0, strArray[10].length()-4);
+            String skill_name = strArray[10].split(".")[0];
             JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name, 7, DAO.deleted_skill_dir);
             skillMetadata.put("testgroup", group_name);
             skillMetadata.put("testlanguage", language_name);
