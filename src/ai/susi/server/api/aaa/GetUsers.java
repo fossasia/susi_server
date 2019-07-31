@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Iterator;
 
 /**
  * Created by chetankaushik on 31/05/17.
@@ -24,6 +25,7 @@ import java.util.Objects;
  * getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
  * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
  * getUserStats -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserStats=true
+ * getDeviceStats -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getDeviceStats=true
  * search       -> string http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&search=mario
  * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
@@ -52,11 +54,13 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 && call.get("getUserStats", false) == false
                 && call.get("search", null) == null
                 && call.get("page", null) == null
-                && call.get("getUserCount", null) == null) {
+                && call.get("getUserCount", null) == null
+                && call.get("getDeviceStats", null) == null) {
             throw new APIException(400, "Bad Request. No parameter present");
         }
         JSONObject result = new JSONObject(true);
         JSONObject userStats = new JSONObject(true);
+        JSONObject deviceStats = new JSONObject(true);
         result.put("accepted", false);
         Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
         List<String> keysList = new ArrayList<String>();
@@ -85,10 +89,16 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             int superAdmin = 0;
             int activeUsers = 0;
             int inactiveUsers = 0;
+
+            // device stats
+            int connectedDevices =0;
+            int deviceUsers = 0;
+
             page = (page - 1) * 50;
             List<JSONObject> userList = new ArrayList<JSONObject>();
             JSONObject lastLoginOverTimeObj = new JSONObject();
             JSONObject signupOverTimeObj = new JSONObject();
+            JSONObject deviceAddedOverTimeObj = new JSONObject();
   
             //authorized.forEach(client -> userList.add(client.toJSON()));
             for (Client client : authorized) {
@@ -150,7 +160,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   if(accounting.getJSON().has("signupTime")) {
                     String signupTime = accounting.getJSON().getString("signupTime");
                     json.put("signupTime", signupTime);
-                    signupTime = signupTime.substring(0, 8);
+                    signupTime = signupTime.substring(8, 16);
                     if(signupOverTimeObj.has(signupTime)){
                       int count = signupOverTimeObj.getInt(signupTime);
                       signupOverTimeObj.put(signupTime, count + 1);
@@ -165,7 +175,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   if(accounting.getJSON().has("lastLoginTime")) {
                     String lastLoginTime = accounting.getJSON().getString("lastLoginTime");
                     json.put("lastLoginTime", lastLoginTime);
-                    lastLoginTime = lastLoginTime.substring(0, 8);
+                    lastLoginTime = lastLoginTime.substring(8, 16);
                     if(lastLoginOverTimeObj.has(lastLoginTime)){
                       int count = lastLoginOverTimeObj.getInt(lastLoginTime);
                       lastLoginOverTimeObj.put(lastLoginTime, count + 1);
@@ -178,7 +188,26 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   }
 
                   if(accounting.getJSON().has("devices")) {
-                      json.put("devices", accounting.getJSON().getJSONObject("devices"));
+                      JSONObject devices = accounting.getJSON().getJSONObject("devices");
+                      json.put("devices", devices);
+                      Iterator<?> keys = devices.keySet().iterator();
+                      while(keys.hasNext() ) {
+                        String key = (String)keys.next();
+                        if (devices.get(key) instanceof JSONObject) {
+                            JSONObject device = new JSONObject(devices.get(key).toString());
+                            if(device.has("deviceAddTime")) {
+                                String deviceAddTime = device.get("deviceAddTime").toString().substring(8,16);
+                                if(deviceAddedOverTimeObj.has(deviceAddTime)) {
+                                    int count = deviceAddedOverTimeObj.getInt(deviceAddTime);
+                                    deviceAddedOverTimeObj.put(deviceAddTime, count + 1);
+                                } else {
+                                    deviceAddedOverTimeObj.put(deviceAddTime, 1);
+                                }
+                            }
+                        }
+                      }
+                      connectedDevices = connectedDevices + devices.length();
+                      ++deviceUsers;
                   } else {
                       json.put("devices", "");
                   }
@@ -211,17 +240,21 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             userStats.put("activeUsers", activeUsers);
             userStats.put("inactiveUsers", inactiveUsers);
             userStats.put("totalUsers", keysArray.length);
+
+            deviceStats.put("connectedDevices", connectedDevices);
+            deviceStats.put("deviceUsers", deviceUsers);
+            
             if (call.get("getUserStats", false) == true) {
               try {
                 List<JSONObject> lastLoginOverTimeList = new ArrayList<JSONObject>();
-                for(String timeStamp: JSONObject.getNames(lastLoginOverTimeObj)) {
+                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))) {
                   JSONObject timeObj = new JSONObject();
                   timeObj.put("timeStamp", timeStamp);
                   timeObj.put("count", lastLoginOverTimeObj.getInt(timeStamp));
                   lastLoginOverTimeList.add(timeObj);
                 }
                 List<JSONObject> signupOverTimeList = new ArrayList<JSONObject>();
-                for(String timeStamp:JSONObject.getNames(lastLoginOverTimeObj)) {
+                for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))) {
                   JSONObject timeObj = new JSONObject();
                   timeObj.put("timeStamp", timeStamp);
                   timeObj.put("count", signupOverTimeObj.getInt(timeStamp));
@@ -244,6 +277,24 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   return new ServiceResponse(result);
               } catch (Exception e) {
                   throw new APIException(500, "Failed to fetch the requested users!");
+              }
+            } else if (call.get("getDeviceStats", null) != null) {
+                try {
+                  List<JSONObject> deviceAddedOverTimeList = new ArrayList<JSONObject>();
+                  for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(deviceAddedOverTimeObj))){
+                    JSONObject timeObj = new JSONObject();
+                    timeObj.put("timeStamp", timeStamp);
+                    timeObj.put("count", deviceAddedOverTimeObj.getInt(timeStamp));
+                    deviceAddedOverTimeList.add(timeObj);
+                  }
+                  deviceStats.put("deviceAddedOverTime", deviceAddedOverTimeList);
+
+                  result.put("deviceStats", deviceStats);
+                  result.put("accepted", true);
+                  result.put("message", "Success: Fetched all device stats!");
+                  return new ServiceResponse(result);
+                } catch (Exception e) {
+                  throw new APIException(500, "Failed to fetch the device stats!");
               }
             } else {
                 try {
