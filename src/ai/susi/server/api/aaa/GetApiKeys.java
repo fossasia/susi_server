@@ -56,8 +56,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
 
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to fetch different API keys used by SUSI")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success : Fetched all API key successfully !"),
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Success : Fetched all API key successfully !"),
             @ApiResponse(code = 500, message = "Failed : Unable to fetch API keys!"),
 
     })
@@ -77,15 +76,34 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
+            final JsonObjectWithDefault permissions) throws APIException {
 
         JsonTray apiKeys = DAO.apiKeys;
-        JSONObject publicKeys = apiKeys.getJSONObject("public");
+        String type = call.get("type", "public");
+        JSONObject configKeys = new JSONObject();
+        if (type.equals("public")) {
+            configKeys = apiKeys.getJSONObject("public");
+        } else if (type.equals("user")) {
+            String access_token = call.get("access_token", null);
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, access_token);
+            Authentication authentication = DAO.getAuthentication(credential);
+
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                String userId = identity.getUuid();
+
+                JSONObject userKeys = apiKeys.getJSONObject("user");
+                configKeys = userKeys.getJSONObject(userId);
+            } else {
+                throw new APIException(422, "Access token is not valid");
+            }
+        }
         JSONObject result = new JSONObject();
         JSONObject keys = new JSONObject();
 
-        for (String key : Objects.requireNonNull(JSONObject.getNames(publicKeys))) {
-            JSONObject values =  (JSONObject)publicKeys.get(key);
+        for (String key : JSONObject.getNames(configKeys)) {
+            JSONObject values = (JSONObject) configKeys.get(key);
             keys.put(key, values.get("value"));
         }
 
@@ -95,7 +113,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
             result.put("message", "Success : Fetched all API key successfully !");
             return new ServiceResponse(result);
         } catch (Exception e) {
-            throw new APIException(500, "Failed : Unable to fetch API keys!" );
+            throw new APIException(500, "Failed : Unable to fetch API keys!");
         }
     }
 }
