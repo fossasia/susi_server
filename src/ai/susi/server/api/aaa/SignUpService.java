@@ -87,7 +87,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		// if regex is requested
 		if (post.get("getParameters", false)) {
-			String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[a-z])(?=.*\\W).{8,64})$");
+			String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
 			String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
 					"Enter a combination of atleast 8 characters and atleast one special character, one number and text characters");
 			if ("false".equals(DAO.getConfig("users.public.signup", "false"))) {
@@ -167,8 +167,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// check password pattern
-		String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[a-z])(?=.*\\W).{8,64})$");
-		String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip", "Enter a combination of atleast 8 characters and atleast one special character, one number and text characters");
+		String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
+		String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip", "Enter a combination of atleast 8 characters and atleast one special character, one number and one capital letter");
 		pattern = Pattern.compile(passwordPattern);
 
 		if (signup.equals(password) || !new TimeoutMatcher(pattern.matcher(password)).matches()) {
