@@ -113,7 +113,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = "https://accounts.susi.ai/?token=" + token;
+		String verificationLink = "https://susi.ai/resetpass?token=" + token;
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));
