@@ -41,13 +41,13 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
-import java.util.Objects;
-
 /**
  * This Servlet gives a API Endpoint to fetch different API keys used by SUSI.
  * It requires user role to be ANONYMOUS or above ANONYMOUS
  * example:
  * http://localhost:4000/aaa/getApiKeys.json
+ * User API Key, necessary parameters, access_token, type(user):
+ * http://localhost:4000/aaa/getApiKeys.json?type=user&access_token=gzTPX50EfAXrpTZtiZrJNao94H00P5
  */
 @Path("/aaa/getApiKeys.json")
 @Produces(MediaType.APPLICATION_JSON)
@@ -82,6 +82,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
         JsonTray apiKeys = DAO.apiKeys;
         String type = call.get("type", "public");
         JSONObject configKeys = new JSONObject();
+        JSONObject result = new JSONObject();
         if (type.equals("public")) {
             configKeys = apiKeys.getJSONObject("public");
         } else if (type.equals("user")) {
@@ -92,24 +93,15 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
             if (authentication.getIdentity() != null) {
                 ClientIdentity identity = authentication.getIdentity();
                 String userId = identity.getUuid();
-
                 JSONObject userKeys = apiKeys.getJSONObject("user");
-                configKeys = userKeys.getJSONObject(userId);
+                configKeys = userKeys.has(userId) ? userKeys.getJSONObject(userId) : null;
             } else {
                 throw new APIException(422, "Access token is not valid");
             }
         }
-        JSONObject result = new JSONObject();
-        JSONObject keys = new JSONObject();
-
-        for (String key : JSONObject.getNames(configKeys)) {
-            JSONObject values = (JSONObject) configKeys.get(key);
-            keys.put(key, values.get("value"));
-        }
-
         try {
             result.put("accepted", true);
-            result.put("keys", keys);
+            result.put("keys", configKeys);
             result.put("message", "Success : Fetched all API key successfully !");
             return new ServiceResponse(result);
         } catch (Exception e) {
