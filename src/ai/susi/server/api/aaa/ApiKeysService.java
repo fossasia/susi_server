@@ -114,7 +114,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
                     throw new APIException(401, "Unauthorized");
                 }
             } else {
-                userKeyObj = keys.getJSONObject(userId);
+                userKeyObj = keys.has(userId) ? keys.getJSONObject(userId) : new JSONObject();
             }
 
         } else {
@@ -132,8 +132,8 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
                     JSONObject apiValueObj = new JSONObject();
                     apiValueObj.put("value", keyValue);
                     key.put(keyName, apiValueObj);
-                    userKeyObj.put(userId, key);
-                    keys.put(type, userKeyObj);
+                    userKeyObj.put(keyName, apiValueObj);
+                    keys.put(userId, userKeyObj);
                 }
                 apiKeys.put(type, keys, true);
                 result.put("accepted", true);
