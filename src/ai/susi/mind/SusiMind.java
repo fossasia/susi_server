@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -143,38 +144,38 @@ public class SusiMind {
         observe(layer.path, layer.os);
     }
 
-    private void observe(File path, boolean acceptWildcardIntent) throws IOException {
-        assert path.exists() : path.getAbsolutePath();
-        if (!path.exists()) return;
-        for (File f: path.listFiles()) {
-            if (f.isDirectory()) {
-                // recursively step into it
-                observe(f, acceptWildcardIntent);
-            }
-            if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
-                if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
-                    DAO.log("observing " + f.toString());
-                    observations.put(f, System.currentTimeMillis());
-                    try {
-                        if (f.getName().endsWith(".json")) {
-                            JSONObject lesson = new JSONObject(new JSONTokener(new FileReader(f)));
-                            learn(lesson, f, false);
-                        }
-                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
-                            SusiSkill.ID skillid = new SusiSkill.ID(f);
-                            SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(f)), skillid, acceptWildcardIntent);
-                            learn(skill, skillid, false);
-                        }
-                        if (f.getName().endsWith(".aiml")) {
-                            JSONObject lesson = AIML2Susi.readAIMLSkill(f);
-                            learn(lesson, f, false);
-                        }
-                    } catch (Throwable e) {
-                        DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
-                        e.printStackTrace();
+    private void observe(File f, boolean acceptWildcardIntent) throws IOException {
+        assert f.exists() : f.getAbsolutePath();
+        if (!f.exists()) return;
+
+        if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
+            if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
+                DAO.log("observing " + f.toString());
+                observations.put(f, System.currentTimeMillis());
+                try {
+                    if (f.getName().endsWith(".json")) {
+                        JSONObject lesson = new JSONObject(new JSONTokener(new FileReader(f)));
+                        learn(lesson, f, false);
                     }
+                    if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
+                        SusiSkill.ID skillid = new SusiSkill.ID(f);
+                        SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(f)), skillid, acceptWildcardIntent);
+                        learn(skill, skillid, false);
+                    }
+                    if (f.getName().endsWith(".aiml")) {
+                        JSONObject lesson = AIML2Susi.readAIMLSkill(f);
+                        learn(lesson, f, false);
+                    }
+                } catch (Throwable e) {
+                    DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
+        }
+        if (f.isDirectory() ) {
+           for (File g: f.listFiles()) {
+           	observe(g, acceptWildcardIntent);
+           }
         }
         //this.intenttrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
@@ -182,7 +183,7 @@ public class SusiMind {
     public SusiMind learn(SusiSkill skill, SusiSkill.ID skillid, boolean acceptFocusSkills) {
         assert skill != null;
         assert skillid != null;
-        
+
         // handle focus skills
         if (!acceptFocusSkills && skill.getOn() != null && skill.getOn().length > 0) {
             String[] on = skill.getOn();
@@ -645,8 +646,10 @@ public class SusiMind {
 
     public static void main(String[] args) {
         SusiMind mem = new SusiMind(null);
-        SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File(new File(new File("conf"), "os_skills"), "test"), "alarm.txt"), true);
+        SusiMind.Layer testlayer = new SusiMind.Layer("test", FileSystems.getDefault().getPath("conf", "os_skills", "test", "en", "alarm.txt").toFile(), true);
         mem.addLayer(testlayer);
+        try {mem.observe();} catch (IOException e1) {}
+        mem.skillMetadata.values().forEach(skill -> System.out.println(skill.toJSON().toString(2)));
         try {
             System.out.println(mem.new Reaction("set alarm", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
             //System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
