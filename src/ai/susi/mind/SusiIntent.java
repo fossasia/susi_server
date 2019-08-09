@@ -723,14 +723,14 @@ public class SusiIntent implements Cloneable {
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
     public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
-        
+
         HashSet<SusiThought> keynotes = new HashSet<>();
-        
+
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
             // check if the intent may match
             if (!new TimeoutMatcher(matcher).matches()) continue;
-            
+
             // initialize keynote (basic data for unification) for flow
             SusiThought keynote = new SusiThought(matcher);
             if (token != null) {
@@ -738,16 +738,19 @@ public class SusiIntent implements Cloneable {
                 keynote.addObservation("token_canonical", token.canonical);
                 keynote.addObservation("token_categorized", token.categorized);
             }
-            
+
+            // we deduced thoughts from the inferences in the intents. The keynote also carries these actions
+            this.getActionsClone().forEach(action -> keynote.addAction(action));
+
             // prevent double consideration of the same keynote
             if (keynotes.contains(keynote)) continue alternatives;
             keynotes.add(keynote);
-            
+
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             // we start with the recall from previous interactions as new flow
             final SusiArgument flow = new SusiArgument(identity, userLanguage, minds).think(recall);
             flow.think(keynote);
-            
+
             // lets apply the intents that belong to this specific consideration
             for (SusiInference inference: this.getInferences()) {
                 SusiThought implication = inference.applyProcedures(flow);
@@ -755,17 +758,14 @@ public class SusiIntent implements Cloneable {
                 // make sure that we are not stuck:
                 // in case that we are stuck (== no progress was made) we consider the next alternative matcher
                 if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in intent
-                
+
                 // think
                 flow.think(implication);
             }
-            
-            // we deduced thoughts from the inferences in the intents. Now apply the actions of intent to produce results
-            this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
-            
+
             // add skill source
             flow.addSkill(this.skillid);
-            
+
             return flow;
         }
         // fail, no alternative was successful

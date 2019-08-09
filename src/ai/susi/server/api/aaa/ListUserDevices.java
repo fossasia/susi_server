@@ -3,22 +3,23 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Created by saurabh on 20/6/17.
- * Servlet to read user settings
+ * Created by akshatnitd on 21/7/19
+ * Servlet to read user devices
  * example:
- * http://localhost:4000/aaa/listUserSettings.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
+ * http://localhost:4000/aaa/listUserDevices.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
-public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
-    private static final long serialVersionUID = -1972211109199355750L;
+public class ListUserDevices extends AbstractAPIHandler implements APIHandler {
+	private static final long serialVersionUID = 4348119523547572080L;
 
-    @Override
+	@Override
     public String getAPIPath() {
-        return "/aaa/listUserSettings.json";
+        return "/aaa/listUserDevices.json";
     }
 
     @Override
@@ -37,13 +38,13 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             JSONObject result = new JSONObject(accounting.getJSON().toMap()); // make a clone
             JSONObject responseObj = new JSONObject();
-            if(result.has("settings")) {
-                responseObj.put("settings", result.getJSONObject("settings"));
+            if(result.has("devices")) {
+              responseObj.put("devices", result.getJSONObject("devices"));
             } else {
-                responseObj.put("settings", new JSONObject());
+              responseObj.put("devices", new JSONObject());
             }
             responseObj.put("accepted", true);
-            responseObj.put("message", "Success: Showing user settings");
+            responseObj.put("message", "Success: Showing user devices");
             return new ServiceResponse(responseObj);
         } else {
             throw new APIException(401, "Specified user data not found, ensure you are logged in");

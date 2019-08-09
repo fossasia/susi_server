@@ -35,7 +35,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import ai.susi.tools.DateParser;
-
+import ai.susi.tools.VerifyRecaptcha;
 
 /**
  * This service allows users to login, logout or to check their login status.
@@ -213,6 +213,15 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 						throw new APIException(422, "Invalid value for 'valid_seconds'");
 					}
 
+					if(checkOneOrMoreInvalidLogins(post, authorization, permissions) ){
+						String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+						boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+						if(!isRecaptchaVerified){
+							result.put("message", "Please verify recaptcha");
+							result.put("accepted", false);
+							return new ServiceResponse(result);
+						}
+					}
 					String token = createAccessToken(identity, valid_seconds);
 
 					if(valid_seconds == -1) result.put("valid_seconds", "forever");
@@ -413,5 +422,19 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			throw new APIException(403, "Too many invalid login attempts. Try again in "
 					+ permissions.getInt("blockTimeSeconds", 120) + " seconds");
 		}
+	}
+
+	private boolean checkOneOrMoreInvalidLogins(Query post, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
+		Accounting accouting = DAO.getAccounting(authorization.getIdentity());
+		JSONObject invalidLogins = accouting.getRequests().getRequests(this.getClass().getCanonicalName());
+		long period = permissions.getLong("periodSeconds", 600) * 1000; // get time period in which wrong logins are counted (e.g. the last 10 minutes)
+		int counter = 0;
+		for(String key : invalidLogins.keySet()){
+			if(Long.parseLong(key, 10) > System.currentTimeMillis() - period) counter++;
+		}
+		if(counter > 0){
+			return true;
+		}
+		return false;
 	}
 }

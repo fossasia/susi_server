@@ -25,6 +25,7 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.IO;
 import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.VerifyRecaptcha;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -86,9 +87,9 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		// if regex is requested
 		if (post.get("getParameters", false)) {
-			String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+			String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
 			String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
-					"Enter a combination of atleast six characters");
+					"Enter a combination of atleast 8 characters and atleast one special character, one number and text characters");
 			if ("false".equals(DAO.getConfig("users.public.signup", "false"))) {
 				throw new APIException(403, "Public signup disabled");
 			}
@@ -162,16 +163,16 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		// check email pattern
 		Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
 		if (!new TimeoutMatcher(pattern.matcher(signup)).matches()) {
-			throw new APIException(422, "no valid email address");
+			throw new APIException(422, "No valid email address");
 		}
 
 		// check password pattern
-		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
-
+		String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
+		String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip", "Enter a combination of atleast 8 characters and atleast one special character, one number and one capital letter");
 		pattern = Pattern.compile(passwordPattern);
 
 		if (signup.equals(password) || !new TimeoutMatcher(pattern.matcher(password)).matches()) {
-			throw new APIException(422, "invalid password");
+			throw new APIException(422, passwordPatternTooltip);
 		}
 
 		// check if id exists already
@@ -181,6 +182,13 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		if (authentication.getIdentity() != null) {
 			throw new APIException(422, "email is already taken");
+		}
+
+		//check for recaptcha validation
+		String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+		boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+		if(!isRecaptchaVerified){
+			throw new APIException(422, "Please verify recaptcha");
 		}
 
 		// create new id
@@ -245,10 +253,11 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	private String getVerificationMailContent(String token, String userId) throws APIException {
 
 		String hostUrl = DAO.getConfig("host.url", null);
+		String frontendUrl = DAO.getConfig("mail.frontendurl", "https://susi.ai");
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
 		// redirect user to accounts verify-account route
-		String verificationLink = "https://susi.ai/verify-account?access_token=" + token
+		String verificationLink = frontendUrl + "/verify-account?access_token=" + token
 				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file

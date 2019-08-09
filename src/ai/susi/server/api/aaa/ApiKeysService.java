@@ -53,7 +53,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ADMIN;
+        return UserRole.USER;
     }
 
     @Override
@@ -93,16 +93,48 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
         JsonTray apiKeys = DAO.apiKeys;
         JSONObject result = new JSONObject();
         JSONObject keys = new JSONObject();
+        JSONObject userKeyObj = new JSONObject();
+        ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token,
+                call.get("access_token", null));
+        Authentication authentication = DAO.getAuthentication(credential);
+        String userId = null;
 
         if (apiKeys.has(type)) {
             keys = apiKeys.getJSONObject(type);
         }
 
+        if (authentication.getIdentity() != null) {
+            ClientIdentity identity = authentication.getIdentity();
+            userId = identity.getUuid();
+            authorization = DAO.getAuthorization(identity);
+            UserRole userRole = authorization.getUserRole();
+            if (!type.equals("user")) {
+                if ((!userRole.getName().equals("admin") && !userRole.getName().equals("superadmin"))
+                        || userId == null) {
+                    throw new APIException(401, "Unauthorized");
+                }
+            } else {
+                userKeyObj = keys.has(userId) ? keys.getJSONObject(userId) : new JSONObject();
+            }
+
+        } else {
+            throw new APIException(422, "Access token is not valid");
+        }
+
         if (!deleteKey) {
             try {
-                JSONObject api = new JSONObject();
-                api.put("value", keyValue);
-                keys.put(keyName, api);
+                if (type.equals("public") || type.equals("private")) {
+                    JSONObject api = new JSONObject();
+                    api.put("value", keyValue);
+                    keys.put(keyName, api);
+                } else {
+                    JSONObject key = new JSONObject();
+                    JSONObject apiValueObj = new JSONObject();
+                    apiValueObj.put("value", keyValue);
+                    key.put(keyName, apiValueObj);
+                    userKeyObj.put(keyName, apiValueObj);
+                    keys.put(userId, userKeyObj);
+                }
                 apiKeys.put(type, keys, true);
                 result.put("accepted", true);
                 result.put("message", "Added new API key " + call.get("keyName") + " successfully !");
@@ -112,7 +144,12 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
             }
         } else {
             try {
-                keys.remove(keyName);
+                if (type.equals("public") || type.equals("private")) {
+                    keys.remove(keyName);
+                } else {
+                    userKeyObj.remove(keyName);
+                    keys.put(userId, userKeyObj);
+                }
                 apiKeys.put(type, keys, true);
                 result.put("accepted", true);
                 result.put("message", "Removed API key " + call.get("keyName") + " successfully !");

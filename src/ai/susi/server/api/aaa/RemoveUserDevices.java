@@ -78,10 +78,16 @@ public class RemoveUserDevices extends AbstractAPIHandler implements APIHandler 
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
         String key = query.get("macid", null);
+        String email = query.get("email", null);
 
-        if ( authorization.getIdentity()!=null ) {
-
+        if (authorization.getIdentity() != null) {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            UserRole userRole = authorization.getUserRole();
+            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null){
+                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+                Authorization rights = DAO.getAuthorization(identity);
+                accounting = DAO.getAccounting(rights.getIdentity());
+            }
             JSONObject userSettings = accounting.getJSON();
 
             if(key == null) {

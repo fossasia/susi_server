@@ -204,7 +204,7 @@ public class SusiServer {
         }
 
         DAO.log("Start time before DAO: " + (System.currentTimeMillis() - starttime) + " milliseconds");
-        // initialize all data        
+        // initialize all data
         try{
             DAO.init(config, data);
         } catch(Exception e){
@@ -215,7 +215,7 @@ public class SusiServer {
         }
 
         DAO.log("Start time after DAO - before Server setup: " + (System.currentTimeMillis() - starttime) + " milliseconds");
-        
+
         // init the http server
         try {
             setupHttpServer(httpPort, httpsPort);
@@ -226,7 +226,7 @@ public class SusiServer {
         setServerHandler(dataFile);
 
         DAO.log("Start time before Server start: " + (System.currentTimeMillis() - starttime) + " milliseconds");
-        
+
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
@@ -300,7 +300,7 @@ public class SusiServer {
         }
 
         //https
-        //uncommented lines for http2 (jetty 9.3 / java 8)        
+        //uncommented lines for http2 (jetty 9.3 / java 8)
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
 
             DAO.log("HTTPS activated");
@@ -489,8 +489,12 @@ public class SusiServer {
                 ModelListService.class,
                 LanguageListService.class,
                 ListUserSettings.class,
+                ListUserDevices.class,
                 ListSkillService.class,
+                ListPrivateSkillService.class,
+                ListPrivateDraftSkillService.class,
                 AddNewDevice.class,
+                ListDeviceService.class,
                 RemoveUserDevices.class,
                 ModifyUserDevices.class,
                 DisableSkillService.class,
