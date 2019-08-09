@@ -93,8 +93,8 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
             if (authentication.getIdentity() != null) {
                 ClientIdentity identity = authentication.getIdentity();
                 String userId = identity.getUuid();
-                JSONObject userKeys = apiKeys.getJSONObject("user");
-                configKeys = userKeys.has(userId) ? userKeys.getJSONObject(userId) : null;
+                JSONObject userKeys = userId != null && apiKeys.has("user") ? apiKeys.getJSONObject("user") : null;
+                configKeys = userKeys != null && userKeys.has(userId) ? userKeys.getJSONObject(userId) : new JSONObject();
             } else {
                 throw new APIException(422, "Access token is not valid");
             }
