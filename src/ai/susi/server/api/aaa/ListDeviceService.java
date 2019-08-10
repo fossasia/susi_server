@@ -50,6 +50,12 @@ public class ListDeviceService extends AbstractAPIHandler implements APIHandler 
             ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
             Authorization authorization = DAO.getAuthorization(identity);
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            if (accounting.getJSON().has("lastLoginIP")) {
+                json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
+            }
+            if(accounting.getJSON().has("lastLoginTime")) {
+                json.put("lastActive", accounting.getJSON().getString("lastLoginTime"));
+            }
             if(accounting.getJSON().has("devices")) {
                 json.put("name", email);
                 json.put("devices", accounting.getJSON().getJSONObject("devices"));
@@ -62,6 +68,12 @@ public class ListDeviceService extends AbstractAPIHandler implements APIHandler 
                 ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
                 Authorization authorization = DAO.getAuthorization(identity);
                 Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+                if (accounting.getJSON().has("lastLoginIP")) {
+                    json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
+                }
+                if(accounting.getJSON().has("lastLoginTime")) {
+                    json.put("lastActive", accounting.getJSON().getString("lastLoginTime"));
+                }
                 if(accounting.getJSON().has("devices")) {
                     json.put("devices", accounting.getJSON().getJSONObject("devices"));
                     deviceList.add(json);
