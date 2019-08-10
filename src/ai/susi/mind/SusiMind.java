@@ -658,17 +658,9 @@ public class SusiMind {
         mem.addLayer(testlayer);
         try {mem.observe();} catch (IOException e1) {}
         mem.skillMetadata.values().forEach(skill -> System.out.println(skill.toJSON().toString(2)));
-        try {
-            System.out.println(mem.new Reaction("set alarm", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
-            //System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
-        } catch (ReactionException e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
-        } catch (ReactionException e) {
-            e.printStackTrace();
-        }
+        SusiThought mindstate = mem.react("countdown", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem);
+        List<SusiAction> actions = mindstate.getActions(false);
+        System.out.println(actions);
     }
 
 }

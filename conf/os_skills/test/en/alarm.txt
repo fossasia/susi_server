@@ -10,6 +10,10 @@ set alarm with * in *|set alarm with * on *
 !plan $2$: starting a planned music alarm `play $1$`
 alarm set in $2$ to play $1$
 
+say hello in one minute
+!plan 60000: hello
+I will say hello in one minute
+
 countdown
 !plan 1000: twelve
 !plan 2000: eleven
