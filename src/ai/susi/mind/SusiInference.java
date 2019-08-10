@@ -22,9 +22,7 @@ package ai.susi.mind;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.ParseException;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -140,27 +138,22 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowProcedures.put(Pattern.compile("PLAN\\h+?([^\\h]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("PLAN\\h+?([^:]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
+            // get attributes
             String time = flow.unify(matcher.group(1), false, 0);
             String reflection = flow.unify(matcher.group(2), false, 0);
-            final AtomicLong delay = new AtomicLong(0);
-            final Date date = new Date();
             SusiThought mindstate = flow.mindmeld(true);
+
+            // parse the time
             String timezoneOffsets = mindstate.getObservation("timezoneOffset");
             int timezoneOffset = 0;
             if (timezoneOffsets != null) try {timezoneOffset = Integer.parseInt(timezoneOffsets);} catch (NumberFormatException e) {}
-            try {
-                delay.set(Long.parseLong(time));
-                date.setTime(System.currentTimeMillis() + delay.get());
-            } catch (NumberFormatException e) {
-                try {
-                    date.setTime(DateParser.parse(time, timezoneOffset).getTime().getTime());
-                    delay.set(date.getTime() - System.currentTimeMillis());
-                } catch (ParseException ee) {
-                    // we just fail here
-                }
-            }
+            final long start = System.currentTimeMillis();
+            final Date date = DateParser.parseAnyText(time, timezoneOffset);
+            if (date == null) return null;
+            final long delay = date.getTime() - start;
 
+            // create planned action
             JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
             try {
                 SusiAction planned_utterance = new SusiAction(actionj);
@@ -168,7 +161,7 @@ public class SusiInference {
                 planned_thought.addAction(planned_utterance); // we want the planned_utterance as well as part of the flow
                 planned_thought.getActions(true).forEach(action -> {
                     // add a delay to the actions
-                    action.setLongAttr("plan_delay", delay.get());
+                    action.setLongAttr("plan_delay", delay);
                     action.setDateAttr("plan_date", date);
                 });
                 flow.think(planned_thought);

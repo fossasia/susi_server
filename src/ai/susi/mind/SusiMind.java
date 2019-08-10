@@ -658,7 +658,7 @@ public class SusiMind {
         mem.addLayer(testlayer);
         try {mem.observe();} catch (IOException e1) {}
         mem.skillMetadata.values().forEach(skill -> System.out.println(skill.toJSON().toString(2)));
-        SusiThought mindstate = mem.react("countdown", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem);
+        SusiThought mindstate = mem.react("set an alarm in one minute", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem);
         List<SusiAction> actions = mindstate.getActions(false);
         System.out.println(actions);
     }
