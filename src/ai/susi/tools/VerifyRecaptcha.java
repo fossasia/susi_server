@@ -7,6 +7,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import org.json.JSONObject;
 
+import ai.susi.json.JsonTray;
+import ai.susi.DAO;
+
 public class VerifyRecaptcha {
 
 	/**
@@ -33,7 +36,17 @@ public class VerifyRecaptcha {
 			res.close();
 
 			JSONObject json = new JSONObject(jsonText);
-			return json.getBoolean("success");
+			JsonTray apiKeys = DAO.apiKeys;
+			JSONObject publicKeys = apiKeys.has("public") ? apiKeys.getJSONObject("public") : new JSONObject();
+			JSONObject isCaptchaEnabled = publicKeys.has("isCaptchaEnabled")
+					? publicKeys.getJSONObject("isCaptchaEnabled")
+					: new JSONObject();
+			Boolean captchaValue = isCaptchaEnabled.has("value") ? isCaptchaEnabled.getBoolean("value") : false;
+			if (!captchaValue) {
+				return true;
+			} else {
+				return json.getBoolean("success");
+			}
 		} catch (Exception e) {
 			// e.printStackTrace();
 		}
