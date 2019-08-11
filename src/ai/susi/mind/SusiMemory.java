@@ -242,7 +242,7 @@ public class SusiMemory {
         }
         if (removed) System.out.println("** removed unanswered pattern " + p.pattern());
     }
-    
+
     public SusiIdentity getMemory(String client, boolean storeToCache) {
     	SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
@@ -251,7 +251,29 @@ public class SusiMemory {
         }
         return identity;
     }
-    
+
+    public SusiAwareness getAwareness(String client) {
+        File short_term_memory_file = new File(new File(chatlog, client), "log.txt");
+        if (short_term_memory_file.exists()) {
+            try {
+                SusiAwareness awareness = new SusiAwareness(short_term_memory_file, Integer.MAX_VALUE);
+                return awareness;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public SusiCognition firstCognition(String client) {
+        File short_term_memory_file = new File(new File(chatlog, client), "log.txt");
+        if (short_term_memory_file.exists()) {
+            SusiCognition firstCognition = SusiAwareness.firstCognition(short_term_memory_file);
+            return firstCognition;
+        }
+        return null;
+    }
+
     /**
      * get a list of cognitions using the client key
      * @param client

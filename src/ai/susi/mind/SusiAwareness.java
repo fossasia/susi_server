@@ -17,11 +17,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package ai.susi.mind;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -54,9 +57,28 @@ public class SusiAwareness implements Iterable<SusiCognition> {
      * Awareness memory: this is reverse list of cognitions; the latest cognition is first in the list.
      */
     private final Deque<SusiCognition> awarex;
-    
+
     public SusiAwareness() {
         this.awarex = new ConcurrentLinkedDeque<>();
+    }
+
+    // helper method to patch missing information in accounting object
+    public static SusiCognition firstCognition(final File memorydump) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(memorydump), StandardCharsets.UTF_8));
+            for (;;) {
+                String line = reader.readLine();
+                if (line == null) {reader.close(); return null;}
+                line = line.trim();
+                if (line.length() == 0) continue;
+                SusiCognition si = new SusiCognition(new JSONObject(line));
+                reader.close();
+                return si;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
