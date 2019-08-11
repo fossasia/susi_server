@@ -2,13 +2,17 @@
 !plan 120000: `tell me a joke`
 I will tell you a joke in 2 minutes
 
-set alarm in one minute | set an alarm in one minute
-!plan 60000: starting a planned music alarm `play metallica`
-alarm set in one minute to play music
+set alarm *|set an alarm *
+!plan $1$: ALARM
+alarm set for $1$
 
 set alarm with * in *|set alarm with * on *
 !plan $2$: starting a planned music alarm `play $1$`
 alarm set in $2$ to play $1$
+
+say hello in one minute
+!plan 60000: hello
+I will say hello in one minute
 
 countdown
 !plan 1000: twelve

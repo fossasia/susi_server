@@ -102,6 +102,7 @@ dependencies {
   compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'
   compile 'net.sf.kxml:kxml2:2.3.0' // provided by Android
   compile group: 'javax.xml', name: 'jaxb-api', version: '2.1'
+  compile group: 'com.joestelmach', name: 'natty', version: '0.13'
 }
 
 task stage(dependsOn: ['assemble', 'clean'])

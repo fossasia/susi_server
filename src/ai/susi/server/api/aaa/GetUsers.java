@@ -243,7 +243,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
             deviceStats.put("connectedDevices", connectedDevices);
             deviceStats.put("deviceUsers", deviceUsers);
-            
+
             if (call.get("getUserStats", false) == true) {
               try {
                 List<JSONObject> lastLoginOverTimeList = new ArrayList<JSONObject>();
@@ -257,7 +257,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastLoginOverTimeObj))) {
                   JSONObject timeObj = new JSONObject();
                   timeObj.put("timeStamp", timeStamp);
-                  timeObj.put("count", signupOverTimeObj.getInt(timeStamp));
+                  timeObj.put("count", signupOverTimeObj.optInt(timeStamp, 0));
                   signupOverTimeList.add(timeObj);
                 }
                   result.put("lastLoginOverTime", lastLoginOverTimeList);

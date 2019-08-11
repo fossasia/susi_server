@@ -252,14 +252,30 @@ public class SusiThought extends JSONObject {
         int t0c = 0;
         for (int i = 0; i < table1.length(); i++) {
             JSONObject j1i = table1.getJSONObject(i);
-            while (t0c < table0.length() && anyObjectKeySame(j1i, table0.getJSONObject(t0c))) {t0c++;}
+            while (t0c < table0.length()) {
+                if (allObjectsSame(j1i, table0.getJSONObject(t0c))) return this;
+                if (!anyObjectKeySame(j1i, table0.getJSONObject(t0c))) break;
+                t0c++;
+            }
             if (t0c >= table0.length()) table0.put(new JSONObject(true));
             table0.getJSONObject(t0c).putAll(table1.getJSONObject(i));
         }
         setData(table0);
         return this;
     }
-    
+
+    private final static boolean allObjectsSame(final JSONObject a, final JSONObject b) {
+        if (a.length() != b.length()) return false;
+        for (String k: a.keySet()) {
+            if (!b.has(k)) return false;
+            Object oa = a.get(k);
+            Object ob = b.get(k);
+            if (oa == null && ob == null) continue;
+            if (!oa.toString().equals(ob.toString())) return false;
+        }
+        return true;
+    }
+
     private final static boolean anyObjectKeySame(final JSONObject a, final JSONObject b) {
         for (String k: a.keySet()) if (b.has(k)) return true;
         return false;

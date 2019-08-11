@@ -35,6 +35,9 @@ import java.util.concurrent.TimeUnit;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.Parser;
+
 public class DateParser {
 
     public final static long HOUR_MILLIS = 60 * 60 * 1000;
@@ -187,6 +190,22 @@ public class DateParser {
         synchronized (iso8601MillisFormat) {
             return iso8601MillisFormat.format(date);
         }
+    }
+
+    public static Date parseAnyText(String text, long timezoneOffset) {
+        // first try if this is simply a number. Then it is a time delay.
+        try {
+            long delay = Long.parseLong(text);
+            return new Date(System.currentTimeMillis() + delay);
+        } catch (NumberFormatException e) {} // we ignore the exception here, because it is expected
+
+        Parser parser = new Parser();
+        List<DateGroup> groups = parser.parse(text);
+        if (groups.size() == 0) return null;
+        DateGroup group = groups.get(0);
+        List<Date> dates = group.getDates();
+        if (dates.size() == 0) return null;
+        return dates.get(0);
     }
 
     public static void main(String[] args) {
