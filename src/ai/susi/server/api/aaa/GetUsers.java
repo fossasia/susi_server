@@ -61,7 +61,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ANONYMOUS;//UserRole.OPERATOR;
+        return UserRole.OPERATOR;
     }
 
     @Override
