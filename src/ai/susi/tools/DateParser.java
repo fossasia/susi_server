@@ -53,13 +53,13 @@ public class DateParser {
 
     /** Date formatter/non-sloppy parser for W3C datetime (ISO8601) in GMT/UTC */
     public final static SimpleDateFormat iso8601Format = new SimpleDateFormat(PATTERN_ISO8601, Locale.US);
-    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US);
+    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US); // PREFERRED FORMAT!
     public final static DateFormat dayDateFormat = new SimpleDateFormat(PATTERN_MONTHDAY, Locale.US);
     public final static DateFormat dayMinuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     public final static DateFormat daySecondDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
     public final static DateFormat minuteDateFormat = new SimpleDateFormat("HH:mm", Locale.US);
     public final static DateFormat secondDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.US);
-    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US);
+    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US); // Do not use this format to format! Only for parsing!
 
     public final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
 
@@ -167,7 +167,7 @@ public class DateParser {
     public static Date oneMonthAgo() {
         return new Date(System.currentTimeMillis() - MONTH_MILLIS);
     }
-
+/*
     private static long lastRFC1123long = 0;
     private static String lastRFC1123string = "";
 
@@ -184,7 +184,7 @@ public class DateParser {
             return s;
         }
     }
-
+*/
     public static final String formatISO8601(final Date date) {
         if (date == null) return "";
         synchronized (iso8601MillisFormat) {

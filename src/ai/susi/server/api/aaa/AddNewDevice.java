@@ -121,7 +121,7 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
         value.put("name", name);
         value.put("room", room);
         value.put("geolocation", geolocation);
-        value.put("deviceAddTime", DateParser.formatRFC1123(currentTime));
+        value.put("deviceAddTime", DateParser.formatISO8601(currentTime));
 
         if (authorization.getIdentity() == null) {
             throw new APIException(401, "Specified user data not found, ensure you are logged in");

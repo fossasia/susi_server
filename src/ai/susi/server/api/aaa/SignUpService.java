@@ -121,7 +121,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
                 // store the time of signup in accounting object
                 Accounting accounting = DAO.getAccounting(identity);
                 Date currentTime = new Date();
-                accounting.getJSON().put("signupTime", DateParser.formatRFC1123(currentTime));
+                accounting.getJSON().put("signupTime", DateParser.formatISO8601(currentTime));
                 accounting.commit();
 
                 // accept the user
@@ -243,7 +243,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
             // store the time of signup in accounting object
             Accounting accounting = DAO.getAccounting(identity);
             Date currentTime = new Date();
-            accounting.getJSON().put("signupTime", DateParser.formatRFC1123(currentTime));
+            accounting.getJSON().put("signupTime", DateParser.formatISO8601(currentTime));
             accounting.commit();
             result.put("message", "You successfully signed-up!");
             result.put("accepted", true);
