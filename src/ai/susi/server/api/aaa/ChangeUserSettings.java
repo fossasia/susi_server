@@ -108,7 +108,16 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
             throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
         }
         else {
-            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            String email = query.get("email", null);
+            Accounting accounting;
+            UserRole userRole = authorization.getUserRole();
+            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+                Authorization userAuthorization = DAO.getAuthorization(identity);
+                accounting = DAO.getAccounting(userAuthorization.getIdentity());
+            } else {
+                accounting = DAO.getAccounting(authorization.getIdentity());
+            }
             for (Map.Entry<String, String> entry : settings.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
