@@ -64,7 +64,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ANONYMOUS;//UserRole.OPERATOR;
+        return UserRole.OPERATOR;
     }
 
     @Override
@@ -193,8 +193,13 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
                   if (accounting.getJSON().has("signupTime")) {
                       String signupTime = accounting.getJSON().getString("signupTime");
+                      if (signupTime.endsWith("0000")) { try { // time is in RFC1123, it should be in ISO8601: patching here; remove code later
+                          Date d = DateParser.FORMAT_RFC1123.parse(signupTime);
+                          signupTime = DateParser.formatISO8601(d);
+                          accounting.getJSON().put("signupTime", signupTime);
+                      } catch (ParseException e) {e.printStackTrace();}}
                       json.put("signupTime", signupTime);
-                      signupTime = signupTime.substring(8, 16);
+                      signupTime = signupTime.substring(0, 7);
                       if (signupOverTimeObj.has(signupTime)){
                           int count = signupOverTimeObj.getInt(signupTime);
                           signupOverTimeObj.put(signupTime, count + 1);
