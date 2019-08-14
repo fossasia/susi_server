@@ -56,9 +56,15 @@ import java.io.*;
         if (post.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
             ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, post.get("access_token", null));
             Authentication authentication = DAO.getAuthentication(credential);
+            ClientIdentity identity = authentication.getIdentity();
+            Authorization authorization = DAO.getAuthorization(identity);
+            UserRole userRole = authorization.getUserRole();
+            String email=post.get("email", null);
+             if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                identity = new ClientIdentity(ClientIdentity.Type.email, email);
+            }
             // check if access_token is valid
-            if (authentication.getIdentity() != null) {
-                ClientIdentity identity = authentication.getIdentity();
+            if (identity != null) {
                 Accounting accounting = DAO.getAccounting(identity);
                 JSONObject accountingObj = accounting.getJSON();
                 if (accountingObj.has("settings") &&
