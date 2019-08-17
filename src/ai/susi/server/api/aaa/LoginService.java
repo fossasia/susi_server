@@ -22,6 +22,7 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.json.JsonTray;
 import ai.susi.tools.IO;
 import org.json.JSONObject;
 
@@ -213,7 +214,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
                         throw new APIException(422, "Invalid value for 'valid_seconds'");
                     }
 
-                    if(checkOneOrMoreInvalidLogins(post, authorization, permissions) ){
+                    JsonTray CaptchaConfig = DAO.captchaConfig;
+                    JSONObject captchaObj = CaptchaConfig.has("config") ? CaptchaConfig.getJSONObject("config") : new JSONObject();
+                    Boolean isLoginCaptchaEnabled = captchaObj.has("login") ? captchaObj.getBoolean("login") : true;
+
+                    if(isLoginCaptchaEnabled && checkOneOrMoreInvalidLogins(post, authorization, permissions) ){
                         String gRecaptchaResponse = post.get("g-recaptcha-response", null);
                         boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
                         if(!isRecaptchaVerified){
