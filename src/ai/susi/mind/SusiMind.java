@@ -124,13 +124,13 @@ public class SusiMind {
         return this.skillMetadata.get(id).getExamples();
     }
 
-    public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
-        return this.skillMetadata;
-    }
-
     public Set<SusiSkill> getFocusSkills(String skillCallName) {
         Set<SusiSkill> skills = this.focusSkills.get(skillCallName.toLowerCase());
         return skills;
+    }
+
+    public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
+        return this.skillMetadata;
     }
 
     public SusiMind observe() throws IOException {
@@ -537,7 +537,7 @@ public class SusiMind {
             final List<String> expresssions = new ArrayList<>();
             this.actions.forEach(action -> {
                 String a = action.getStringAttr("expression");
-                if (a != null) expresssions.add(a);
+                if (a != null && a.length() > 0) expresssions.add(a);
             });
             return expresssions;
         }
