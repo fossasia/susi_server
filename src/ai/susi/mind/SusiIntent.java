@@ -608,24 +608,24 @@ public class SusiIntent implements Cloneable {
         this.score = language_subscore;
          
         // (1) pattern score
-        final AtomicInteger utterances_subscore = new AtomicInteger(0);
+        final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
         SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
         this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
 
         // (2) meatsize: length of a utterance (counts letters)
-        final AtomicInteger utterances_meatscore = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.max(utterances_meatscore.get(), utterance.getMeatsize())));
+        final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.min(utterances_meatscore.get(), utterance.getMeatsize())));
         this.score = this.score * 100 + utterances_meatscore.get();
         
         // (3) whole size: length of the pattern
-        final AtomicInteger utterances_wholesize = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.max(utterances_wholesize.get(), utterance.getPattern().toString().length())));
+        final AtomicInteger utterances_wholesize = new AtomicInteger(Integer.MAX_VALUE);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length())));
         this.score = this.score * 100 + utterances_wholesize.get();
 
         // (4) conversation plan from the answer purpose
-        final AtomicInteger dialogType_subscore = new AtomicInteger(0);
+        final AtomicInteger dialogType_subscore = new AtomicInteger(Integer.MAX_VALUE);
         if (!(utterances.size() == 1 && utterances.get(0).equals("(.*)"))) {
-            SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+            SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.min(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         }
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
         

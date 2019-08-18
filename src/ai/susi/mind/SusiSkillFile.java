@@ -223,7 +223,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
 
         try {
             Map<String, String> config = SusiServer.readConfig(data);
-            DAO.init(config, data);
+            DAO.init(config, data, true);
             File f = new File("conf/os_skills/operation/en/en_0001_foundation.txt");
             SusiSkill.ID skillid = new SusiSkill.ID(f);
             

@@ -81,7 +81,7 @@ public class SusiTutorialTest {
 
             // initialize all data
             try{
-                DAO.init(config, data);
+                DAO.init(config, data, false);
                 BufferedReader br = getTestReader();
                 SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
                 SusiSkill skill = new SusiSkill(br, skillid, true);
@@ -97,6 +97,8 @@ public class SusiTutorialTest {
             }
 
             ClientIdentity identity = ClientIdentity.ANONYMOUS;
+            test("[token]", "token is working", identity);
+            test("[token2] test", "token2 handles test", identity);
             test("reset test.", "ok", identity);
             test("roses are red", "SUSI is a hack", identity);
             //test("susi is a hack", "skynet is back", identity);
@@ -142,6 +144,12 @@ public class SusiTutorialTest {
     private final static String testFile = 
                     "# susi EzD tutorial playground\n" +
                     "::prior\n" +
+                    "\n" +
+                    "[token]\n" +
+                    "token is working\n" +
+                    "\n" +
+                    "[token2] *\n" +
+                    "token2 handles $1$\n" +
                     "\n" +
                     "reset test.\n" +
                     "ok^^>_mood\n" +
