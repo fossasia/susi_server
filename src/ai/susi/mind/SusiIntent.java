@@ -138,15 +138,15 @@ public class SusiIntent implements Cloneable {
             this.inferences = new ArrayList<>(0);
         }
 
-        // extract (or compute) the keys; there may be none key given, then they will be computed
+        // extract and compute the keys; there may be none key given, then they will be computed
         this.keys = new HashSet<>();
         JSONArray k;
         if (json.has("keys")) {
             k = json.getJSONArray("keys");
-            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromUtterance(this.utterances);
-        } else {
-            k = computeKeysFromUtterance(this.utterances);
+            k.forEach(o -> this.keys.add((String) o));
         }
+        k = computeKeysFromUtterance(this.utterances);
+        
         k.forEach(o -> this.keys.add((String) o));
 
         this.cues = new LinkedHashSet<>();

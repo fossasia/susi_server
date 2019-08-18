@@ -75,8 +75,6 @@ public class SusiUtterance {
         expression = fixExpression(expression);
         expression = parsePattern(expression);
 
-        expression = expression.replaceAll("\\[", "\\\\[");
-        expression = expression.replaceAll("\\]", "\\\\]");
         // write class variables
         this.pattern = Pattern.compile(expression);
         if (expression.equals("(.*)")) this.type = Type.minor;
@@ -93,7 +91,6 @@ public class SusiUtterance {
      * @throws PatternSyntaxException
      */
     public SusiUtterance(String expression, boolean prior) throws PatternSyntaxException {
-
         this.type = prior ? Type.prior : Type.minor;
 
         // normalize expression
@@ -101,8 +98,6 @@ public class SusiUtterance {
         expression = fixExpression(expression);
         expression = parsePattern(expression);
 
-        expression = expression.replaceAll("\\[", "\\\\[");
-        expression = expression.replaceAll("\\]", "\\\\]");
         // write class variables
         this.pattern = Pattern.compile(expression);
         if (expression.equals("(.*)")) this.type = Type.minor;
@@ -184,6 +179,8 @@ public class SusiUtterance {
     private static String parseOnePattern(String expression) {
         expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
         expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
+        expression = expression.replaceAll("\\[", "\\\\[");
+        expression = expression.replaceAll("\\]", "\\\\]");
         return expression;
     }
 
@@ -199,7 +196,7 @@ public class SusiUtterance {
     }
 
     public static boolean isRegularExpression(String expression) {
-        if (expression.indexOf('\\') >=0 || (expression.indexOf('(') >= 0 && expression.indexOf(')') >= 0) ) {
+        if (expression.indexOf(".*") >= 0 || expression.indexOf("\\h*") >= 0 || (expression.indexOf('(') >= 0 && expression.indexOf(')') >= 0) ) {
             // this is a hint that this could be a regular expression.
             // the meatsize of regular expressions must be 0, therefore we must check this in more detail
             try {
