@@ -206,7 +206,7 @@ public class SusiServer {
         DAO.log("Start time before DAO: " + (System.currentTimeMillis() - starttime) + " milliseconds");
         // initialize all data
         try{
-            DAO.init(config, data);
+            DAO.init(config, data, true);
         } catch(Exception e){
             e.printStackTrace();
             DAO.severe(e.getMessage());

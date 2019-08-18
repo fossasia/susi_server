@@ -21,7 +21,6 @@ package ai.susi;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -159,7 +158,7 @@ public class DAO {
      * @param configMap
      * @param dataPath the path to the data directory
      */
-    public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
+    public static void init(Map<String, String> configMap, Path dataPath, boolean learnWorldKnowledge) throws Exception{
 
         log("initializing SUSI DAO");
 
@@ -204,23 +203,25 @@ public class DAO {
         if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
 
         // wake up susi
-        SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
-        SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
-        SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
-        SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
-        SusiMind.Layer system_skills_test = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "test"), true);
         susi = new SusiMind(susi_memory);
-        susi.addLayer(system_skills_include);
-        susi.addLayer(system_skills_linuguistic);
-        susi.addLayer(system_skills_operation);
-        susi.addLayer(system_skills_system);
-        susi.addLayer(system_skills_test);
-        if (model_watch_dir.exists()) {
-            SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
-            susi.addLayer(model_skills);
-        }
-        if (DAO.getConfig("local.mode", false)) {
-            susi.addLayer(susi_generic_skills_media_discovery);
+        if (learnWorldKnowledge) {
+            SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
+            SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
+            SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
+            SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
+            SusiMind.Layer system_skills_test = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "test"), true);
+            susi.addLayer(system_skills_include);
+            susi.addLayer(system_skills_linuguistic);
+            susi.addLayer(system_skills_operation);
+            susi.addLayer(system_skills_system);
+            susi.addLayer(system_skills_test);
+            if (model_watch_dir.exists()) {
+                SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
+                susi.addLayer(model_skills);
+            }
+            if (DAO.getConfig("local.mode", false)) {
+                susi.addLayer(susi_generic_skills_media_discovery);
+            }
         }
 
         // initialize public and private keys

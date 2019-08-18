@@ -19,7 +19,6 @@
 
 package ai.susi.mind;
 
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -65,9 +64,9 @@ public class SusiUtterance {
     public SusiUtterance(JSONObject json) throws PatternSyntaxException {
         if (!json.has("expression")) throw new PatternSyntaxException("expression missing", "", 0);
 
-        Type t = Type.minor;
+        this.type = Type.minor;
         if (json.has("type")) try {
-            t = Type.valueOf(json.getString("type"));
+            this.type = Type.valueOf(json.getString("type"));
         } catch (IllegalArgumentException e) {
             //Logger.getLogger("SusiPhrase").warning("type value is wrong: " + json.getString("type"));
         }
@@ -76,9 +75,11 @@ public class SusiUtterance {
         expression = fixExpression(expression);
         expression = parsePattern(expression);
 
+        expression = expression.replaceAll("\\[", "\\\\[");
+        expression = expression.replaceAll("\\]", "\\\\]");
         // write class variables
         this.pattern = Pattern.compile(expression);
-        this.type = expression.equals("(.*)") ? Type.minor : t;
+        if (expression.equals("(.*)")) this.type = Type.minor;
         this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
 
         // measure the meat size
@@ -100,8 +101,11 @@ public class SusiUtterance {
         expression = fixExpression(expression);
         expression = parsePattern(expression);
 
+        expression = expression.replaceAll("\\[", "\\\\[");
+        expression = expression.replaceAll("\\]", "\\\\]");
         // write class variables
         this.pattern = Pattern.compile(expression);
+        if (expression.equals("(.*)")) this.type = Type.minor;
         this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
 
         // measure the meat size
@@ -212,7 +216,7 @@ public class SusiUtterance {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if (Character.isLetter(c) || Character.isDigit(c) || c == ' ' || c == '_') sb.append(c);
+            if (Character.isLetter(c) || Character.isDigit(c) || c == '['  || c == ']'  || c == ' ' || c == '_') sb.append(c);
         }
         return sb.toString();
     }
