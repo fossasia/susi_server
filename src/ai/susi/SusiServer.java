@@ -464,6 +464,8 @@ public class SusiServer {
                 AppsService.class,
                 ApiKeysService.class,
                 GetApiKeys.class,
+                CaptchaConfigService.class,
+                GetCaptchaConfig.class,
                 AuthorizationDemoService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,

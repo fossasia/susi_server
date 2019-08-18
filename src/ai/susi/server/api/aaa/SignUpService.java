@@ -21,6 +21,7 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.EmailHandler;
+import ai.susi.json.JsonTray;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.IO;
@@ -193,11 +194,17 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
             throw new APIException(422, "email is already taken");
         }
 
-        //check for recaptcha validation
-        String gRecaptchaResponse = post.get("g-recaptcha-response", null);
-        boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
-        if(!isRecaptchaVerified){
-            throw new APIException(422, "Please verify recaptcha");
+        JsonTray CaptchaConfig = DAO.captchaConfig;
+        JSONObject captchaObj = CaptchaConfig.has("config") ? CaptchaConfig.getJSONObject("config") : new JSONObject();
+        Boolean isSignUpCaptchaEnabled = captchaObj.has("signUp") ? captchaObj.getBoolean("signUp") : true;
+
+        // check for recaptcha validation
+        if (isSignUpCaptchaEnabled) {
+            String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+            boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+            if (!isRecaptchaVerified) {
+                throw new APIException(422, "Please verify recaptcha");
+            }
         }
 
         // create new id

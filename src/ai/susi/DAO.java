@@ -112,6 +112,7 @@ public class DAO {
     private static JsonFile login_keys;
     public static JsonTray group;
     public static JsonTray apiKeys;
+    public static JsonTray captchaConfig;
 
     // CMS Schema for server usage
     public static JsonTray skillInfo;
@@ -295,6 +296,13 @@ public class DAO {
         apiKeys = new JsonTray(apiKeys_per.toFile(), apiKeys_vol.toFile(), 1000000);
         OS.protectPath(apiKeys_per);
         OS.protectPath(apiKeys_vol);
+
+        /*ReCaptcha config*/
+        Path captchaConfig_per = settings_dir.resolve("captchaConfig.json");
+        Path captchaConfig_vol = settings_dir.resolve("captchaConfig_session.json");
+        captchaConfig = new JsonTray(captchaConfig_per.toFile(), captchaConfig_vol.toFile(), 1000000);
+        OS.protectPath(captchaConfig_per);
+        OS.protectPath(captchaConfig_vol);
 
         /* Basic attributes related to a skill*/
         Path susi_skill_info_dir = dataPath.resolve("skill_info");
