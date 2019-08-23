@@ -388,8 +388,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         List<SusiAction> reactionActions;
         String expression;
         
-        public Reflection(String expression, SusiArgument argument) throws ReactionException {
-            this.expression = expression;
+        public Reflection(String query, SusiArgument argument) throws ReactionException {
+            this.expression = query;
             boolean reflectionSuccess = false;
             Matcher m;
             while ((m = appropriateReflectionMatcher(expression)) != null) {
@@ -415,8 +415,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                     if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
                 }); 
                 List<String> expressions = reaction.getExpressions();
-                expression = expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + expression.substring(m.end(1) + 1);
-                expression = expression.trim();
+                this.expression = this.expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + this.expression.substring(m.end(1) + 1);
+                this.expression = this.expression.trim();
                 reflectionSuccess = true;
             }
             if (!reflectionSuccess) throw new ReactionException("no reflection inside expression");
@@ -441,6 +441,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         // beside these trivial heuristics above, we can see that mostly reflection phrases should not have superfluous spaces at the end
         if (nested_observation.length() == nested_observation_trim.length() && parallel_observation.length() != parallel_observation_trim.length()) return nested_matcher;
         if (nested_observation.length() != nested_observation_trim.length() && parallel_observation.length() == parallel_observation_trim.length()) return parallel_matcher;
+        // special cases
+        for (int i = 0; i < nested_observation.length(); i++) if (nested_observation.charAt(i) < '0') return parallel_matcher;
         // we don't know :(
         return nested_matcher;
     }
