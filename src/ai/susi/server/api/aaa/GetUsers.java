@@ -240,9 +240,16 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                             if(device.has("deviceAddTime")) {
                                 String deviceAddTime = device.get("deviceAddTime").toString();
                                 try {
-                                Date d = DateParser.FORMAT_RFC1123.parse(deviceAddTime);
-                                deviceAddTime = DateParser.formatISO8601(d).substring(0,7);
-                                } catch (ParseException e) {e.printStackTrace();}
+                                    Date d = DateParser.FORMAT_RFC1123.parse(deviceAddTime);
+                                    deviceAddTime = DateParser.formatISO8601(d).substring(0,7);
+                                } catch (ParseException e) {
+                                    try {
+                                    Date d = DateParser.iso8601MillisFormat.parse(deviceAddTime);
+                                    deviceAddTime = DateParser.formatISO8601(d).substring(0,7);
+                                    } catch (ParseException ee) {
+                                        ee.printStackTrace();
+                                    }
+                                }
                                 if(deviceAddedOverTimeObj.has(deviceAddTime)) {
                                     int count = deviceAddedOverTimeObj.getInt(deviceAddTime);
                                     deviceAddedOverTimeObj.put(deviceAddTime, count + 1);
