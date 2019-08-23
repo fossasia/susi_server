@@ -132,6 +132,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // read language preferences; this may overwrite the given call information
         String user_language = recall.getObservation("_user_language");
         if (user_language != null && user_language.length() > 0) language = user_language;
+        SusiLanguage susi_language = SusiLanguage.parse(language);
 
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();
@@ -175,7 +176,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             if (text.length() > 0 && !text.startsWith("Welcome to Etherpad!")) {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.unknown, "susi");
+                SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
                 SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
                 dreamMind.learn(skill, skillid, true);
                 SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
@@ -201,7 +202,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
             // fill an empty mind with the dream
             SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-            SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.unknown, dream);
+            SusiSkill.ID skillid = new SusiSkill.ID(susi_language, dream);
             SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
             dreamMind.learn(skill, skillid, true);
             SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
@@ -222,7 +223,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             } else {
                 for (SusiSkill focus_skill: focus_skills) {
                     String originpath = focus_skill.getID().getPath();
-                    SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.unknown, originpath);
+                    SusiSkill.ID skillid = new SusiSkill.ID(susi_language, originpath);
                     focusMind.learn(focus_skill, skillid, true);
                     minds.add(focusMind);
                 }
