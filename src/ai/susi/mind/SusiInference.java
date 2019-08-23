@@ -338,6 +338,10 @@ public class SusiInference {
                 // load more data using an url and a path
                 if (definition.has("url") && definition.has("path")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
+                    try {while (url.indexOf('`') >= 0) {
+                        SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow);
+                        url = reflection.expression;
+                    }} catch (ReactionException e) {}
                     String path = flow.unify(definition.getString("path"), false, Integer.MAX_VALUE);
                     byte[] b;
                     JSONArray data;
