@@ -29,6 +29,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -218,12 +219,17 @@ public class SusiInference {
                 StringWriter stdout = new StringWriter();
                 javascript.getContext().setWriter(new PrintWriter(stdout));
                 javascript.getContext().setErrorWriter(new PrintWriter(stdout));
-                Object o = javascript.eval(flow.unify(term, false, Integer.MAX_VALUE));
+                Object o;
+                try {
+                    o = javascript.eval(flow.unify(term, false, Integer.MAX_VALUE));
+                } catch (ScriptException e) {
+                    o = e.getMessage();
+                }
                 String bang = o == null ? "" : o.toString().trim();
                 if (bang.length() == 0) bang = stdout.getBuffer().toString().trim();
                 return new SusiThought().addObservation("!", bang);
-            } catch (Throwable e) {
-                DAO.severe(e);
+            } catch (Throwable ee) {
+                DAO.severe(ee);
                 return new SusiThought(); // empty thought -> fail
             }
         });
