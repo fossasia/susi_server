@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.json.JsonPath;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiArgument.Reflection;
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.DateParser;
@@ -215,13 +216,21 @@ public class SusiInference {
         });
         javascriptProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
             String term = matcher.group(1);
+            term = flow.unify(term, false, Integer.MAX_VALUE);
+            while (term.indexOf('`') >= 0) try {
+                Reflection reflection = new Reflection(term, flow);
+                term = reflection.expression;
+            } catch (ReactionException e) {
+                e.printStackTrace();
+                break;
+            }
             try {
                 StringWriter stdout = new StringWriter();
                 javascript.getContext().setWriter(new PrintWriter(stdout));
                 javascript.getContext().setErrorWriter(new PrintWriter(stdout));
                 Object o;
                 try {
-                    o = javascript.eval(flow.unify(term, false, Integer.MAX_VALUE));
+                    o = javascript.eval(term);
                 } catch (ScriptException e) {
                     o = e.getMessage();
                 }
