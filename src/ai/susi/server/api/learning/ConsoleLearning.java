@@ -33,8 +33,10 @@ import org.json.JSONTokener;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -260,7 +262,9 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             // now test the api call
             byte[] serviceResponse = null;
             try {
-                serviceResponse = ConsoleService.loadData(serviceURL, test);
+                Map<String, String> request_header = new HashMap<>();
+                request_header.put("Accept","application/json");
+                serviceResponse = ConsoleService.loadDataWithQuery(serviceURL, request_header, test);
             } catch (Exception e) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the console test load resulted in an error: " + e.getMessage());

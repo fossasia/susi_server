@@ -51,7 +51,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0d!example:x%0d!expect:y%0dyee
@@ -169,7 +171,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
         if (local_etherpad_apikey != null) try {
             String padurl = "http://localhost:9001/api/1/getText?apikey=" + local_etherpad_apikey + "&padID=$query$";
-            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, "susi")));
+            Map<String, String> request_header = new HashMap<>();
+            request_header.put("Accept","application/json");
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
             JSONObject json = new JSONObject(serviceResponse);
             JSONObject data = json.optJSONObject("data");
             String text = data == null ? "" : data.getString("text");
@@ -186,14 +190,16 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         } catch (JSONException | IOException | SusiActionException e) {
             DAO.severe(e.getMessage(), e);
         }
-        
+
         // global etherpad dreaming, reading from http://dream.susi.ai
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
             String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
             String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
             String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
-            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
+            Map<String, String> request_header = new HashMap<>();
+            request_header.put("Accept","application/json");
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, dream)));
             JSONObject json = new JSONObject(serviceResponse);
             JSONObject data = json.optJSONObject("data");
             String text = data == null ? "" : data.getString("text");

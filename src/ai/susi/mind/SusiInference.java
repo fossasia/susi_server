@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -355,7 +357,9 @@ public class SusiInference {
                     byte[] b;
                     JSONArray data;
                     try {
-                        b = ConsoleService.loadData(url);
+                        Map<String, String> request_header = new HashMap<>();
+                        request_header.put("Accept","application/json");
+                        b = ConsoleService.loadData(url, request_header);
                         data = JsonPath.parse(b, path);
                     } catch (IOException e) {
                         DAO.log("no response from API " + url);
