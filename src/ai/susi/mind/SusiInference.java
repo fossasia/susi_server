@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
@@ -44,6 +46,7 @@ import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.DateParser;
 import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.HttpClient.Response;
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.SolveInfo;
@@ -347,26 +350,50 @@ public class SusiInference {
                 }
 
                 // load more data using an url and a path
-                if (definition.has("url") && definition.has("path")) try {
+                if (definition.has("url")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
                     try {while (url.indexOf('`') >= 0) {
                         SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow);
                         url = reflection.expression;
                     }} catch (ReactionException e) {}
-                    String path = flow.unify(definition.getString("path"), false, Integer.MAX_VALUE);
-                    byte[] b;
-                    JSONArray data;
+                    String path = definition.has("path") ? flow.unify(definition.getString("path"), false, Integer.MAX_VALUE) : null;
+
+                    // make a custom request header
+                    Map<String, String> request_header = new HashMap<>();
+                    if (path != null) request_header.put("Accept","application/json");
+                    Map<String, Object> request =  definition.has("request") ? definition.getJSONObject("request").toMap() : null;
+                    if (request != null) request.forEach((key, value) -> request_header.put(key, value.toString()));
+
+                    // issue the request
+                    Response httpresponse = null;
+                    JSONArray data = new JSONArray();
                     try {
-                        Map<String, String> request_header = new HashMap<>();
-                        request_header.put("Accept","application/json");
-                        b = ConsoleService.loadData(url, request_header);
-                        data = JsonPath.parse(b, path);
+                        httpresponse = new Response(url, request_header);
                     } catch (IOException e) {
-                        DAO.log("no response from API " + url);
-                        data = null;
+                        DAO.log("no response from API: " + url);
                     }
 
-                    if (data != null) {
+                    byte[] b = httpresponse == null ? null : httpresponse.getData();
+                    if (b != null && path != null) try {
+                        data = JsonPath.parse(b, path);
+                    } catch (JSONException e) {
+                        DAO.log("JSON data from API cannot be parsed: " + url);
+                    }
+
+                    // parse response
+                    Map<String, Object> response =  definition.has("response") ? definition.getJSONObject("response").toMap() : null;
+                    if (response != null && httpresponse != null) {
+                        JSONObject obj_from_http_response_header = new JSONObject(true);
+                        Map<String, List<String>> response_header = httpresponse.getResponse();
+                        response.forEach((httpresponse_key, susi_varname) -> {
+                            List<String> values = response_header.get(httpresponse_key);
+                            if (values != null && !values.isEmpty()) obj_from_http_response_header.put(susi_varname.toString(), values.iterator().next());
+                        });
+                        if (!obj_from_http_response_header.isEmpty()) data.put(obj_from_http_response_header);
+                    }
+
+                    // evaluate the result data
+                    if (data != null && !data.isEmpty()) {
                         JSONArray learned = new SusiTransfer("*").conclude(data);
                         if (learned.length() > 0 && definition.has("actions") &&
                             learned.get(0) instanceof JSONObject &&

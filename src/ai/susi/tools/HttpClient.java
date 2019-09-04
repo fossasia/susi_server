@@ -237,7 +237,7 @@ public class HttpClient {
 
     private int status;
     public BufferedInputStream inputStream;
-    private Map<String, List<String>> header;
+    private Map<String, List<String>> response_header;
     private CloseableHttpClient httpClient;
     private HttpRequestBase request;
     private HttpResponse httpResponse;
@@ -403,10 +403,10 @@ public class HttpClient {
                     this.request.releaseConnection();
                     throw e;
                 }
-                this.header = new HashMap<String, List<String>>();
+                this.response_header = new HashMap<String, List<String>>();
                 for (Header header: httpResponse.getAllHeaders()) {
-                    List<String> vals = this.header.get(header.getName());
-                    if (vals == null) { vals = new ArrayList<String>(); this.header.put(header.getName(), vals); }
+                    List<String> vals = this.response_header.get(header.getName());
+                    if (vals == null) { vals = new ArrayList<String>(); this.response_header.put(header.getName(), vals); }
                     vals.add(header.getValue());
                 }
             } else {
@@ -505,6 +505,58 @@ public class HttpClient {
         }
     }
 
+    public static class Response {
+
+        private Map<String, String> request_header;
+        private Map<String, List<String>> response_header;
+        private byte[] data;
+
+        public Response(String source_url, Map<String, String> request_header) throws IOException {
+            this.request_header = request_header;
+            final List<byte[]> content = new ArrayList<>(1);
+            final List<IOException> exception = new ArrayList<>(1);
+            Thread loadThread = new Thread() {
+                public void run() {
+                    try {
+                        final HttpClient connection = new HttpClient(source_url);
+                        if (request_header != null) {
+                            request_header.forEach((key, value) -> connection.setHeader(key, value));
+                        }
+                        byte[] c = connection.load();
+                        Response.this.response_header = connection.response_header;
+                        if (c != null) content.add(c);
+                    } catch (IOException e) {
+                        exception.add(e);
+                    }
+                }
+            };
+            loadThread.start();
+            try {
+                loadThread.join(defaultClientTimeout);
+            } catch (InterruptedException e) {
+                throw new IOException(e.getMessage());
+            }
+            if (loadThread.isAlive()) loadThread.interrupt();
+            if (!exception.isEmpty()) throw exception.get(0);
+            if (content.isEmpty()) {
+                throw new IOException("no content available for url " + source_url);
+            }
+            this.data = content.get(0);
+        }
+
+        public byte[] getData() {
+            return this.data;
+        }
+
+        public Map<String, String> getRequest() {
+            return this.request_header;
+        }
+
+        public Map<String, List<String>> getResponse() {
+            return this.response_header;
+        }
+    }
+
     public static void load(String source_url, File target_file) {
         download(source_url, target_file, true);
     }
@@ -520,34 +572,8 @@ public class HttpClient {
     }
 
     public static byte[] loadGet(String source_url, Map<String, String> request_header) throws IOException {
-        final List<byte[]> content = new ArrayList<>(1);
-        final List<IOException> exception = new ArrayList<>(1);
-        Thread loadThread = new Thread() {
-            public void run() {
-                try {
-                    final HttpClient connection = new HttpClient(source_url);
-                    if (request_header != null) {
-                        request_header.forEach((key, value) -> connection.setHeader(key, value));
-                    }
-                    byte[] c = connection.load();
-                    if (c != null) content.add(c);
-                } catch (IOException e) {
-                    exception.add(e);
-                }
-            }
-        };
-        loadThread.start();
-        try {
-            loadThread.join(defaultClientTimeout);
-        } catch (InterruptedException e) {
-            throw new IOException(e.getMessage());
-        }
-        if (loadThread.isAlive()) loadThread.interrupt();
-        if (!exception.isEmpty()) throw exception.get(0);
-        if (content.isEmpty()) {
-            throw new IOException("no content available for url " + source_url);
-        }
-        return content.get(0);
+        Response response = new Response(source_url, request_header);
+        return response.getData();
     }
 
     /**
