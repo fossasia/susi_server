@@ -129,6 +129,17 @@ public class SusiServer {
         Properties customized_config_props = new Properties();
         customized_config_props.load(new FileInputStream(customized_config));
         for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
+
+        // overwrite the config with environment variables. Because a '.' (dot) is not allowed in system environments
+        // the dot can be replaced by "_" (underscore), i.e. like:
+        // users_public_signup="false" java -jar build/libs/susi_server-all.jar
+        String[] keys = config.keySet().toArray(new String[config.size()]); // create a clone of the keys to prevent a ConcurrentModificationException
+        for (String key: keys) if (System.getenv().containsKey(key.replace('.', '_'))) config.put(key, System.getenv().get(key.replace('.', '_')));
+
+        // the config can further be overwritten by System Properties, i.e. like:
+        // java -jar -Dusers.public.signup="false" build/libs/susi_server-all.jar
+        for (String key: keys) if (System.getProperties().containsKey(key)) config.put(key, System.getProperties().getProperty(key));
+
         return config;
     }
 
