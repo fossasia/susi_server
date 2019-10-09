@@ -340,6 +340,10 @@ public class SusiAction {
     }
     private ArrayList<String> phrasesCache = null;
 
+    public boolean isSabta() {
+        return this.json.has("mood") && "sabta".equals(this.json.getString("mood"));
+    }
+
     public boolean hasAttr(String attr) {
         return this.json.has(attr);
     }
