@@ -43,7 +43,7 @@ public class SusiUtterance {
 
     private final static String CATCHONE_CAPTURE_GROUP_STRING = "(^\\S+)"; // only one word
     private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)"; // greedy capturing everything is the best choice: that covers words phrases as well
-    private final static Pattern CATCHONE_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHONE_CAPTURE_GROUP_STRING));
+    //private final static Pattern CATCHONE_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHONE_CAPTURE_GROUP_STRING));
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
     private final static Pattern wspace = Pattern.compile(",|;:");
@@ -76,7 +76,12 @@ public class SusiUtterance {
         expression = parsePattern(expression);
 
         // write class variables
-        this.pattern = Pattern.compile(expression);
+        try {
+            this.pattern = Pattern.compile(expression);
+        } catch (PatternSyntaxException e) {
+            // we throw the same exception here to make it possible to debug the event here with a breakpoint
+            throw new PatternSyntaxException(e.getDescription(), e.getPattern(), e.getIndex());
+        }
         if (expression.equals("(.*)")) this.type = Type.minor;
         this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
 
@@ -145,9 +150,10 @@ public class SusiUtterance {
         while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
         if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
-        if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
+        int p = ".?!".indexOf(s.charAt(s.length() - 1));
+        if (p >= 0 && (s.length() == 1 || s.charAt(s.length() - 2) != '\\')) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
-        int p = -1;
+        p = -1;
         while ((p = s.toLowerCase().indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);
         while ((p = s.toLowerCase().indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
         return s;
@@ -186,7 +192,7 @@ public class SusiUtterance {
 
     private static String parseOnePattern(String expression, char meta, String regex) {
         if (expression.length() == 0 || expression.equals("" + meta)) expression = regex;
-        if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
+        if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0 && (expression.length() == 1 || expression.charAt(expression.length() - 2) !='\\')) expression = expression.substring(0, expression.length() - 1);
         if (expression.startsWith(meta + " ")) expression = regex + " " + expression.substring(2);
         if (expression.length() > 0 && expression.charAt(0) == meta) expression = regex + " ?" + expression.substring(1);
         if (expression.endsWith(" " + meta)) expression = expression.substring(0, expression.length() - 2) + " " + regex;
