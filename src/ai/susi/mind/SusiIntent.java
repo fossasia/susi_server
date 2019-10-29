@@ -405,7 +405,7 @@ public class SusiIntent implements Cloneable {
                 SusiIntent intent = new SusiIntent(skillid, json);
                 intents.add(intent);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillid.getPath() + ": " + json.toString(2));
+                Logger.getLogger("SusiIntent").warning("Regular Expression error (\"" + e.getPattern() + "\") in Susi Intent " + skillid.getPath() + ": \n" + json.toString(2));
             }
         }
         return intents;

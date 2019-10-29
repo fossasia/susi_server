@@ -306,13 +306,11 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // reflection: evaluate contents from the answers expressions as recursion.
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
-                while (expression.indexOf('`') >= 0) try {
+                while (expression.indexOf('`') >= 0) {
                     Reflection reflection = new Reflection(expression, this);
                     deducedThought = reflection.deducedThought;
                     expression = reflection.expression;
                     reflectionSuccess = true;
-                } catch (ReactionException e) {
-                    e.printStackTrace();
                 }
             }
 
@@ -380,10 +378,11 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
                 this.deducedThought = reaction.getMindstate();
                 this.reactionActions = new ArrayList<>();
-                reaction.getActions().forEach(reactionAction -> {
+                for (SusiAction reactionAction: reaction.getActions()) {
                     // we add only non-answer actions, because the answer actions are added within the expression (see below)!
                     if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
-                }); 
+                    if (reactionAction.isSabta()) throw new ReactionException("sabta in reflection answer"); // the reflection found no answer, just one which pretended to be a proper answer
+                }
                 List<String> expressions = reaction.getExpressions();
                 this.expression = this.expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + this.expression.substring(m.end(1) + 1);
                 this.expression = this.expression.trim();
@@ -392,7 +391,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
             if (!reflectionSuccess) throw new ReactionException("no reflection inside expression: " + query);
         }
     }
-    
+
     private static Matcher appropriateReflectionMatcher(String expression) {
         Matcher nested_matcher = SusiAction.reflection_nested.matcher(expression);
         Matcher parallel_matcher = SusiAction.reflection_parallel.matcher(expression);
