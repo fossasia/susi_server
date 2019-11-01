@@ -83,11 +83,13 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             byte[] b = new byte[0];
+            String bs = "";
             try {
                 String testquery = matcher.group(2);
                 Map<String, String> request_header = new HashMap<>();
                 request_header.put("Accept","application/json");
                 b = loadDataWithQuery(serviceURL, request_header, testquery);
+                bs = new String(b, StandardCharsets.UTF_8);
                 JSONArray data = JsonPath.parse(b, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
@@ -95,7 +97,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(json.getCount());
             } catch (Throwable e) {
                 DAO.severe(e);
-                DAO.severe(new String(b, StandardCharsets.UTF_8));
+                DAO.severe(bs);
             }
             return json;
         });
