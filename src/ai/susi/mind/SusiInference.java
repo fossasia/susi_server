@@ -363,7 +363,19 @@ public class SusiInference {
                     if (path != null) request_header.put("Accept","application/json");
                     Map<String, Object> request =  definition.has("request") ? definition.getJSONObject("request").toMap() : null;
                     if (request != null) request.forEach((key, value) -> request_header.put(key, value.toString()));
-
+                    /*
+                    request_header.put("Accept-Encoding","gzip, deflate, br");
+                    request_header.put("Accept-Language","de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6");
+                    request_header.put("Cache-Control","max-age=0");
+                    request_header.put("Connection","keep-alive");
+                    request_header.put("Cookie","WR_SID=e6de8822.59648a8a2de5a");
+                    request_header.put("Host","api.wolframalpha.com");
+                    request_header.put("Sec-Fetch-Mode","navigate");
+                    request_header.put("Sec-Fetch-Site","none");
+                    request_header.put("Sec-Fetch-User","?1");
+                    request_header.put("Upgrade-Insecure-Requests","1");
+                    request_header.put("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.70 Safari/537.36");
+                     */
                     // issue the request
                     Response httpresponse = null;
                     JSONArray data = new JSONArray();

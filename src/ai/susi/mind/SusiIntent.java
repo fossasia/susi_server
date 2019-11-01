@@ -664,6 +664,18 @@ public class SusiIntent implements Cloneable {
     }
     
     /**
+     * getting a untterance sample can be used for debugging.
+     * @return a String containing the regular expression of the utterances
+     */
+    public String getUtterancesSample() {
+        StringBuilder sb = new StringBuilder();
+        for (SusiUtterance utterance: this.utterances) {
+            sb.append(" | ").append(utterance.getPattern().toString());
+        }
+        return sb.length() == 0 ? "" : sb.toString().substring(3);
+    }
+    
+    /**
      * The inferences of a intent are a set of operations that are applied if the intent is selected as response
      * mechanism. The inferences are feeded by the matching parts of the utterances to have an initial data set.
      * Inferences are lists because they represent a set of lambda operations on the data stream. The last

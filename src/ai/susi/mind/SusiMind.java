@@ -423,7 +423,23 @@ public class SusiMind {
 
         return plausibleIdeas;
     }
-    
+
+
+    public static SusiThought reactMinds(
+            final String query,
+            final SusiLanguage userLanguage,
+            final ClientIdentity identity,
+            final boolean debug,
+            final SusiThought observation,
+            final SusiMind... mindLayers) {
+        SusiThought thought = null;
+        int mindcount = 0;
+        while (thought == null && mindcount < mindLayers.length) {
+            thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
+        }
+        return thought;
+    }
+
     /**
      * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
      * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
@@ -457,6 +473,7 @@ public class SusiMind {
         long t4 = System.currentTimeMillis();
 
         // test all ideas: the ideas are ranked in such a way that the best one is considered first
+        JSONArray testedIdeaQueryPatterns = new JSONArray();
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
@@ -466,17 +483,21 @@ public class SusiMind {
 
             // arguments may fail; a failed proof is one which does not exist. Therefore an argument may be empty
             if (argument == null) {
+                testedIdeaQueryPatterns.put(new JSONObject().put(idea.getIntent().getUtterancesSample(), "fail"));
                 continue ideatest; // consider only sound arguments
             }
             try {
                 answer = argument.finding(identity, userLanguage, debug, minds);
+                testedIdeaQueryPatterns.put(new JSONObject().put(idea.getIntent().getUtterancesSample(), "success"));
                  // a valid idea
                 break;
             } catch (ReactionException e) {
+                testedIdeaQueryPatterns.put(new JSONObject().put(idea.getIntent().getUtterancesSample(), e.getMessage()));
                 // a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
                 continue ideatest;
             }
         }
+        answer.put("trace", testedIdeaQueryPatterns);
         long t7 = System.currentTimeMillis();
         //DAO.log("+++ react run time: " + (t1 - t0) + " milliseconds - getCognitions");
         //DAO.log("+++ react run time: " + (t2 - t1) + " milliseconds - think");
@@ -501,21 +522,6 @@ public class SusiMind {
             }
         }
         return answer;
-    }
-
-    public static SusiThought reactMinds(
-            final String query,
-            final SusiLanguage userLanguage,
-            final ClientIdentity identity,
-            final boolean debug,
-            final SusiThought observation,
-            final SusiMind... mindLayers) {
-        SusiThought thought = null;
-        int mindcount = 0;
-        while (thought == null && mindcount < mindLayers.length) {
-            thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
-        }
-        return thought;
     }
 
     public class Reaction {
