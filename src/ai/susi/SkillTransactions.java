@@ -67,6 +67,7 @@ public class SkillTransactions {
         pullThread = new Thread() {
             @Override
             public void run() {
+                Thread.currentThread().setName("SkillTransactions");
                 while (pullStatus) {
                     try {
                         Thread.sleep(pull_delay);

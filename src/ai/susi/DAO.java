@@ -445,6 +445,7 @@ public class DAO {
         // initializing susi minf concurrently
         Thread susi_mind_init = new Thread() {
             public void run() {
+                Thread.currentThread().setName("ObserveLearn");
                 try {
                     susi.observe();
                 } catch (IOException e) {

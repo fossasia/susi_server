@@ -79,6 +79,7 @@ public class AccessTracker extends Thread {
     }
     
     public void run() {
+        Thread.currentThread().setName("AccessTracker");
         monitor: while (!terminate) {
             // identify oldest track and remove it from the pending tracks if it is over timeout time
             timeoutcheck: while (this.pendingQueue.size() > 0) {

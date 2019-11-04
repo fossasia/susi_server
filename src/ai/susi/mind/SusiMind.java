@@ -226,6 +226,7 @@ public class SusiMind {
         if (this.memories != null) new Thread(new Runnable() {
             @Override
             public void run() {
+                Thread.currentThread().setName("removeUnanswered");
                 removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern));
             }
         }).start();
