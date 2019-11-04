@@ -41,7 +41,7 @@ else
     exit 1
 fi
 
-cmdline="java";
+cmdline="java -Xverify:none";
 
 if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
 elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
