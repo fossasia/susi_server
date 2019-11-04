@@ -152,6 +152,10 @@ public class SusiServer {
     }
 
     public static void main(String[] args) throws Exception {
+        // recommended start parameters:
+        // -ea -Xverify:none -Xms512m
+        // to enable asserts and disable bytecode verification which increases turnaround time
+
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         long starttime = System.currentTimeMillis();
 
