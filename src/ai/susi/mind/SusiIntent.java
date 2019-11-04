@@ -196,13 +196,13 @@ public class SusiIntent implements Cloneable {
         this.skillid = skillid;
         this.example = "";
         this.expect = "";
-        if (label == null || label.length() == 0 && this.utterances.size() == 1) try {
+        if ((this.label == null || this.label.length() == 0) && this.utterances.size() == 1) try {
             String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
-            if (l.indexOf('*') < 0) label = l;
+            if (l.indexOf('*') < 0) this.label = l;
         } catch (IndexOutOfBoundsException e) {
         	throw new SusiActionException(e.toString() + " in " + skillid.toString());
         }
-        this.label = (label != null && label.length() > 0) ? label : "";
+        this.label = (this.label != null && this.label.length() > 0) ? this.label : "";
         this.implication = "";
         this.hashCode = 0; // will be computed later
         this.depth = depth;

@@ -682,11 +682,10 @@ public class SusiSkill {
     }
 
     public static void main(String[] args) {
+
         File conf = FileSystems.getDefault().getPath("conf").toFile();
-        File os_skills = new File(conf, "os_skills");
-        File test = new File(os_skills, "test");
-        File en = new File(test, "en");
-        File skillFile = new File(en, "alarm.txt");
+        //File skillFile = new File(conf, "os_skills/test/en/alarm.txt");
+        File skillFile = new File(conf, "../../susi_skill_data/models/general/Communication/en/Hotword_Changer.txt");
         //File model = new File(DAO.model_watch_dir, "general");
         //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
         System.out.println(skillFile);
