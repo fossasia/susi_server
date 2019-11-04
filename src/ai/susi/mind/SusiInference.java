@@ -84,11 +84,12 @@ public class SusiInference {
         this.json = json;
     }
 
-    public SusiInference(String expression, Type type) {
+    public SusiInference(String expression, Type type, int line) {
         assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);
+        this.json.put("line", line);
     }
 
     public SusiInference(JSONObject definition, Type type) {
@@ -161,7 +162,7 @@ public class SusiInference {
             final long delay = date.getTime() - start;
 
             // create planned action
-            JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
+            JSONObject actionj = SusiAction.answerAction(0, flow.getLanguage(), reflection);
             try {
                 SusiAction planned_utterance = new SusiAction(actionj);
                 SusiThought planned_thought = flow.applyAction(planned_utterance); // this also instantiates the answer in the planned_utterance

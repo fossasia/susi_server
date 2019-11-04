@@ -113,11 +113,12 @@ public class SusiTutorialTest {
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
             test("How do I feel?", "I don't know your mood.", identity);
             test("I am getting bored.", "Make something!", identity);
-            //test("How do I feel?", "You are inactive.", identity);
+            test("How do I feel?", "You are inactive.", identity);
             test("I am so happy!", "Good for you!", identity);
             test("Shall I eat?", "You will be happy, whatever I say!", identity);
             test("javascript hello", "Hello world from Nashorn", identity);
             test("compute 10 to the power of 3", "10^3 = 1000.0", identity);
+            test("who is susi", "nlu success", identity);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,6 +235,12 @@ public class SusiTutorialTest {
                     "set alarm\n" +
                     "!queue: 1234 `play metallica`\n" +
                     "alarm set\n" +
+                    "\n" +
+                    "who is *\n" +
+                    "`[who] $1$`\n" +
+                    "\n" +
+                    "[who] *\n" +
+                    "nlu success\n" +
                     "\n" +
                     "\n" +
                     "\n";

@@ -262,15 +262,16 @@ public class SusiAction {
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(SusiLanguage language, String... answers) {
+    public static JSONObject answerAction(int line, SusiLanguage language, String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
-        JSONObject json = new JSONObject()
+        JSONObject json = new JSONObject(true)
             .put("type", RenderType.answer.name())
             .put("select", SelectionType.random.name())
             .put("phrases", phrases);
         assert language != SusiLanguage.unknown;
         if (language != SusiLanguage.unknown) json.put("language", language.name());
+        if (line > 0) json.put("line", line);
         return json;
     }
 

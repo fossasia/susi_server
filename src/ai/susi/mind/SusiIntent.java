@@ -176,10 +176,10 @@ public class SusiIntent implements Cloneable {
             boolean prior,
             int depth,
             SusiSkill.ID skillid) throws SusiActionException {
-    	assert skillid != null;
-    	assert utterances != null : "utterances is null in " + skillid.getPath();
-    	assert utterances.size() > 0 : "utterance size is 0 in " + skillid.getPath();
-    	
+        assert skillid != null;
+        if (utterances == null) throw new SusiActionException("utterances is null in " + skillid.getPath());
+        if (utterances.size() == 0) throw new SusiActionException("utterances size is 0 in " + skillid.getPath());
+
         this.utterances = new ArrayList<>();
         for (SusiUtterance u: utterances) this.utterances.add(u);
         this.actions = new ArrayList<>();
@@ -439,7 +439,7 @@ public class SusiIntent implements Cloneable {
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
             intent.put("process", c);
-            c.put(new SusiInference(condition, SusiInference.Type.memory).getJSON());
+            c.put(new SusiInference(condition, SusiInference.Type.memory, 0).getJSON());
         }
 
         // quality control
@@ -456,7 +456,7 @@ public class SusiIntent implements Cloneable {
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
-        a.put(SusiAction.answerAction(language, answers));
+        a.put(SusiAction.answerAction(0, language, answers));
         return intent;
     }
 

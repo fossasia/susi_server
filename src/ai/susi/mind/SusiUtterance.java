@@ -52,6 +52,7 @@ public class SusiUtterance {
     private Type type;
     private final boolean hasCaptureGroups;
     private final int meatsize;
+    private int line;
 
     /**
      * Create a phrase using a json data structure containing the phrase description.
@@ -70,6 +71,8 @@ public class SusiUtterance {
         } catch (IllegalArgumentException e) {
             //Logger.getLogger("SusiPhrase").warning("type value is wrong: " + json.getString("type"));
         }
+
+        this.line = json.has("line") ? json.getInt("line") : 0;
 
         String expression = normalizeExpression(json.getString("expression"));
         expression = fixExpression(expression);
@@ -95,8 +98,9 @@ public class SusiUtterance {
      * @param prior if true, this phrase has priority
      * @throws PatternSyntaxException
      */
-    public SusiUtterance(String expression, boolean prior) throws PatternSyntaxException {
+    public SusiUtterance(String expression, boolean prior, int line) throws PatternSyntaxException {
         this.type = prior ? Type.prior : Type.minor;
+        this.line = line;
 
         // normalize expression
         expression = normalizeExpression(expression);
@@ -260,6 +264,7 @@ public class SusiUtterance {
         }
         json.put("type", this.type.name());
         json.put("expression", p);
+        if (this.line > 0) json.put("line", line);
         return json;
     }
 }
