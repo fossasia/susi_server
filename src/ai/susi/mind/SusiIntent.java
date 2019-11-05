@@ -360,7 +360,11 @@ public class SusiIntent implements Cloneable {
         json.put("id", this.hashCode());
         json.put("depth", this.depth);
         if (this.score != null) json.put("score", this.score.score);
-        if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill_source", this.skillid.getPath());
+        if (this.skillid != null && this.skillid.getPath().length() > 0) {
+            json.put("skill_source", this.skillid.getPath());
+            json.put("skill_link", SusiCognition.getSkillLink(this.skillid.getPath()));
+            json.put("skill_line", this.utterances.iterator().next().getLine());
+        }
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
         JSONArray phrases = new JSONArray();
         this.utterances.forEach(utterance -> phrases.put(utterance.toJSON()));
@@ -776,7 +780,7 @@ public class SusiIntent implements Cloneable {
             }
 
             // add skill source
-            flow.addSkill(this.skillid);
+            flow.addSkill(this.skillid, utterances.iterator().next().getLine());
 
             return flow;
         }

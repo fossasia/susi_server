@@ -148,6 +148,10 @@ public class SusiUtterance {
         return json;
     }
 
+    public int getLine() {
+        return this.line;
+    }
+
     public static String normalizeExpression(String s) {
         s = s.trim().toLowerCase().replaceAll("\\#", "  ");
         Matcher m;

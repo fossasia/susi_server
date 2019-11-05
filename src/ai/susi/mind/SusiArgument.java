@@ -21,11 +21,11 @@ package ai.susi.mind;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -48,7 +48,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
 
     // working data
     private final ArrayList<SusiThought> recall;
-    private final List<SusiSkill.ID> skills;
+    private final LinkedHashMap<SusiSkill.ID, Integer> skills;
 
     /**
      * Create an empty argument
@@ -58,13 +58,13 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         this.language = language;
         this.minds = minds;
         this.recall = new ArrayList<>();
-        this.skills = new ArrayList<>();
+        this.skills = new LinkedHashMap<>();
     }
 
     public SusiArgument clone() {
         SusiArgument c = new SusiArgument(this.identity, this.language, this.minds);
         this.recall.forEach(thought -> c.recall.add(thought));
-        this.skills.forEach(skill -> c.skills.add(skill));
+        this.skills.forEach((skill, line) -> c.skills.put(skill, line));
         return c;
     }
 
@@ -423,9 +423,9 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * @param skill a relative path to the skill
      * @return the argument
      */
-    public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    public SusiArgument addSkill(final SusiSkill.ID skillid, int line) {
         assert skillid != null;
-        this.skills.add(skillid);
+        this.skills.put(skillid, line);
         return this;
     }
 
@@ -449,11 +449,11 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         SusiThought answer = this.mindmeld(true);
         answer.put("actions", getActionsJSON());
         List<String> skillpaths = new ArrayList<>();
-        this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
+        this.skills.forEach((skill, line) -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
         JSONObject persona = new JSONObject();
         SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
-        if (skill != null) persona.put("skill_source", skill.toJSON());
+        if (skill != null) persona.put("skill", skill.toJSON());
         answer.put("persona", persona);
         return answer;
     }
@@ -481,10 +481,10 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         JSONArray actionsJson = new JSONArray();
         getActionsClone().forEach(action -> actionsJson.put(action.toJSONClone()));
         JSONArray skillJson = new JSONArray();
-        this.skills.forEach(skill -> skillJson.put(skill));
+        this.skills.forEach((skill, line) -> skillJson.put(new JSONObject().put(skill.toString(), line)));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
-        json.put("skill_source", skillJson);
+        json.put("skill", skillJson);
         return json;
     }
 

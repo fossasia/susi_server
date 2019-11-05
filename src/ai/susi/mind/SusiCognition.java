@@ -365,19 +365,19 @@ public class SusiCognition {
         if (phrases == null || phrases.size() == 0) return "";
         return phrases.get(0);
     }
-    
+
     /**
      * The cognition is the result of a though extraction. We can reconstruct
      * the dispute as list of last mindstates using the cognition data.
      * @return a backtrackable thought reconstructed from the cognition data
-     */    
+     */
     public SusiThought recallDispute() {
         SusiThought dispute = new SusiThought();
         if (this.json.has("answers")) {
             JSONArray answers = this.json.getJSONArray("answers"); // in most cases there is only one answer
             for (int i = answers.length() - 1; i >= 0; i--) {
                 SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
-                
+
                 // add observations from metadata as variable content:
                 // the query:
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
@@ -399,7 +399,7 @@ public class SusiCognition {
                     }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
                 }
-                
+
                 // add all data from the old dispute
                 JSONArray clonedData = clonedThought.getData();
                 if (clonedData.length() > 0) {
@@ -421,16 +421,16 @@ public class SusiCognition {
         }
         return dispute;
     }
-    
+
     public JSONObject getJSON() {
         return this.json;
     }
-    
+
     public String toString() {
         return this.json.toString();
     }
 
-    public String getSkillLink(String skillPath) {
+    public static String getSkillLink(String skillPath) {
         String link=skillPath;
         if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER)) {
             if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {
