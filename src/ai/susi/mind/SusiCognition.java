@@ -393,9 +393,9 @@ public class SusiCognition {
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
                     if(skills.get(0).startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {
-                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length()));
+                        dispute.addObservation("skill_source", "Etherpad Dream: " +skills.get(0).substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length()));
                     } else {
-                        dispute.addObservation("skill", skills.get(0));
+                        dispute.addObservation("skill_source", skills.get(0));
                     }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
                 }

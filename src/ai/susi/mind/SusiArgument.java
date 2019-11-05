@@ -453,7 +453,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         answer.put("skills", skillpaths);
         JSONObject persona = new JSONObject();
         SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
-        if (skill != null) persona.put("skill", skill.toJSON());
+        if (skill != null) persona.put("skill_source", skill.toJSON());
         answer.put("persona", persona);
         return answer;
     }
@@ -484,7 +484,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         this.skills.forEach(skill -> skillJson.put(skill));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
-        json.put("skill", skillJson);
+        json.put("skill_source", skillJson);
         return json;
     }
 

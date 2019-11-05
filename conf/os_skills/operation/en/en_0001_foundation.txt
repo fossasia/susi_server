@@ -68,7 +68,7 @@ english language activated ^en^>_user_language
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
 # Susi just responds with the path to the skill it used in the previous answer.
 analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
-My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
+My previous answer is defined in the skill $skill_source$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
 # stop whatever happens
 stop|off|shut up|stop *
