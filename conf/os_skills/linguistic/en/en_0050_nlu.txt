@@ -1,7 +1,7 @@
 # This is an intent definition library
 # see https://en.wikipedia.org/wiki/Five_Ws
 
-# unwrapping
+# unwrapping hotwords and pronouns
 hi susi *|susi *|tell me *|please tell me *|can you tell me *|can you please tell me *
 `$1$`
 
@@ -31,6 +31,9 @@ I have *
 You have *
 `You've $1$`
 
+it is *
+`it's $1$`
+
 * isnt *|* is not *
 `$1$ isn't $2$`
 
@@ -52,12 +55,21 @@ why can I *|why is *
 `[why] $1$`
 
 #which *
+#whose *
 
 how does *
 `[how] $1$`
 
+# cut off gap fillers at the beginning of sentences
+you know *|it's like *|that thing *|ok *|right *|actually *|basically *|actually *|so *|well *|i mean *|At the end of the day *|Believe me *
+`$1$`
+
+# cut away gap fillers inside of sentences
+* basically *|* well *|* seriously *|* you see *|* you know *|* I guess *|* or something *
+`$1$ $2$`
+
 # cut off suffixes
-* now|* right now|* please
+* now|* right now|* please|* you know|* You know what I mean
 `$1$`
 
 #do, did, does
