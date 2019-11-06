@@ -45,6 +45,8 @@ public class SusiTutorialTest {
             assertTrue("no answer for q = " + q, answers.size() > 0);
             SusiThought thought = answers.iterator().next();
             List<SusiAction> actions = thought.getActions(false);
+            assert actions.size() > 0;
+            assertTrue("no actions computed", actions.size() > 0);
             SusiAction action = actions.iterator().next();
             String answer = action.getPhrases().iterator().next();
             return answer;

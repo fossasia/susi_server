@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -190,7 +189,7 @@ public class SusiMind {
             for (String o: on) {
                 Set<SusiSkill> skills = this.focusSkills.get(o.toLowerCase());
                 if (skills == null) {
-                    skills = new HashSet<>();
+                    skills = ConcurrentHashMap.newKeySet();
                     this.focusSkills.put(o.toLowerCase(), skills);
                 }
                 skills.add(skill);
@@ -207,7 +206,7 @@ public class SusiMind {
             intent.getKeys().forEach(key -> {
                 Set<SusiIntent> l = this.intenttrigger.get(key);
                 if (l == null) {
-                    l = new HashSet<>();
+                    l = ConcurrentHashMap.newKeySet();
                     this.intenttrigger.put(key, l);
                 }
                 l.add(intent);
@@ -292,7 +291,7 @@ public class SusiMind {
                 String o = on.getString(i);
                 Set<SusiSkill> skills = this.focusSkills.get(o.toLowerCase());
                 if (skills == null) {
-                    skills = new HashSet<>();
+                    skills = ConcurrentHashMap.newKeySet();
                     this.focusSkills.put(o.toLowerCase(), skills);
                 }
                 skills.add(skill);
@@ -310,7 +309,7 @@ public class SusiMind {
                 intent.getKeys().forEach(key -> {
                     Set<SusiIntent> l = this.intenttrigger.get(key);
                     if (l == null) {
-                        l = new HashSet<>();
+                        l = ConcurrentHashMap.newKeySet();
                         this.intenttrigger.put(key, l);
                     }
                     l.add(intent);
@@ -378,7 +377,7 @@ public class SusiMind {
         SusiLinguistics.tokenizeSentence(userLanguage, query).forEach(token -> {
             Set<SusiIntent> intent_for_category = this.intenttrigger.get(token.categorized);
             Set<SusiIntent> intent_for_original = token.original.equals(token.categorized) ? null : this.intenttrigger.get(token.original);
-            Set<SusiIntent> r = new HashSet<>();
+            Set<SusiIntent> r = ConcurrentHashMap.newKeySet();
             if (intent_for_category != null) r.addAll(intent_for_category);
             if (intent_for_original != null) r.addAll(intent_for_original);
             r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));

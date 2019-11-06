@@ -368,13 +368,17 @@ public class SusiThought extends JSONObject {
         actions.forEach(action -> a.put(action.toJSONClone()));
         return this;
     }
-    
+
     public SusiThought addAction(SusiAction action) {
         JSONArray a = getActionsJSON();
         a.put(action.toJSONClone());
         return this;
     }
-    
+
+    public SusiThought removeActions() {
+        if (this.has("actions")) this.remove("actions");
+        return this;
+    }
     /**
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.

@@ -349,6 +349,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
             v = Math.min(100, Math.max(0, v));
             action.setStringAttr("volume", Integer.toString(v));
         }
+        deducedThought.addAction(action);
         return deducedThought;
     }
 
@@ -356,7 +357,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         SusiThought deducedThought;
         List<SusiAction> reactionActions;
         String expression;
-        
+
         public Reflection(String query, SusiArgument argument) throws ReactionException {
             this.expression = query;
             boolean reflectionSuccess = false;
@@ -385,8 +386,12 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                     if (reactionAction.isSabta()) throw new ReactionException("sabta in reflection answer"); // the reflection found no answer, just one which pretended to be a proper answer
                 }
                 List<String> expressions = reaction.getExpressions();
-                this.expression = this.expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + this.expression.substring(m.end(1) + 1);
-                this.expression = this.expression.trim();
+                if (expressions.size() == 0) {
+                    this.expression = "";
+                } else {
+                    this.expression = this.expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + this.expression.substring(m.end(1) + 1);
+                    this.expression = this.expression.trim();
+                }
                 reflectionSuccess = true;
             }
             if (!reflectionSuccess) throw new ReactionException("no reflection inside expression: " + query);
@@ -440,14 +445,20 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      */
     public SusiThought finding(ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... mind) throws ReactionException {
         // all actions must be instantiated with variables from this arguments
-        for (SusiAction action: this.getActionsClone()) { // we need a clone from the here (but not from the actions itself) because we modify/extend the actions list object inside the loop
-            SusiThought t = this.applyAction(action); // apply but not add - these actions are already here in this argument
-            if (!t.isFailed()) this.think(t);
+        List<SusiAction> extractedActions = this.getActionsClone();
+        JSONArray appliedActions = new JSONArray();
+        for (SusiAction action: extractedActions) { // we need a clone from the here (but not from the actions itself) because we modify/extend the actions list object inside the loop
+            SusiThought t = this.applyAction(action);
+            if (!t.isFailed()) {
+                for (SusiAction a: t.getActions(true)) appliedActions.put(a.toJSONClone());
+                t.removeActions(); // we do not want to copy the actions to our argument here, we do this later (below)
+                this.think(t); // remember data that has been computed within action evaluation
+            }
         }
         // the 'applyAction' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
-        answer.put("actions", getActionsJSON());
+        answer.put("actions", appliedActions);  // this overwrites the result of the mindmeld
         List<String> skillpaths = new ArrayList<>();
         this.skills.forEach((skill, line) -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
@@ -464,7 +475,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> actionClone = new ArrayList<>();
-        this.recall.forEach(thought -> thought.getActions(true).forEach(action -> actionClone.add(action)));
+        this.recall.forEach(thought -> thought.getActions(true).forEach(action -> actionClone.add(action.clone())));
         return actionClone;
     }
 

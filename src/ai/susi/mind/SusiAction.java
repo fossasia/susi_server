@@ -46,7 +46,7 @@ import ai.susi.tools.DateParser;
  * - can several actions be performed concurrently and then synchronized again with a join-step for a common follow-up action?
  * We need a declaration to express this; a logic in the client to perform this and an expression in the skills to declare this.
  */
-public class SusiAction {
+public class SusiAction implements Cloneable {
 
     public static class SusiActionException extends Exception {
         private static final long serialVersionUID = -754075705722756817L;
@@ -253,6 +253,16 @@ public class SusiAction {
             }
         } catch (IllegalArgumentException e) {
             throw new SusiActionException("the action type '" + json.getString("type") + "' is not known");
+        }
+    }
+
+    public SusiAction clone() {
+        JSONObject j = new JSONObject(true);
+        this.json.keySet().forEach(key -> j.put(key, this.json.get(key)));
+        try {
+            return new SusiAction(j);
+        } catch (SusiActionException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
