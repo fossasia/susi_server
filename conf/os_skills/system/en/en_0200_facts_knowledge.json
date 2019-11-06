@@ -5,12 +5,8 @@
       {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"find (?:(?:a )*)(.*)"}
     ],
-    "process":[ {"type":"console", "expression":"SELECT location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"},
-                {"type":"console", "expression":"SELECT object AS locationInfo FROM location-info WHERE query='$1$';"}],
+    "process":[ {"type":"console", "expression":"SELECT location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
     "actions":[
-      {"type":"answer", "select":"random",
-       "phrases":["$locationInfo$"]
-      },
       {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Here is a map"},
       {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
     ]
