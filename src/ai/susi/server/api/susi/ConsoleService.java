@@ -162,8 +162,8 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 JsonTray apiKeys = DAO.apiKeys;
                 JSONObject publicKeys = apiKeys.getJSONObject("public");
                 String appid = DAO.getConfig("wolframalpha.appid", "");
-                if(publicKeys.has("wolframalphaKey")) {
-                    appid = publicKeys.getString("wolframalphaKey");
+                if (appid.length() == 0 && publicKeys.has("wolframalphaKey")) {
+                    appid = publicKeys.getJSONObject("wolframalphaKey").getString("value");
                 }
                 String serviceURL = "https://api.wolframalpha.com/v2/query?input=$query$&format=plaintext&output=JSON&appid=" + appid;
                 Map<String, String> request_header = new HashMap<>();
