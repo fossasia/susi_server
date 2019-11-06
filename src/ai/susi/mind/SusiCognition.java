@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.SusiServer;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
 
@@ -81,6 +82,7 @@ public class SusiCognition {
      */
     public SusiCognition(
             final String query,
+            final String clientHost,
             int timezoneOffset,
             double latitude, double longitude,
             String countryCode, String countryName,
@@ -95,6 +97,8 @@ public class SusiCognition {
         String client = identity.getClient();
         this.setQuery(query);
         SusiThought observation = new SusiThought();
+        observation.addObservation("client_host", clientHost);
+        SusiServer.hostInfo.forEach((key, value) -> observation.addObservation(key, value));
         observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
 
         if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {

@@ -311,7 +311,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
 
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[0]));
+        SusiCognition cognition = new SusiCognition(q, post.getClientHost(), timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
             DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug);
         } catch (IOException e) {
