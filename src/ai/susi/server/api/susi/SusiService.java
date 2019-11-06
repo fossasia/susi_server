@@ -35,6 +35,8 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ai.susi.json.JsonTray;
@@ -52,6 +54,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -314,6 +318,25 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.severe(e.getMessage());
         }
         JSONObject json = cognition.getJSON();
+
+        // now the very bad multi-answer patch TODO: fix this! remove this!
+        JSONArray a = json.optJSONArray("answers");
+        if (a != null && a.length() > 0) {
+            JSONObject j = a.getJSONObject(0);
+            a = j.optJSONArray("actions");
+            if (a != null && a.length() > 1) {
+                Set<String> exp = new HashSet<>();
+                Iterator<Object> ai = a.iterator();
+                while (ai.hasNext()) {
+                    String e = ((JSONObject) ai.next()).optString("expression");
+                    if (e != null) {
+                        if (exp.contains(e)) ai.remove();
+                        exp.add(e);
+                    }
+                }
+            }
+        }
+
         return json;
     }
 }
