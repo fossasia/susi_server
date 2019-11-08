@@ -23,7 +23,10 @@ package ai.susi.mind;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -489,19 +492,60 @@ public class SusiThought extends JSONObject {
         Thread.currentThread().setName(threadOrigName);
         return statement;
     }
-    
+
     public JSONObject toJSON() {
         return this;
     }
-    
+
     public String toString() {
         return super.toString(0);
     }
-    
+
     public int hashCode() {
         return this.getData().toString().hashCode();
     }
-    
+
+    // below now debugging methods:
+
+    public boolean hasUniqueActions() {
+        return hasUniqueActions(this);
+    }
+
+    public static boolean hasUniqueActions(JSONObject json) {
+        JSONArray a = json.optJSONArray("actions");
+        if (a != null && a.length() > 1) {
+            Set<String> exp = new HashSet<>();
+            Iterator<Object> ai = a.iterator();
+            while (ai.hasNext()) {
+                String e = ((JSONObject) ai.next()).optString("expression");
+                if (e != null) {
+                    if (exp.contains(e)) return false;
+                    exp.add(e);
+                }
+            }
+        }
+        return true;
+    }
+
+    public void uniqueActions() {
+        uniqueActions(this);
+    }
+
+    public static void uniqueActions(JSONObject json) {
+        JSONArray a = json.optJSONArray("actions");
+        if (a != null && a.length() > 1) {
+            Set<String> exp = new HashSet<>();
+            Iterator<Object> ai = a.iterator();
+            while (ai.hasNext()) {
+                String e = ((JSONObject) ai.next()).optString("expression");
+                if (e != null) {
+                    if (exp.contains(e)) ai.remove();
+                    exp.add(e);
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
         SusiThought t = new SusiThought().addObservation("a", "letter-a");
         System.out.println(t.unifyOnce("the letter $a$", true));

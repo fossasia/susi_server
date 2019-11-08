@@ -186,10 +186,10 @@
           document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();
         </script>
         <div class="input-group input-group-lg col-sm-8" style="float:left">
-          <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Chat with SUSI"
-            placeholder="Chat with SUSI" autofocus>
+          <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Chat with SUSI" placeholder="Chat with SUSI" autofocus>
           <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
-        </div>
+        </div><br/><br/><br/>
+        <input type="checkbox" name="debug" value="true">&nbsp;with&nbsp;debug&nbsp;data
       </form>
 
       <form action="#" class="col-lg-12 hidden-lg hidden-md hidden-sm row">

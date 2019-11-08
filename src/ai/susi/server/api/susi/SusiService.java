@@ -313,27 +313,26 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[0]));
         if (cognition.getAnswers().size() > 0) try {
-            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug);
+            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug /*storeToCache*/);
         } catch (IOException e) {
             DAO.severe(e.getMessage());
         }
         JSONObject json = cognition.getJSON();
 
-        // now the very bad multi-answer patch TODO: fix this! remove this!
-        JSONArray a = json.optJSONArray("answers");
-        if (a != null && a.length() > 0) {
-            JSONObject j = a.getJSONObject(0);
-            a = j.optJSONArray("actions");
-            if (a != null && a.length() > 1) {
-                Set<String> exp = new HashSet<>();
-                Iterator<Object> ai = a.iterator();
-                while (ai.hasNext()) {
-                    String e = ((JSONObject) ai.next()).optString("expression");
-                    if (e != null) {
-                        if (exp.contains(e)) ai.remove();
-                        exp.add(e);
-                    }
-                }
+        // for non-debugging/production use cases: make the answer short!
+        if (!debug) {
+            JSONArray a = json.optJSONArray("answers");
+            if (a != null) for (int i = 0; i < a.length(); i++) {
+                JSONObject j = a.getJSONObject(0);
+
+                // remove data object to prevent confusion of the first-time devs
+                // the data object is just for debugging, not as information to create a front-end!
+                j.remove("data");
+                j.remove("metadata");
+                j.remove("trace");
+
+                // now the very bad multi-answer patch TODO: fix this! remove this!
+                SusiThought.uniqueActions(j);
             }
         }
 

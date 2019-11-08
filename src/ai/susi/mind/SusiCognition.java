@@ -111,9 +111,7 @@ public class SusiCognition {
         assert language != SusiLanguage.unknown; // we should always know a language
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
 
-        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
         long query_date = System.currentTimeMillis();
-        this.json.put("query_date", DateParser.utcFormatter.print(query_date));
 
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         SusiThought dispute = SusiMind.reactMinds(query, language, identity, debug, observation, mindLayers);
@@ -142,16 +140,19 @@ public class SusiCognition {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // store answer and actions into json
         if (dispute != null) {
-        	List<SusiThought> thoughts = new ArrayList<>();
-        	thoughts.add(dispute);
-        	this.json.put("answers", new JSONArray(thoughts));
+            List<SusiThought> thoughts = new ArrayList<>();
+            thoughts.add(dispute);
+            this.json.put("answers", new JSONArray(thoughts));
         }
+        this.json.put("query_date", DateParser.utcFormatter.print(query_date));
+        this.json.put("query_language", language.name());
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
-        this.json.put("language", language.name());
+        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
+
     }
 
     public void updateDeviceWiseUsageData(String skillPath, String deviceType) {
