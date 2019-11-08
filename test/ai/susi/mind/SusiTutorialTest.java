@@ -33,7 +33,7 @@ public class SusiTutorialTest {
 
     public static String susiAnswer(String q, ClientIdentity identity) {
         // creating a cognition means that an answer is computed
-        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others", identity, true, DAO.susi);
+        SusiCognition cognition = new SusiCognition(q, "", 0, 0, 0, "", "", "en", "Others", identity, true, DAO.susi);
         // evaluate the cognition, the answer is already inside!
         try {
             // memorize the cognition, this is needed to compute context-aware intents.

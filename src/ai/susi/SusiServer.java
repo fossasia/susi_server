@@ -26,7 +26,9 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +38,7 @@ import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
@@ -69,7 +72,6 @@ import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.security.Constraint;
@@ -89,11 +91,23 @@ import ai.susi.server.RemoteAccess;
 import ai.susi.tools.OS;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.json.JSONException;
 
 
 public class SusiServer {
 
-    public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
+    public final static Set<String> blacklistedHosts = ConcurrentHashMap.newKeySet();
+    public final static Map<String, String> hostInfo = new ConcurrentHashMap<>();
+
+    static {
+        try {
+            InetAddress localhost = InetAddress.getLocalHost();
+            hostInfo.put("host_loopback", InetAddress.getLoopbackAddress().getHostAddress());
+            hostInfo.put("host_address", localhost.getHostAddress());
+            hostInfo.put("host_fqdm", localhost.getCanonicalHostName());
+            hostInfo.put("host_name", localhost.getHostName());
+        } catch (JSONException | UnknownHostException e) {}
+    }
 
     private static Server server = null;
     private static Caretaker caretaker = null;
