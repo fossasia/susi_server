@@ -327,7 +327,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
 
                 // remove data object to prevent confusion of the first-time devs
                 // the data object is just for debugging, not as information to create a front-end!
-                j.remove("data");
+                //j.remove("data");
                 j.remove("metadata");
                 j.remove("trace");
 
