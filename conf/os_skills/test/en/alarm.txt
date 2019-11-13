@@ -14,7 +14,7 @@ say hello in one minute
 !plan 60000: hello
 I will say hello in one minute
 
-countdown
+countdown|count down|rocket start|start rocket|apollo start
 !plan 1000: twelve
 !plan 2000: eleven
 !plan 3000: ten
