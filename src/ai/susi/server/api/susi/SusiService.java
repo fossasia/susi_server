@@ -181,7 +181,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             JSONObject json = new JSONObject(serviceResponse);
             JSONObject data = json.optJSONObject("data");
             String text = data == null ? "" : data.getString("text");
-            if (text.length() > 0 && !text.startsWith("Welcome to Etherpad!")) {
+            if (text.length() > 0 && !text.startsWith("Welcome to Etherpad!") && !text.startsWith("disabled")) {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
