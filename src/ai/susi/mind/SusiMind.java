@@ -497,7 +497,7 @@ public class SusiMind {
                 continue ideatest;
             }
         }
-        answer.put("trace", testedIdeaQueryPatterns);
+        if (answer != null) answer.put("trace", testedIdeaQueryPatterns);
         long t7 = System.currentTimeMillis();
         //DAO.log("+++ react run time: " + (t1 - t0) + " milliseconds - getCognitions");
         //DAO.log("+++ react run time: " + (t2 - t1) + " milliseconds - think");
