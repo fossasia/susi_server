@@ -50,7 +50,9 @@ jar {
 shadowJar {
   mergeServiceFiles()
 }
-
+test {
+    exclude 'ai/susi/mind/SusiTutorialTest.java'
+}
   
 
 assemble.dependsOn shadowJar
