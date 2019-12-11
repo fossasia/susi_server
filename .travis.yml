@@ -29,6 +29,7 @@ matrix:
       # deploy to heroku
         deploy:
           provider: heroku
+          buildpack: https://github.com/heroku/heroku-buildpack-gradle#previous-version
           api_key:
             secure: fb37c89e-2ad2-4b1a-ac4b-4a8d22f4856f
 
