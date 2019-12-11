@@ -12,12 +12,9 @@ matrix:
       env:
         global:
           - GH_REF: github.com/Thebest1209/susi_server.git
-          - secure: 850ee87560ad43a9c81b4701501b21324059b14b
-          - PATH=$PATH:${HOME}/google-cloud-sdk/bin
-          - CLOUDSDK_CORE_DISABLE_PROMPTS=1
-      before_cache:
-        - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-        - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+    #  before_cache:
+    #    - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+    #    - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
       # Store Gradle dependency cache and Gradle Wrapper files for next execution
       cache:
         directories:
@@ -28,26 +25,12 @@ matrix:
         - gradle assemble
         - gradle clean
       install: true
-      # If build successful, deploy to GC using kubernetes
-      after_success:
-        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
-        - bash kubernetes/travis/deploy.sh
-        - bash kubernetes/travis/deploy-master.sh
-        - bash .utility/push-javadoc-to-gh-pages.sh
+      after_success: 
       # deploy to heroku
-      deploy:
-        - provider: heroku
-          buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak
-          api_key: fb37c89e-2ad2-4b1a-ac4b-4a8d22f4856f
-            secure: 850ee87560ad43a9c81b4701501b21324059b14b
-          app: susi-bot
-          on:
-            branch: development
+        deploy:
+          provider: heroku
+          api_key:
+            secure: fb37c89e-2ad2-4b1a-ac4b-4a8d22f4856f
 
     # Codecov
-    - language: generic
-      before_script: pip install --user codecov
-      install: true
-      script:
-        - bash <(curl -s https://codecov.io/bash)
-        - codecov
+    
