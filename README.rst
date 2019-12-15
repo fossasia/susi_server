@@ -31,8 +31,7 @@ How do I install Susi: Download, Build, Run
     - You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you'll see a 404 error instead.
     
 
-|Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
-Cloud| |Deploy to Azure|
+|Deploy on Scalingo| |Deploy to Docker Cloud| |Deploy to Azure|
 
 At this time, Susi AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
 hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
