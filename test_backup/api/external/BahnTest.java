@@ -1,4 +1,4 @@
-package api.external;
+/*package api.external;
 
 import java.io.IOException;
 
@@ -15,4 +15,4 @@ public class BahnTest {
 		System.out.println(service.getConnections("Alexanderplatz", "Griebnitzsee"));
 		System.out.println(service.getConnections("München HBF", "Griebnitzsee", 10, 0).getData().getJSONObject(0).getString("description"));
 	}
-}
+}*/

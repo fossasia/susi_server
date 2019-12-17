@@ -1,4 +1,4 @@
-package api.external.transit;
+/*package api.external.transit;
 
 import java.util.List;
 
@@ -116,4 +116,4 @@ public class JSONConverter {
 		}
 		return response;
 	}
-}
+}*/

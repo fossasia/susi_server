@@ -33,8 +33,8 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.HttpClient;
-import api.external.transit.BahnService;
-import api.external.transit.BahnService.NoStationFoundException;
+//import api.external.transit.BahnService;
+//import api.external.transit.BahnService.NoStationFoundException;
 import ai.susi.json.JsonTray;
 
 import org.json.JSONArray;
@@ -189,7 +189,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             }
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
+        /*dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             String query = matcher.group(1);
             String from = matcher.group(2);
             String to = matcher.group(3);
@@ -207,7 +207,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 DAO.severe(e);
             }
             return json;
-        });
+        });*/
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikipedia +?WHERE +?query ??= ??'(.*?)' +?AND +?language ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             try {

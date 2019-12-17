@@ -1,4 +1,4 @@
-package api.external.transit;
+/*package api.external.transit;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,18 +8,22 @@ import org.json.*;
 
 import ai.susi.mind.SusiThought;
 import de.schildbach.pte.*;
+import de.schildbach.pte.BahnProvider;
 import de.schildbach.pte.dto.Location;
 import de.schildbach.pte.dto.QueryTripsResult;
 import de.schildbach.pte.dto.Trip;
 
 public class BahnService {
+
+	private final BahnProvider provider = new BahnProvider();
+
 	@SuppressWarnings("serial")
 	public static class NoStationFoundException extends Exception {
 		public NoStationFoundException(String stationName) {
 			super("No station named '" + stationName + "' found.");
 		}
 	}
-	private BahnProvider provider = new BahnProvider();
+
 	
 	public SusiThought getConnections(String from, String to) throws IOException, NoStationFoundException {
 		Calendar cal = Calendar.getInstance();
@@ -54,4 +58,4 @@ public class BahnService {
 		
 		return response;
 	}
-}
+}*/
