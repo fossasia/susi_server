@@ -6,7 +6,7 @@ SUSI.AI Server
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real-time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
+SUSI.AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real-time information. Additional functionalities can be added as console services using external APIs. SUSI.AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the SUSI.AI server that holds the "intelligence" and "personality" of SUSI.AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 **Deployments**
 
@@ -31,11 +31,9 @@ How do I install Susi: Download, Build, Run
     - You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you'll see a 404 error instead.
     
 
-|Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
-Cloud| |Deploy to Azure|
+|Deploy on Scalingo| |Deploy to Docker Cloud| |Deploy to Azure|
 
-At this time, Susi AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
-hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
+At this time, SUSI.AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run SUSI.AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 .. note::
     - For Armv6 processors (e.g. Raspberry Pi Zero / Zero W/ Zero WH/ 1A / 1B), please make sure that your system is using Java 8 (Oracle or OpenJDK) as there are some compatibility issues for Armv6 processors.
@@ -72,9 +70,9 @@ For Windows Users (who are using GitBash/Cygwin or any terminal):
     To stop:
     > Press Ctrl+C
 
-After all server processes are running, Susi AI tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+After all server processes are running, SUSI.AI tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
-To stop Susi AI, run: (this will block until the server has actually terminated)
+To stop SUSI.AI, run: (this will block until the server has actually terminated)
 
 ::
 
@@ -87,7 +85,7 @@ A self-upgrading process is available which must be triggered by a shell command
     > bin/upgrade.sh
 
 *********
-Where can I download ready-built releases of Susi AI?
+Where can I download ready-built releases of SUSI.AI?
 *********
 
 The latest binary built can be downloaded from
@@ -99,57 +97,56 @@ cd susi_server_binary_latest
 java -server -Xmx200m -jar build/libs/susi_server-all.jar
 
 *********
-How do I install Susi AI with Docker on Google Cloud?
+How do I install SUSI.AI with Docker on Google Cloud?
 *********
 
-To install Susi AI with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
+To install SUSI.AI with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
 
 *********
-How do I install Susi AI with Docker on AWS?
+How do I install SUSI.AI with Docker on AWS?
 *********
 
-To install Susi AI with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
+To install SUSI.AI with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
 
 *********
-How do I install Susi AI with Docker on Bluemix?
+How do I install SUSI.AI with Docker on Bluemix?
 *********
 
-To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
+To install SUSI.AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
 *********
-How do I install Susi AI with Docker on Microsoft Azure?
+How do I install SUSI.AI with Docker on Microsoft Azure?
 *********
 
-To install Susi AI with Docker on Azure please refer to the `Susi Docker installation readme </docs/installation/installation_docker_azure.md>`__.
-
-
-*********
-How do I install Susi AI with Docker on Digital Ocean?
-*********
-
-To install Susi AI with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
+To install SUSI.AI with Docker on Azure please refer to the `Susi Docker installation readme </docs/installation/installation_docker_azure.md>`__.
 
 *********
-How do I deploy Susi AI with Heroku?
+How do I install SUSI.AI with Docker on Digital Ocean?
 *********
 
-You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi AI using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
+To install SUSI.AI with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
 
 *********
-How do I deploy Susi AI with cloud9?
+How do I deploy SUSI.AI with Heroku?
 *********
 
-To install Susi AI with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
+You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install SUSI.AI using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
 
 *********
-How do I setup Susi AI on Eclipse?
+How do I deploy SUSI.AI with cloud9?
 *********
 
-To install Susi AI on Eclipse, please refer to the `Susi Eclipse
+To install SUSI.AI with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
+
+*********
+How do I setup SUSI.AI on Eclipse?
+*********
+
+To install SUSI.AI on Eclipse, please refer to the `Susi Eclipse
 readme </docs/installation/eclipseSetup.md>`__.
 
 *********
-How do I run Susi AI?
+How do I run SUSI.AI?
 *********
 
 -  build Susi (you need to do this only once, see above)
@@ -158,12 +155,10 @@ How do I run Susi AI?
 -  to shut down Susi, run ``bin/stop.sh``
 
 *********
-How do I configure Susi AI?
+How do I configure SUSI.AI?
 *********
 
-The basis configuration file is in ``conf/config.properties``. To
-customize these settings place a file ``customized_config.properties``
-to the path ``data/settings/``
+The basis configuration file is in ``conf/config.properties``. To customize these settings place a file ``customized_config.properties`` to the path ``data/settings/``
 
 *********
 How to compile using Gradle?
@@ -197,14 +192,14 @@ How to compile using Gradle?
        ./gradle_clean.sh
 
 *********
-How do I develop Skills (AI Conversation Rules) for Susi AI?
+How do I develop Skills (AI Conversation Rules) for SUSI.AI?
 *********
 
-The Susi AI skill language is described in the `Skill Development
+The SUSI.AI skill language is described in the `Skill Development
 Tutorial <https://github.com/fossasia/susi_skill_cms/blob/master/docs/Skill_Tutorial.md>`__.
 
 *********
-How to utilize Susi skill data in Susi.AI server?
+How to utilize Susi skill data in SUSI.AI server?
 *********
 
 If you simply want to add your skill to the SUSI.AI online service, please go to https://skills.susi.ai and add your skill.
@@ -226,23 +221,13 @@ If you want to create private skills in your local server, you should create a l
     > git push --set-upstream origin master
 
 *********
-Why should I use Susi AI?
+Why should I use SUSI.AI?
 *********
 
-If you like to create your own AI, then you may consider Susi AI.
+If you like to create your own AI, then you may consider SUSI.AI.
 
 *********
-Where can I get the latest news about Susi AI?
-*********
-
-Hey, this is the tool for that! Just put
-https://api.loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh,
-wait.. you will get a lot of information about tasty Cambodian food with
-that as well. Alternatively, you may also read the authors timeline or just follow @0rb1t3r
-(that's a zero after the "@" sign)
-
-*********
-Where can I find documentation?
+Where can I find API documentation?
 *********
 
 The Documentation can be found `here <https://github.com/fossasia/susi_server/tree/development/docs/api/api.md>`_.
@@ -273,20 +258,14 @@ Step 1: Pick an issue to fix
 
 After selecting the issue
 
-1.Comment on the issue saying you are working on the issue.
-
-2.We expect you to discuss the approach either by commenting or in the
-gitter.
-
-3.Updates or progress on the issue would be nice.
+1. Comment on the issue saying you are working on the issue.
+2. We expect you to discuss the approach either by commenting or on Gitter Chat.
+3. Updates or progress on the issue would be nice.
 
 Step 2: Branch policy
 ------------------------------------
 
-Start off from your ``development`` branch and make sure it is 
-up-to-date with the latest version of the committer repo's
-``development`` branch. Make sure you are working in development branch
-only. ``git pull upstream development``
+Start off from your ``development`` branch and make sure it is up-to-date with the latest version of the committer repo's ``development`` branch. Make sure you are working in development branch only. ``git pull upstream development``
 
 If you have not added upstream follow the steps given
 `here <https://help.github.com/articles/configuring-a-remote-for-a-fork/>`__.
@@ -297,48 +276,28 @@ Step 3: Coding Policy
 -  Please help us follow the best practice to make it easy for the
    reviewer as well as the contributor. We want to focus on the code
    quality more than on managing pull request ethics.
-
 -  Single commit per pull request
-
-
 -  For writing commit messages please adhere to the `Commit style guidelines <docs/commitStyle.md>`__.
-
-
--  Follow uniform design practices. The design language must be
-   consistent throughout the app.
-
--  The pull request will not get merged until and unless the commits are
-   squashed. In case there are multiple commits on the PR, the commit
-   author needs to squash them and not the maintainers cherry-picking and
-   merging squashes.
-
+-  Follow uniform design practices. The design language must be consistent throughout the app.
+-  The pull request will not get merged until and unless the commits are squashed. In case there are multiple commits on the PR, the commit author needs to squash them and not the maintainers cherry-picking and merging squashes.
 -  If you don't know what does squashing of commits is read from
    `here <http://stackoverflow.com/a/35704829/6181189>`__.
-
--  If the PR is related to any front end change, please attach relevant
-   screenshots in the pull request description
+-  If the PR is related to any front end change, please attach relevant screenshots in the pull request description
 
 Step 4: Submitting a PR
 ------------------------------------
 
-Once a PR is opened, try and complete it within 2 weeks, or at least
-stay actively working on it. Inactivity for a long period may
-necessitate a closure of the PR. As mentioned earlier updates would be
-nice.
+Once a PR is opened, try and complete it within 2 weeks, or at least stay actively working on it. Inactivity for a long period may necessitate a closure of the PR. As mentioned earlier updates would be nice.
 
 Step 5: Code Review
 ------------------------------------
 
 Your code will be reviewed, in this sequence, by:
 
--  Travis CI: by building and running tests. If there are failed tests,
-   the build will be marked as a failure. You can consult the CI log to
-   find which tests. Ensure that all tests pass before triggering
+-  Travis CI: by building and running tests. If there are failed tests, the build will be marked as a failure. You can consult the CI log to find which tests. Ensure that all tests pass before triggering
    another build.
--  The CI log will also contain the command that will enable running the
-   failed tests locally.
--  Reviewer: A core team member will be assigned to the PR as its
-   reviewer, who will approve your PR or he will suggest changes.
+-  The CI log will also contain the command that will enable running the failed tests locally.
+-  Reviewer: A core team member will be assigned to the PR as its reviewer, who will approve your PR or he will suggest changes.
 
 *********
 What is the software license?
@@ -366,8 +325,6 @@ What is the software license?
    :target: https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development
 .. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg
    :target: https://my.scalingo.com/deploy?source=https://github.com/fossasia/susi_server
-.. |Deploy to Bluemix| image:: https://bluemix.net/deploy/button.png
-   :target: https://bluemix.net/deploy?repository=https://github.com/fossasia/susi_server
 .. |Deploy to Docker Cloud| image:: https://files.cloud.docker.com/images/deploy-to-dockercloud.svg
    :target: https://cloud.docker.com/stack/deploy/
 .. |Deploy to Azure| image:: https://azuredeploy.net/deploybutton.svg
