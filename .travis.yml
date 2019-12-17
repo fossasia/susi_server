@@ -11,13 +11,10 @@ matrix:
       # Environment Variables
       env:
         global:
-          - GH_REF: github.com/fossasia/susi_server.git
-          - secure: WAjBBsbaxnj+6N9wu3v20AVcikJB4Q9U4CuqR1Ws8jPlRl5e8LxMzwQreFokEk22ymIuOpMMChTqdZTMtEQI24xPaDIpGd9byo5XYjX8Ln1LD0ndXboRdf0WNG88rtrQmaTvGKG6ahEzAFlmgwJ62ahA+DxuTDLKypWNNymqk49mmbV2g2c2Leh9fJYIDEGg3elZrKJnsretTo/PMC9SJP32W+3xonUh43FxinGJU+UEXXF9VtoMhfxCxl2zC4w2pXvrJpHhtw2tB42P2fHRH/MYOwM7okstgyBdIfWLMjWPSrpMosTQx3LrtX35tVNEqGmqPlYDXKFzeX0vawUtc08hQgIz2eWrc4YJ8YoAxuUCMW2OodEoLEuOizP59eAAJ3jmPlH1kY50T0JOxS47AxSLYT9QQWNKbGEX0EPfKSqNTTmUZb/RaXR3iYNJKZLS+9rZ91Ck3rmuMqxdJOsrZ6zWpxX6spNOqjtLrQvQaHcpK9JDFBE7oTf5fR2r+b4yY7K2cYCLDhUJfGC64qfVutwFQYhQx+QEEODiiR3ubSXrvH9IzAmlWrq8sUJB7qCOpyIb3AraH72BhGL1XgQIEodx7wkX4ZWTCu1q6GoY6MUbu270dPHTRcoesTh2LFCriqAKzKXia2EQiYZXFi18Vo2YQ/Km2FAWhdJZrhgVl9M=
-          - PATH=$PATH:${HOME}/google-cloud-sdk/bin
-          - CLOUDSDK_CORE_DISABLE_PROMPTS=1
-      before_cache:
-        - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-        - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+          - GH_REF: github.com/Thebest1209/susi_server.git
+    #  before_cache:
+    #    - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+    #    - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
       # Store Gradle dependency cache and Gradle Wrapper files for next execution
       cache:
         directories:
@@ -28,26 +25,13 @@ matrix:
         - gradle assemble
         - gradle clean
       install: true
-      # If build successful, deploy to GC using kubernetes
-      after_success:
-        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
-        - bash kubernetes/travis/deploy.sh
-        - bash kubernetes/travis/deploy-master.sh
-        - bash .utility/push-javadoc-to-gh-pages.sh
-      # deploy to heroku
+      after_success: 
       deploy:
-        - provider: heroku
-          buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak
-          api_key:
-            secure: CqW0sgNQiVHA2bUaTpWBd5xslu1LQaBRuT9t/XIhes1WQbJ7+rfsqPb1FFPS6cD8o+7Pgx7hCmIyKxcchrmk8Oat2jrO59fe8i3xuOh/Tl9os8PWy0Y2Kbsd4zjWODMC++ioY9sJKB71fhkA1sZjemo10cDLB0jp5P9vmGwj+34H8h2Mw/kA/CggD+lu52ZR/LqLT+QYTF+l5Q9wF1PdCMYNMi2zis3bKjvt6psCMjfQ9PA+C8GjhrA3d5hd6ToIekPaFXk179ev+FbAzJrVo9Ltste7JHRhtm2e+5juSjkpt1jh/l97DHoVLkIyWUNBuR+owfTEPFotFFhLfFJ048NBM9fCoGdJ8kRWpuaFCzu3UeQQODVVlqJHyShBFiaGrOiJPK8V9mSCXVVoU4D6NM/W8CXAhgdAY1jpzjAvwShCnnpOU9aBTzPGNhFJvl01QiM+mIgaIyyW3/Zb5lorzUA89+DgTMZucQKn8oFagsC+nxl7T0dgNML4JnWnKGh7cqnUSS8lTdHBIgEdq8kxFxpM5BEzQ85B1/pmlPeiop/hilq3onXgv3+qMLajRV0KE/GQg11XV8z/9qFBm8LppfUYJeKkjCg/vKsJfnOmj8Z6GDOZyVx5JAQ0Kd9e5Ds/yObmqaih6gKdoJlypkN94WMvEQsochS+/Ld3jxvLQaU=
-          app: susi-server
-          on:
-            branch: development
-
-    # Codecov
-    - language: generic
-      before_script: pip install --user codecov
-      install: true
-      script:
-        - bash <(curl -s https://codecov.io/bash)
-        - codecov
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+        keep_history: true
+        on:
+          branch: development
+    
+    
