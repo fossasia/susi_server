@@ -19,6 +19,8 @@
 
 package ai.susi.mind;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -308,7 +310,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
                 while (expression.indexOf('`') >= 0) {
-                    Reflection reflection = new Reflection(expression, this);
+                    Reflection reflection = new Reflection(expression, this, false);
                     deducedThought = reflection.deducedThought;
                     expression = reflection.expression;
                     reflectionSuccess = true;
@@ -358,7 +360,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         List<SusiAction> reactionActions;
         String expression;
 
-        public Reflection(String query, SusiArgument argument) throws ReactionException {
+        public Reflection(String query, SusiArgument argument, boolean urlencode) throws ReactionException {
             this.expression = query;
             boolean reflectionSuccess = false;
             Matcher m;
@@ -385,11 +387,13 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                     if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
                     if (reactionAction.isSabta()) throw new ReactionException("sabta in reflection answer"); // the reflection found no answer, just one which pretended to be a proper answer
                 }
-                List<String> expressions = reaction.getExpressions();
-                if (expressions.size() == 0) {
+                List<String> reflExprs = reaction.getExpressions();
+                if (reflExprs.size() == 0) {
                     this.expression = "";
                 } else {
-                    this.expression = this.expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + this.expression.substring(m.end(1) + 1);
+                    String reflExpr = reflExprs.get(random.nextInt(reflExprs.size()));
+                    if (urlencode) try {reflExpr = URLEncoder.encode(reflExpr, "UTF-8");} catch (UnsupportedEncodingException e) {}
+                    this.expression = this.expression.substring(0, m.start(1) - 1) + reflExpr + this.expression.substring(m.end(1) + 1);
                     this.expression = this.expression.trim();
                 }
                 reflectionSuccess = true;
