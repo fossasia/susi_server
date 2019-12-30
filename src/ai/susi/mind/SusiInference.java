@@ -224,7 +224,7 @@ public class SusiInference {
             String term = matcher.group(1);
             term = flow.unify(term, false, Integer.MAX_VALUE);
             while (term.indexOf('`') >= 0) try {
-                Reflection reflection = new Reflection(term, flow);
+                Reflection reflection = new Reflection(term, flow, false);
                 term = reflection.expression;
             } catch (ReactionException e) {
                 e.printStackTrace();
@@ -354,7 +354,7 @@ public class SusiInference {
                 if (definition.has("url")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
                     try {while (url.indexOf('`') >= 0) {
-                        SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow);
+                        SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow, true);
                         url = reflection.expression;
                     }} catch (ReactionException e) {}
                     String path = definition.has("path") ? flow.unify(definition.getString("path"), false, Integer.MAX_VALUE) : null;
