@@ -47,8 +47,6 @@ At this time, SUSI.AI is not provided in the compiled form, you easily build it 
 
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
-    > git submodule update --recursive --remote
-    > git submodule update --init --recursive
     > ./gradlew build
     > bin/start.sh
 
