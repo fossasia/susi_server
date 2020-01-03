@@ -33,8 +33,6 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.HttpClient;
-import api.external.transit.BahnService;
-import api.external.transit.BahnService.NoStationFoundException;
 import ai.susi.json.JsonTray;
 
 import org.json.JSONArray;
@@ -185,25 +183,6 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(json.getCount());
             } catch (Throwable e) {
                 // probably a time-out or a json error
-                DAO.severe(e);
-            }
-            return json;
-        });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
-            String query = matcher.group(1);
-            String from = matcher.group(2);
-            String to = matcher.group(3);
-            SusiThought json = new SusiThought();
-            try {
-                json = (new BahnService()).getConnections(from, to);
-                SusiTransfer transfer = new SusiTransfer(query);
-                json.setData(transfer.conclude(json.getData()));
-                return json;
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                DAO.severe(e);
-            } catch (NoStationFoundException e) {
-                // TODO Auto-generated catch block
                 DAO.severe(e);
             }
             return json;
