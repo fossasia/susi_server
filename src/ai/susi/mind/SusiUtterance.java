@@ -162,8 +162,8 @@ public class SusiUtterance {
         if (p >= 0 && (s.length() == 1 || s.charAt(s.length() - 2) != '\\')) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
         p = -1;
-        while ((p = s.toLowerCase().indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);
-        while ((p = s.toLowerCase().indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
+        while ((p = s.indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);
+        while ((p = s.indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
         return s;
     }
 
@@ -171,7 +171,7 @@ public class SusiUtterance {
         String expression = this.pattern.pattern();
         return CATCHALL_CAPTURE_GROUP_STRING.equals(expression);
     }
-    
+
     public static boolean isCatchallPhrase(JSONObject json) {
         String expression = json.getString("expression");
         return CATCHALL_CAPTURE_GROUP_STRING.equals(expression);

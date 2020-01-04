@@ -197,8 +197,8 @@ public class SusiIntent implements Cloneable {
         this.example = "";
         this.expect = "";
         if ((this.label == null || this.label.length() == 0) && this.utterances.size() == 1) try {
-            String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
-            if (l.indexOf('*') < 0) this.label = l;
+            String l = this.utterances.get(0).getPattern().toString();
+            if (l.indexOf('*') < 0) this.label = l.replace(' ', '_');
         } catch (IndexOutOfBoundsException e) {
         	throw new SusiActionException(e.toString() + " in " + skillid.toString());
         }

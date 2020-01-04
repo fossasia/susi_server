@@ -216,13 +216,13 @@ public class SusiMemory {
             return o instanceof TokenMapList && ((TokenMapList) o).token.equals(this.token);
         }
     }
-    
+
     public boolean removeUnanswered(String s) {
         AtomicInteger removed = this.unanswered.remove(s.toLowerCase());
         return removed != null;
         //if (removed) System.out.println("** removed unanswered " + s);
     }
-    
+
     public void removeUnanswered(Pattern p) {
         if (p.toString().indexOf("reddit") >= 0) {
             System.out.println("");

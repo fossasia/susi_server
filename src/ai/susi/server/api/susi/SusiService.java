@@ -35,6 +35,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.OnlineCaution;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,6 +88,8 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     }
 
     public static JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions, String q) throws APIException {
+
+        OnlineCaution.demand("SusiService", 5000);
 
         // parameters
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60

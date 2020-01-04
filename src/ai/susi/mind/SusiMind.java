@@ -51,6 +51,7 @@ import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
 import ai.susi.tools.DateParser;
+import ai.susi.tools.OnlineCaution;
 
 /**
  * The mind learns skills and uses creativity to map intents with user utterances
@@ -132,7 +133,11 @@ public class SusiMind {
         return this.skillMetadata;
     }
 
+    private AtomicLong latestObserve = new AtomicLong(0);
+
     public SusiMind observe() throws IOException {
+        if (System.currentTimeMillis() < latestObserve.get() + 10000) return this; // do not run this too often
+        latestObserve.set(System.currentTimeMillis());
         for (int i = 0; i < layers.size(); i++) {
             observe(layers.get(i));
         }
@@ -146,6 +151,8 @@ public class SusiMind {
     private void observe(File f, boolean acceptWildcardIntent) throws IOException {
         assert f.exists() : f.getAbsolutePath();
         if (!f.exists()) return;
+
+        Thread.currentThread().setName("ObserveLearn: " + f.getAbsolutePath());
 
         if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
             if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
@@ -226,7 +233,10 @@ public class SusiMind {
             @Override
             public void run() {
                 Thread.currentThread().setName("removeUnanswered");
-                removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern));
+                for (Pattern pattern: removalPattern) {
+                    OnlineCaution.throttle(500);
+                    SusiMind.this.memories.removeUnanswered(pattern);
+                }
             }
         }).start();
 
