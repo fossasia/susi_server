@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.susi.DAO;
+
 /**
  * Identity is the mental model of a being represented with a SusiMind.
  * In other words, it is the storage location for all cognitions.
@@ -65,7 +67,9 @@ public class SusiIdentity {
                 this.short_term_memory = new SusiAwareness(this.short_term_memory_file, attention);
                 this.short_term_memory.limitAwareness(this.attention);
             } catch (IOException e) {
-                e.printStackTrace();
+                DAO.severe("error reading short memory file " + this.short_term_memory_file.getAbsolutePath() + " - deleting file", e);
+                this.short_term_memory_file.delete();
+                this.short_term_memory = new SusiAwareness();
             }
         }
 

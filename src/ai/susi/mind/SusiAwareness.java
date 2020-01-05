@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -92,12 +93,16 @@ public class SusiAwareness implements Iterable<SusiCognition> {
         this();
         String name = Thread.currentThread().getName();
         Thread.currentThread().setName("initializing awareness with " + memorydump.getAbsolutePath());
-        List<String> lines = Files.readAllLines(memorydump.toPath());
+        List<String> lines = Files.readAllLines(memorydump.toPath()); // this can throw a java.nio.charset.MalformedInputException which is an instance of IOException
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i);
             if (line.length() == 0) continue;
-            SusiCognition si = new SusiCognition(new JSONObject(line));
-            this.awarex.addLast(si); // thats right, we insert at the end of the deque because we are reading in reverse order
+            try {
+                SusiCognition si = new SusiCognition(new JSONObject(line));
+                this.awarex.addLast(si); // thats right, we insert at the end of the deque because we are reading in reverse order
+            } catch (JSONException e) {
+                throw new IOException(e.getMessage());
+            }
             if (attentionTime != Integer.MAX_VALUE && this.getTime() >= attentionTime) break;
         }
         Thread.currentThread().setName(name);
