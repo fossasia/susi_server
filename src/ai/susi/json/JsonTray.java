@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.tools.CacheMap;
 
 /**
@@ -56,6 +57,16 @@ public class JsonTray {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        DAO.log("init JsonTray persistent '" + file_persistent.getAbsolutePath() + "' " + getPersistentSize());
+        DAO.log("init JsonTray volatile '" + file_volatile.getAbsolutePath() + "' " + getVolatileSize());
+    }
+
+    public int getPersistentSize() {
+        return this.per.length();
+    }
+    
+    public int getVolatileSize() {
+        return this.vol.size();
     }
 	
     public void close() {

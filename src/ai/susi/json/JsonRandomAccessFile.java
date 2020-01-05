@@ -44,7 +44,7 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile {
      * @throws IOException
      */
     public JsonRandomAccessFile(final File dumpFile, final int concurrency) throws IOException {
-        super(dumpFile, "rw");
+        super(dumpFile, "rw", 1 << 14);
         this.file = dumpFile;
         this.concurrency = concurrency;
         this.jsonline = new ArrayBlockingQueue<>(1000);
