@@ -47,6 +47,9 @@ public class SusiUtterance {
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
     private final static Pattern wspace = Pattern.compile(",|;:");
+    private final static Pattern sbackopen = Pattern.compile("\\[");
+    private final static Pattern sbackclose = Pattern.compile("\\]");
+    private final static Pattern cgopen = Pattern.compile("\\(\\?");
 
     private final Pattern pattern;
     private Type type;
@@ -86,7 +89,7 @@ public class SusiUtterance {
             throw new PatternSyntaxException(e.getDescription(), e.getPattern(), e.getIndex());
         }
         if (expression.equals("(.*)")) this.type = Type.minor;
-        this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
+        this.hasCaptureGroups = cgopen.matcher(expression).replaceAll("").indexOf('(') >= 0;
 
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());
@@ -110,7 +113,7 @@ public class SusiUtterance {
         // write class variables
         this.pattern = Pattern.compile(expression);
         if (expression.equals("(.*)")) this.type = Type.minor;
-        this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
+        this.hasCaptureGroups = cgopen.matcher(expression).replaceAll("").indexOf('(') >= 0;
 
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());
@@ -190,11 +193,17 @@ public class SusiUtterance {
         return sb.substring(0, sb.length() - 1);
     }
 
+    private final static Pattern metastarp = Pattern.compile(String.format(" \\%s | \\?\\%s ", '*', '*'));
+    private final static Pattern metaplusp = Pattern.compile(String.format(" \\%s | \\?\\%s ", '+', '+'));
+    
     private static String parseOnePattern(String expression) {
         expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
+        expression = metastarp.matcher(expression).replaceAll(" " + CATCHALL_CAPTURE_GROUP_STRING + " ");
         expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
-        expression = expression.replaceAll("\\[", "\\\\[");
-        expression = expression.replaceAll("\\]", "\\\\]");
+        expression = metaplusp.matcher(expression).replaceAll(" " + CATCHONE_CAPTURE_GROUP_STRING + " ");
+
+        expression = sbackopen.matcher(expression).replaceAll("\\\\[");
+        expression = sbackclose.matcher(expression).replaceAll("\\\\]");
         return expression;
     }
 
@@ -205,7 +214,6 @@ public class SusiUtterance {
         if (expression.length() > 0 && expression.charAt(0) == meta) expression = regex + " ?" + expression.substring(1);
         if (expression.endsWith(" " + meta)) expression = expression.substring(0, expression.length() - 2) + " " + regex;
         if (expression.length() > 0 && expression.charAt(expression.length() - 1) == meta) expression = expression.substring(0, expression.length() - 1) + " ?" + regex;
-        expression = expression.replaceAll(String.format(" \\%s | \\?\\%s ", meta, meta), " " + regex + " ");
         return expression;
     }
 
@@ -229,6 +237,7 @@ public class SusiUtterance {
             char c = expression.charAt(i);
             if (Character.isLetter(c) || Character.isDigit(c) || c == '['  || c == ']'  || c == ' ' || c == '_') sb.append(c);
         }
+        sb.trimToSize();
         return sb.toString();
     }
 

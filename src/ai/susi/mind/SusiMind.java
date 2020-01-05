@@ -95,10 +95,6 @@ public class SusiMind {
         this.observations = new HashMap<>();
         this.memories = memory;
         this.skillMetadata = new TreeMap<>();
-        // learn all available intents
-        try {observe();} catch (IOException e) {
-            e.printStackTrace();
-        }
         this.activeSkill = null;
     }
 

@@ -224,6 +224,13 @@ public class DAO {
             }
         }
 
+        // learn all available intents
+        new Thread() {
+            public void run() {
+                observe();
+            }
+        }.start();
+        
         // initialize public and private keys
         public_settings = new Settings(new File("data/settings/public.settings.json"));
         File private_file = new File("data/settings/private.settings.json");
