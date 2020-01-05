@@ -38,7 +38,7 @@ How do I install Susi: Download, Build, Run
 .. note::
 
     - You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you'll see a 404 error instead.
-    
+
 
 |Deploy on Scalingo| |Deploy to Docker Cloud| |Deploy to Azure|
 
@@ -46,12 +46,12 @@ At this time, SUSI.AI is not provided in the compiled form, you easily build it 
 
 .. note::
     - For Armv6 processors (e.g. Raspberry Pi Zero / Zero W/ Zero WH/ 1A / 1B), please make sure that your system is using Java 8 (Oracle or OpenJDK) as there are some compatibility issues for Armv6 processors.
-    - You may use the following command to install OpenJDK's Java 8 JRE and JDK: 
+    - You may use the following command to install OpenJDK's Java 8 JRE and JDK:
 
 ::
 
     > sudo apt install openjdk-8-jdk-headless
- 
+
 ::
 
     > git clone https://github.com/fossasia/susi_server.git
@@ -153,6 +153,12 @@ To install SUSI.AI on Eclipse, please refer to the `Susi Eclipse
 readme </docs/installation/eclipseSetup.md>`__.
 
 *********
+How to setup auto deployment to a VPS using travis
+*********
+
+To auto deploy SUSI.AI to a VPS using travis, please refer to the `readme file </docs/installation/auto_deploy_to_vps_with_travis.md>`__.
+
+*********
 How do I run SUSI.AI?
 *********
 
@@ -177,15 +183,15 @@ How to compile using Gradle?
        $ sudo add-apt-repository ppa:cwchien/gradle
        $ sudo apt-get update
        $ sudo apt-get install gradle
-    
+
 -  To install Gradle on Mac OS X with homebrew
    ::
-   
+
        brew install gradle
 
 -  To compile, first, create dir necessary for Gradle
    ::
-   
+
        ./gradle_init.sh
 
    Compile the source to classes and a jar file
@@ -213,7 +219,7 @@ If you simply want to add your skill to the SUSI.AI online service, please go to
 
 For your own deployments: The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
 ::
-   
+
    git clone https://github.com/fossasia/susi_skill_data.git
 
 If you want to create private skills in your local server, you should create a local git repository ``susi_private_skill_data`` alongside Susi server. Then you must create a local git host:
@@ -336,4 +342,4 @@ What is the software license?
    :target: https://cloud.docker.com/stack/deploy/
 .. |Deploy to Azure| image:: https://azuredeploy.net/deploybutton.svg
    :target: https://deploy.azure.com/?repository=https://github.com/fossasia/susi_server
- 
+
