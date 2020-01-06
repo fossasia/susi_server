@@ -31,6 +31,7 @@ import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -43,13 +44,14 @@ import org.json.JSONTokener;
  * It also offers some key management tools
  *
  */
-public class JsonFile extends JSONObject {
+public class JsonFile {
 
     private static final char LF = (char) 10; // we don't use '\n' or System.getProperty("line.separator"); here to be consistent over all systems.
-    
+
     private final File file;
     private long file_date;
     private boolean lineByLineStorage;
+    private JSONObject object; // a copy of the file in RAM
 
     /**
      * 
@@ -58,13 +60,90 @@ public class JsonFile extends JSONObject {
      * @throws IOException
      */
     public JsonFile(File file, boolean lineByLineStorage) throws IOException {
-        super(true);
+        this.object = null;
         if (file == null) throw new IOException("File must not be null");
-        
+
         this.file = file;
         this.file_date = 0;
         this.lineByLineStorage = lineByLineStorage;
+    }
+
+    public int size() {
         updateToFile();
+        int size = this.object.length();
+        this.object = null; // because size is logged during initialization we do not store the data afterwards to support lazy initialization
+        return size;
+    }
+
+    public boolean has(String key) {
+        updateToFile();
+        return this.object.has(key);
+    }
+
+    public Object get(String key) {
+        updateToFile();
+        return this.object.get(key);
+    }
+
+    public String getString(String key) {
+        updateToFile();
+        return this.object.getString(key);
+    }
+
+    public JSONObject getJSONObject(String key) {
+        updateToFile();
+        return this.object.getJSONObject(key);
+    }
+
+    public Set<String> keySet() {
+        updateToFile();
+        return this.object.keySet();
+    }
+
+    /**
+     * Write changes to file. It is not required that the user calls this method,
+     * however, if sub-objects of existing objects are modified, the user must handle
+     * file writings themself.
+     * @throws JSONException
+     */
+    public synchronized void commit() throws JSONException {
+        try {
+            writeJson(this.file, this.object, this.lineByLineStorage);
+        } catch (IOException e) {
+            throw new JSONException(e.getMessage());
+        }
+        this.file_date = file.lastModified();
+    }
+
+    /**
+     * Return a copy of the JSON content
+     * @return JSONObject json
+     */
+    public synchronized JSONObject toJSONObject() {
+        updateToFile();
+        JSONObject res = new JSONObject();
+        res.putAll(this.object);
+        return res;
+    }
+
+    public synchronized JsonFile put(String key, Object value) throws JSONException {
+        updateToFile();
+        this.object.put(key, value);
+        if (this.lineByLineStorage) addJsonProperty(key, value); else commit();
+        return this;
+    }
+
+    public synchronized void putAll(JSONObject other) {
+        updateToFile();
+        this.object.putAll(other);
+        commit();
+    }
+
+    public synchronized JsonFile remove(String key) {
+        updateToFile();
+        this.object.remove(key);
+        commit();
+        return this;
     }
 
     /**
@@ -72,19 +151,58 @@ public class JsonFile extends JSONObject {
      * To keep up with changes, this method provides an update function to the local copy of the database.
      * @throws JSONException
      */
-    public synchronized void updateToFile() throws JSONException {
-        long x = this.file.lastModified();
-        if (x == this.file_date) return;
-        JSONObject json;
+    private synchronized void updateToFile() throws JSONException {
+        if (this.object != null && this.file.lastModified() == this.file_date) return;
         try {
-            json = readJson(this.file);
+            JSONObject json = readJson(this.file);
+            this.object = new JSONObject(true);
+            this.object.putAll(json);
+            this.file_date = file.lastModified();
         } catch (IOException e) {
             throw new JSONException(e.getMessage());
         }
-        super.putAll(json);
-        this.file_date = file.lastModified();
     }
-    
+
+    public void addJsonProperty(String key, Object value) throws JSONException {
+        if (this.object != null) {
+            this.object.put(key, value);
+        }
+        try {
+            if (this.file == null) throw new IOException("file must not be null");
+            RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
+            long pos = raf.length();
+            if (pos == 0) {
+                raf.write('{');
+                raf.write(LF);
+            } else if (pos < 3) {
+                // it looks like this will be the first entry
+                raf.seek(pos - 1);
+            } else {
+                raf.seek(pos - 2); // this includes a CR and the '}' character
+                raf.write(',');
+                raf.write(LF);
+            }
+
+            // write the key: object
+            writeProperty(raf, key, value);
+            raf.write(LF);
+            raf.write('}');
+            raf.close();
+
+            // our object is up-to-date, no need to load it again
+            this.file_date = this.file.lastModified();
+        } catch (IOException e) {
+            throw new JSONException(e);
+        }
+    }
+
+    public synchronized File getFile() {
+        return this.file;
+    }
+
+    /** STATIC HELPER METHODS BELOW **/
+
+
     /**
      * static JSON reader which is able to read a json file written by JsonFile
      * @param file
@@ -152,7 +270,7 @@ public class JsonFile extends JSONObject {
         }
         return json;
     }
-    
+
     private static void writeProperty(RandomAccessFile writer, String key, Object object) throws IOException {
         writer.write('"'); writer.write(key.getBytes(StandardCharsets.UTF_8)); writer.write('"'); writer.write(':');
         if (object instanceof JSONObject) {
@@ -169,6 +287,7 @@ public class JsonFile extends JSONObject {
             writer.write(object.toString().getBytes(StandardCharsets.UTF_8));
         }
     }
+
     /**
      * write a json file in transaction style: first write a temporary file,
      * then rename the original file to another temporary file, then rename the
@@ -202,107 +321,26 @@ public class JsonFile extends JSONObject {
             writer.write(json.toString(2).getBytes(StandardCharsets.UTF_8));
         }
         writer.close();
-        
+
         // start of critical phase: these operations must not be interrupted
         file.renameTo(tmpFile1);
         tmpFile0.renameTo(file);
         // end of critical phase
-        
+
         tmpFile1.delete();
     }
-    
-    public void addJsonProperty(String key, Object object) throws JSONException {
-        try {
-            if (this.file == null) throw new IOException("file must not be null");
-            RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
-            long pos = raf.length();
-            if (pos == 0) {
-                raf.write('{');
-                raf.write(LF);
-            } else if (pos < 3) {
-                // it looks like this will be the first entry
-                raf.seek(pos - 1);
-            } else {
-                raf.seek(pos - 2); // this includes a CR and the '}' character
-                raf.write(',');
-                raf.write(LF);
-            }
-            
-            // write the key: object
-            writeProperty(raf, key, object);
-            raf.write(LF);
-            raf.write('}');
-            raf.close();
-        } catch (IOException e) {
-            throw new JSONException(e);
-        }
-        this.file_date = this.file.lastModified();
-    }
-    
-    
-    public synchronized File getFile() {
-        return this.file;
-    }
-    
-    /**
-     * Write changes to file. It is not required that the user calls this method,
-     * however, if sub-objects of existing objects are modified, the user must handle
-     * file writings themself.
-     * @throws JSONException
-     */
-    public synchronized void commit() throws JSONException {
-        try {
-            writeJson(this.file, this, this.lineByLineStorage);
-        } catch (IOException e) {
-            throw new JSONException(e.getMessage());
-        }
-        this.file_date = file.lastModified();
-    }
-    
-    /**
-     * Return a copy of the JSON content
-     * @return JSONObject json
-     */
-    public synchronized JSONObject toJSONObject(){
-        JSONObject res = new JSONObject();
-        res.putAll(this);
-        return res;
-    }
-    
-    @Override
-    public synchronized JSONObject put(String key, Object value) throws JSONException {
-        updateToFile();
-        super.put(key, value);
-        if (this.lineByLineStorage) addJsonProperty(key, value); else commit();
-        return this;
-    }
 
-    @Override
-    public synchronized void putAll(JSONObject other) {
-        updateToFile();
-        super.putAll(other);
-        commit();
-    }
-    
-    @Override
-    public synchronized Object remove(String key) {
-        updateToFile();
-        super.remove(key);
-        commit();
-        return this;
-    }
-    
     public static void serialize(File f, JSONObject json) throws IOException {
     	PrintWriter pw = new PrintWriter(f);
         pw.print(json.toString(2));
         pw.close();
     }
-    
+
     public static JSONObject deserialize(File f) throws IOException {
     	JSONObject json = new JSONObject(new JSONTokener(new FileInputStream(f)));
         return json;
     }
-    
+
     public static void main(String[] args) {
         try {
             File f = File.createTempFile("JsonFileTest", "json");
