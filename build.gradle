@@ -89,6 +89,10 @@ tasks.withType(Javadoc) {
   options.addBooleanOption('Xdoclint:none', true)
 }
 
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+}
+
 task start(type: JavaExec, dependsOn: classes) {
   main = 'ai.susi.SusiServer'
   classpath sourceSets.main.runtimeClasspath
