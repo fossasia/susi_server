@@ -45,20 +45,28 @@ public class JsonTray {
     private CacheMap<String, JSONObject> vol;
     private File file_volatile;
     private long file_volatile_lastModified;
+    private int cachesize;
 
     public JsonTray(File file_persistent, File file_volatile, int cachesize) throws IOException {
+        this.cachesize = cachesize;
         this.per = new JsonFile(file_persistent, false);
-        this.vol = new CacheMap<String, JSONObject>(cachesize);
+        this.vol = null;
         this.file_volatile = file_volatile;
         this.file_volatile_lastModified = this.file_volatile.lastModified();
-        if (this.file_volatile != null && this.file_volatile.exists()) try {
+
+        //DAO.log("init JsonTray persistent '" + file_persistent.getAbsolutePath() + "' " + getPersistentSize());
+        //DAO.log("init JsonTray volatile '" + file_volatile.getAbsolutePath() + "' " + getVolatileSize());
+    }
+
+    private void ensureVolatileInit() {
+        if (this.vol != null || !this.file_volatile.exists()) return;
+        this.vol = new CacheMap<String, JSONObject>(this.cachesize);
+        try {
             JSONObject j = JsonFile.readJson(this.file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
         } catch (IOException e) {
-            e.printStackTrace();
+            DAO.severe(e);
         }
-        DAO.log("init JsonTray persistent '" + file_persistent.getAbsolutePath() + "' " + getPersistentSize());
-        DAO.log("init JsonTray volatile '" + file_volatile.getAbsolutePath() + "' " + getVolatileSize());
     }
 
     public int getPersistentSize() {
@@ -66,7 +74,8 @@ public class JsonTray {
     }
 
     public int getVolatileSize() {
-        return this.vol.size();
+        ensureVolatileInit();
+        return this.vol == null ? 0 : this.vol.size();
     }
 
     public void close() {
@@ -96,6 +105,7 @@ public class JsonTray {
     }
 
     public boolean has(String key) {
+        ensureVolatileInit();
         synchronized(this.vol) {
             if (this.vol.exist(key)) return true;
         }
@@ -113,13 +123,15 @@ public class JsonTray {
     }
 
     private JsonTray putVolatile(String key, JSONObject value) {
+        ensureVolatileInit();
         synchronized (this.vol) {
             this.vol.put(key, value);
         }
         return this;
     }
 
-    public JsonTray remove(String key){
+    public JsonTray remove(String key) {
+        ensureVolatileInit();
         synchronized(this.vol) {
             if (this.vol.exist(key)){
                 this.vol.remove(key);
@@ -138,6 +150,7 @@ public class JsonTray {
     }
     
     public JSONObject getJSONObject(String key) {
+        ensureVolatileInit();
         synchronized(this.vol) {
             JSONObject value = this.vol.get(key);
             if (value != null) return value;
@@ -150,6 +163,7 @@ public class JsonTray {
         for (String key : this.per.keySet()){
             j.put(key, this.per.get(key));
         }
+        ensureVolatileInit();
         synchronized (this.vol) {
             LinkedHashMap<String,JSONObject> map = this.vol.getMap();
             for(String key : map.keySet()){
@@ -162,6 +176,7 @@ public class JsonTray {
     public Collection<String> keys() {
         ArrayList<String> keys = new ArrayList<>();
         keys.addAll(this.per.keySet());
+        ensureVolatileInit();
         synchronized (this.vol) {
             keys.addAll(this.vol.getMap().keySet());
         }
