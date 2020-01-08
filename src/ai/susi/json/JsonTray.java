@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,8 +42,11 @@ import ai.susi.tools.CacheMap;
  */
 public class JsonTray {
 
+    private static Map<Integer, JsonTray> trayRegistry = new HashMap<>(); // all tray files are registered here
+
     private JsonFile per;
     private CacheMap<String, JSONObject> vol;
+    private File file_persistent;
     private File file_volatile;
     private long file_volatile_lastModified;
     private int cachesize;
@@ -51,20 +55,32 @@ public class JsonTray {
         this.cachesize = cachesize;
         this.per = new JsonFile(file_persistent, false);
         this.vol = null;
+        this.file_persistent = file_persistent;
         this.file_volatile = file_volatile;
         this.file_volatile_lastModified = this.file_volatile.lastModified();
+        ensureVolatileInitBase();
 
         //DAO.log("init JsonTray persistent '" + file_persistent.getAbsolutePath() + "' " + getPersistentSize());
         //DAO.log("init JsonTray volatile '" + file_volatile.getAbsolutePath() + "' " + getVolatileSize());
+        trayRegistry.put(this.hashCode(), this);
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.file_persistent.getAbsolutePath() + this.file_volatile.getAbsolutePath()).hashCode();
     }
 
     private void ensureVolatileInit() {
+        ensureVolatileInitBase();
+    }
+
+    private void ensureVolatileInitBase() {
         if (this.vol != null || !this.file_volatile.exists()) return;
         this.vol = new CacheMap<String, JSONObject>(this.cachesize);
         try {
             JSONObject j = JsonFile.readJson(this.file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
-        } catch (IOException e) {
+        } catch (Exception e) {
             DAO.severe(e);
         }
     }
@@ -143,12 +159,12 @@ public class JsonTray {
         }
         return this;
     }
-    
+
     public JsonTray commit() {
         this.per.commit();
         return this;
     }
-    
+
     public JSONObject getJSONObject(String key) {
         ensureVolatileInit();
         synchronized(this.vol) {
@@ -157,7 +173,7 @@ public class JsonTray {
         }
         return this.per.getJSONObject(key);
     }
-    
+
     public JSONObject toJSON() {
         JSONObject j = new JSONObject();
         for (String key : this.per.keySet()){
@@ -172,7 +188,7 @@ public class JsonTray {
         }
         return j;
     }
-    
+
     public Collection<String> keys() {
         ArrayList<String> keys = new ArrayList<>();
         keys.addAll(this.per.keySet());
@@ -182,4 +198,5 @@ public class JsonTray {
         }
         return keys;
     }
+
 }
