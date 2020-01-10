@@ -75,8 +75,10 @@ public class JsonTray {
     }
 
     private void ensureVolatileInitBase() {
-        if (this.vol != null || !this.file_volatile.exists()) return;
+        if (this.vol != null) return;
         this.vol = new CacheMap<String, JSONObject>(this.cachesize);
+        if (!this.file_volatile.exists()) return;
+
         try {
             JSONObject j = JsonFile.readJson(this.file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
