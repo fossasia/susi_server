@@ -141,7 +141,7 @@ public class SusiUtterance {
         }
 
         // write class variables
-        this.pattern = new SusiPattern(expression);
+        this.pattern = new SusiPattern(expression, this.hasCaptureGroup || expression.indexOf('*') >= 0);
         if (expression.equals("(.*)")) this.type = Type.minor;
 
         // measure the meat size

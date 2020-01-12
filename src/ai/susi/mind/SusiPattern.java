@@ -29,23 +29,25 @@ public class SusiPattern {
 
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
 
-    private final Pattern pattern;
+    private final Object pattern;
 
-    public SusiPattern(String expression) throws PatternSyntaxException {
-        try {
+    public SusiPattern(String expression, boolean compileToPattern) throws PatternSyntaxException {
+        if (compileToPattern) try {
             this.pattern = Pattern.compile(expression);
         } catch (PatternSyntaxException e) {
             // we throw the same exception here to make it possible to debug the event here with a breakpoint
             throw new PatternSyntaxException(e.getDescription(), e.getPattern(), e.getIndex());
+        } else {
+            this.pattern = expression;
         }
     }
 
     public String pattern() {
-        return this.pattern.pattern();
+        return this.pattern instanceof Pattern ? ((Pattern) this.pattern).pattern() : (String) this.pattern;
     }
 
     public String[] token() {
-        return SPACE_PATTERN.split(this.pattern.pattern());
+        return SPACE_PATTERN.split(pattern());
     }
 
     public class SusiMatcher {
@@ -53,7 +55,11 @@ public class SusiPattern {
         private Matcher matcher;
 
         protected SusiMatcher(String s) {
-            this.matcher = SusiPattern.this.pattern.matcher(s);
+            if (SusiPattern.this.pattern instanceof Pattern) {
+                this.matcher = ((Pattern) SusiPattern.this.pattern).matcher(s);
+            } else {
+                this.matcher = Pattern.compile((String) SusiPattern.this.pattern).matcher(s);
+            }
         }
 
         public boolean matches() {
