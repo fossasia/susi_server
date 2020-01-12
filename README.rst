@@ -14,6 +14,15 @@ SUSI.AI is an intelligent Open Source personal assistant. It is capable of chat 
 
 *Master*: The master branch is planned to be deployed on https://api.susi.ai. Currently, the deployment is taking place each hour at xx.45 using the development branch. We are planning to switch to the Master branch for production soon.
 
+**Deployment branches**
+
+There are two branches targetting deployment, "dev-dist" and "stable-dist".
+The former is intended to be used in conjunction with the development versions
+of "susi_linux", while the later with the stable (from the "master" branch).
+These two branches are currently updated manually from "susi_server_binary_latest.tar.gz"
+(see below), but future integration will update "dev-dist" regularly.
+
+
 *********
 Communication
 *********
