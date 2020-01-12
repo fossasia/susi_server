@@ -39,14 +39,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import ai.susi.DAO;
+import ai.susi.mind.SusiIntent.Score;
+import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
@@ -201,7 +201,7 @@ public class SusiMind {
         }
 
         // add conversation intents
-        final List<Pattern> removalPattern = new ArrayList<>();
+        final List<SusiPattern> removalPattern = new ArrayList<>();
         List<SusiIntent> intents = skill.getIntents();
         intents.forEach(intent -> {
             // add removal pattern
@@ -229,9 +229,9 @@ public class SusiMind {
             @Override
             public void run() {
                 Thread.currentThread().setName("removeUnanswered");
-                for (Pattern pattern: removalPattern) {
+                for (SusiPattern pattern: removalPattern) {
                     OnlineCaution.throttle(500);
-                    SusiMind.this.memories.removeUnanswered(pattern);
+                    SusiMind.this.memories.removeUnanswered(pattern.toString());
                 }
             }
         }).start();
@@ -306,7 +306,7 @@ public class SusiMind {
         }
 
         // add conversation intents
-        final List<Pattern> removalPattern = new ArrayList<>();
+        final List<SusiPattern> removalPattern = new ArrayList<>();
         JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
         intentset.forEach(j -> {
             List<SusiIntent> intents = SusiIntent.getIntents(skillid, (JSONObject) j);
@@ -335,7 +335,7 @@ public class SusiMind {
         if (this.memories != null) new Thread(new Runnable() {
             @Override
             public void run() {
-                removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern));
+                removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern.toString()));
             }
         }).start();
 
@@ -374,7 +374,7 @@ public class SusiMind {
      * @param maxcount the maximum number of ideas to return
      * @return an ordered list of ideas, first idea should be considered first.
      */
-    public List<SusiIdea> creativity(String query, SusiLanguage userLanguage, SusiThought latest_thought, int maxcount) {
+    public List<SusiIdea> creativity(String query, SusiLanguage userLanguage, SusiThought latest_thought, int maxcount, boolean debug) {
         // debugging: write down which intent triggers are stored:
         //System.out.println("** INTENTTRIGGER: " + this.intenttrigger.keySet().toString());
 
@@ -399,32 +399,41 @@ public class SusiMind {
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            long score = idea.getIntent().getScore(userLanguage).score;
-            long orderkey = Long.MAX_VALUE - score * 1000L + count.incrementAndGet();
-            List<SusiIdea> r = scored.get(orderkey);
-            if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
-            r.add(idea);
+            SusiIntent intent = idea.getIntent();
+            Score score = intent.getScore(query, userLanguage);
+            if (score != null) {
+                long s = score.score;
+                long orderkey = Long.MAX_VALUE - s * 1000L + count.incrementAndGet(); // reverse the ordering: first element has then highest score
+                List<SusiIdea> r = scored.get(orderkey);
+                if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
+                r.add(idea);
+            }
         });
 
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
-        
+
         //for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
-        
+
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
             SusiIntent intent = idea.getIntent();
-            Collection<Matcher> m = intent.matcher(query);
-            if (m.isEmpty()) continue;
+            Collection<SusiMatcher> matchers = intent.matcher(query);
+            if (matchers.isEmpty()) continue;
+            idea.setMatchers(matchers);
             // TODO: evaluate leading SEE flow commands right here as well
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
 
-        for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
-            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore(userLanguage).log );
+        if (debug) for (SusiIdea idea: plausibleIdeas) {
+            Score score = idea.getIntent().getScore(query, userLanguage);
+            assert score != null;
+            if (score == null) continue;
+            DAO.log("creativity: skill=" + idea.getIntent().getSkillID());
+            DAO.log("creativity: score=" + score.score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("creativity:   log=" + score.log );
         }
 
         return plausibleIdeas;
@@ -475,7 +484,7 @@ public class SusiMind {
 
         // find an answer
         SusiThought answer = null;
-        List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100); // create a list of ideas which are possible intents
+        List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100, debug); // create a list of ideas which are possible intents
         long t4 = System.currentTimeMillis();
 
         // test all ideas: the ideas are ranked in such a way that the best one is considered first
@@ -483,7 +492,7 @@ public class SusiMind {
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
-            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), debug, identity, userLanguage, minds);
+            SusiArgument argument = idea.getIntent().consideration(query, recall, idea, debug, identity, userLanguage, minds);
             long t6 = System.currentTimeMillis();
             if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
 

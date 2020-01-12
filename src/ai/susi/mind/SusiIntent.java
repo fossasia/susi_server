@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONArray;
@@ -38,8 +36,8 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.server.ClientIdentity;
-import ai.susi.tools.TimeoutMatcher;
 
 /**
  * An intent in the Susi AI framework is a collection of utterances, inference processes and actions that are applied
@@ -344,10 +342,11 @@ public class SusiIntent implements Cloneable {
 
     public int hashCode() {
         if (this.hashCode != 0) return this.hashCode;
-        String ids0 = this.skillid == null ? "" : this.skillid.getPath();
-        String ids1 = this.actions.toString();
-        String ids2 = this.utterances.toString();
-        this.hashCode = ids0.hashCode() + ids1.hashCode() + ids2.hashCode();
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.skillid == null ? "" : this.skillid.getPath());
+        sb.append(this.actions.toString());
+        sb.append(this.utterances.toString());
+        this.hashCode = sb.toString().hashCode();
         return this.hashCode;
     }
 
@@ -463,8 +462,6 @@ public class SusiIntent implements Cloneable {
         a.put(SusiAction.answerAction(0, language, answers));
         return intent;
     }
-
-    private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
     
     /**
      * if no keys are given, we compute them from the given utterances
@@ -479,7 +476,7 @@ public class SusiIntent implements Cloneable {
         final AtomicBoolean needsCatchall = new AtomicBoolean(false);
         utterances.forEach(utterance -> {
             Set<String> s = new HashSet<>();
-            for (String token: SPACE_PATTERN.split(utterance.getPattern().toString())) {
+            for (String token: utterance.getPattern().token()) {
                 String m = SusiUtterance.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
@@ -539,12 +536,14 @@ public class SusiIntent implements Cloneable {
 
     /**
      * get the intent score
+     * @param expression the user expression where we are looking for an answer
      * @param language this is the language the user is speaking
-     * @return an intent score: the higher, the better
+     * @return an intent score: the higher, the better; null if the expression cannot be matched
      */
-    public Score getScore(SusiLanguage language) {
+    public Score getScore(String expression, SusiLanguage language) {
         if (this.score != null) return score;
-        this.score = new Score(language);
+        this.score = new Score(expression, language);
+        if (this.score.score == Integer.MIN_VALUE) this.score = null;
         return this.score;
     }
     
@@ -558,6 +557,8 @@ public class SusiIntent implements Cloneable {
      * If the AI learns that a intent was applied and caused a better situation (see also: game playing gamefield
      * evaluation) then the intent might get the score increased. Having many intents which have a high score
      * therefore might induce a 'good feeling' because it is known that the outcome will be good.
+     * @param expression the user expression where we are looking for an answer
+     * @param language this is the language the user is speaking
      * @return a score which is used for sorting of the intents. The higher the better. Highest score wins.
      */
     public class Score {
@@ -565,9 +566,9 @@ public class SusiIntent implements Cloneable {
         public long score;
         public String log;
         
-        public Score(SusiLanguage userLanguage) {
+        public Score(String expression, SusiLanguage userLanguage) {
         if (SusiIntent.this.score != null) return;
-        
+
         /*
          * Score Computation:
          * see: https://github.com/loklak/loklak_server/issues/767
@@ -585,11 +586,11 @@ public class SusiIntent implements Cloneable {
          * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
          * The resulting criteria is a property with three possible values: {minor, pattern, major}
-    
+
          * (2) the meatsize (number of characters that are non-patterns)
-    
+
          * (3) the whole size (total number of characters)
-    
+
          * (4) the conversation plan:
          * purpose: {answer, question, reply} purpose would have to be defined
          * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
@@ -599,31 +600,41 @@ public class SusiIntent implements Cloneable {
 
          * (6) the IO activity (-location)
          * io: {remote, local, ram} the storage location can be computed from the intent string
-    
-         
+
          * (7) finally the subscore can be assigned manually
          * subscore a score in a small range which can be used to distinguish intents within the same categories
          */
-        
+
         // compute the score
 
         // (0) language
         final int language_subscore = SusiIntent.this.skillid == null ? 0 : (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
         this.score = language_subscore;
-         
-        // (1) pattern score
-        final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
-        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
 
+        // (1) pattern score
         // (2) meatsize: length of a utterance (counts letters)
-        final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.min(utterances_meatscore.get(), utterance.getMeatsize())));
-        this.score = this.score * 100 + utterances_meatscore.get();
-        
         // (3) whole size: length of the pattern
+        final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
         final AtomicInteger utterances_wholesize = new AtomicInteger(Integer.MAX_VALUE);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length())));
+        for (SusiUtterance utterance : SusiIntent.this.utterances) {
+            if (!utterance.getPattern().matcher(expression).matches()) continue;
+
+            utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore()));
+            utterances_meatscore.set(Math.min(utterances_meatscore.get(), utterance.getMeatsize()));
+            String p = utterance.getPattern().toString();
+            utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length()));
+        }
+        if (utterances_subscore.get() == Integer.MAX_VALUE ||
+            utterances_meatscore.get() == Integer.MAX_VALUE ||
+            utterances_wholesize.get() == Integer.MAX_VALUE) {
+            // no match of any utterance, do not consider this
+            this.score = Integer.MIN_VALUE;
+            this.log = "";
+            return;
+        }
+        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
+        this.score = this.score * 100 + utterances_meatscore.get();
         this.score = this.score * 100 + utterances_wholesize.get();
 
         // (4) conversation plan from the answer purpose
@@ -632,29 +643,31 @@ public class SusiIntent implements Cloneable {
             SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.min(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         }
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
-        
+
         // (5) action render type score
         final AtomicInteger actionRenderType_subscore = new AtomicInteger(0);
         SusiIntent.this.actions.forEach(action -> actionRenderType_subscore.set(Math.max(actionRenderType_subscore.get(), action.getRenderType().getScore())));
         this.score = this.score * 256 + actionRenderType_subscore.get();
-        
+
         // (6) operation type - there may be no operation at all
         final AtomicInteger inference_subscore = new AtomicInteger(0);
         SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
         this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
-        
+
         // (7) subscore from the user
         this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
-        
+
         this.log = 
                 "language=" + language_subscore +
-                ", dialog=" + dialogType_subscore.get() +
                 ", utterance=" + utterances_subscore.get() +
                 ", meatscore=" + utterances_meatscore.get() +
                 ", wholesize=" + utterances_wholesize.get() +
+                ", dialog=" + dialogType_subscore.get() +
                 ", inference=" + inference_subscore.get() +
                 ", subscore=" + user_subscore +
                 ", pattern=" + (utterances.size() > 0 ? utterances.get(0).toString() : "") + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
+
+        //System.out.println("*** " + SusiIntent.this.utterances + ": " + this.log);
         }
     }
 
@@ -666,7 +679,7 @@ public class SusiIntent implements Cloneable {
     public List<SusiUtterance> getUtterances() {
         return this.utterances;
     }
-    
+
     /**
      * getting a untterance sample can be used for debugging.
      * @return a String containing the regular expression of the utterances
@@ -717,12 +730,12 @@ public class SusiIntent implements Cloneable {
      * @param s the string which should match
      * @return a matcher on the intent utterances
      */
-    public Collection<Matcher> matcher(String s) {
-        List<Matcher> l = new ArrayList<>();
+    public Collection<SusiMatcher> matcher(String s) {
+        List<SusiMatcher> l = new ArrayList<>();
         s = s.toLowerCase();
         for (SusiUtterance p: this.utterances) {
-            Matcher m = p.getPattern().matcher(s);
-            if (new TimeoutMatcher(m).matches()) {
+            SusiMatcher m = p.getPattern().matcher(s);
+            if (m.matches()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
                 l.add(m); // TODO: exclude double-entries
             }
@@ -738,14 +751,13 @@ public class SusiIntent implements Cloneable {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiIdea idea, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
 
+        SusiLinguistics.Token token = idea.getToken();
         HashSet<SusiThought> keynotes = new HashSet<>();
 
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
-        alternatives: for (Matcher matcher: this.matcher(query)) {
-            // check if the intent may match
-            if (!new TimeoutMatcher(matcher).matches()) continue;
+        alternatives: for (SusiMatcher matcher: idea.getMatchers()) {
 
             // initialize keynote (basic data for unification) for flow
             SusiThought keynote = new SusiThought(matcher);

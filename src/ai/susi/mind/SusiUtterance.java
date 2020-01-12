@@ -51,10 +51,10 @@ public class SusiUtterance {
     private final static Pattern sbackclose = Pattern.compile("\\]");
     private final static Pattern cgopen = Pattern.compile("\\(\\?");
 
-    private final Pattern pattern;
+    private SusiPattern pattern;
     private Type type;
-    private final boolean hasCaptureGroups;
-    private final int meatsize;
+    private boolean hasCaptureGroup;
+    private int meatsize;
     private int line;
 
     /**
@@ -77,22 +77,7 @@ public class SusiUtterance {
 
         this.line = json.has("line") ? json.getInt("line") : 0;
 
-        String expression = normalizeExpression(json.getString("expression"));
-        expression = fixExpression(expression);
-        expression = parsePattern(expression);
-
-        // write class variables
-        try {
-            this.pattern = Pattern.compile(expression);
-        } catch (PatternSyntaxException e) {
-            // we throw the same exception here to make it possible to debug the event here with a breakpoint
-            throw new PatternSyntaxException(e.getDescription(), e.getPattern(), e.getIndex());
-        }
-        if (expression.equals("(.*)")) this.type = Type.minor;
-        this.hasCaptureGroups = cgopen.matcher(expression).replaceAll("").indexOf('(') >= 0;
-
-        // measure the meat size
-        this.meatsize = Math.min(99, extractMeat(expression).length());
+        init(json.getString("expression"), this.type == Type.prior, json.has("line") ? json.getInt("line") : 0);
     }
 
     /**
@@ -102,39 +87,65 @@ public class SusiUtterance {
      * @throws PatternSyntaxException
      */
     public SusiUtterance(String expression, boolean prior, int line) throws PatternSyntaxException {
+        init(expression, prior, line);
+    }
+
+    private void init(String expression, boolean prior, int line) throws PatternSyntaxException {
         this.type = prior ? Type.prior : Type.minor;
         this.line = line;
+        this.hasCaptureGroup = false;
 
-        // normalize expression
+        // normalize expression: make a canonical form of utterances and queries
         expression = normalizeExpression(expression);
-        expression = fixExpression(expression);
-        expression = parsePattern(expression);
+
+        // fix expression: patches for wrong utterances and syntax mis-uses.
+        if (expression == null || expression.length() == 0) {
+            expression = "";
+        } else {
+            if (expression.indexOf(".*") >= 0 ||
+                (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
+                (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) {
+            } else {
+                // this is not a regular expression, therefore we can remove superfluous dots
+                int p;
+                while ((p = expression.indexOf('.')) > 0 && expression.charAt(p - 1) != ' ') {
+                    expression = expression.substring(0, p) + ' ' + expression.substring(p);
+                }
+                while ((p = expression.indexOf('.')) >= 0 && p < expression.length() - 1 && expression.charAt(p + 1) != ' ') {
+                    expression = expression.substring(0, p + 1) + ' ' + expression.substring(p + 1);
+                }
+            }
+        }
+
+        // parse pattern: create a proper regular expression from simple wildcard form
+        String[] expressions = expression.split("\\|");
+        if (expressions.length == 0) {
+            expression = "";
+        } else if (expressions.length == 1) {
+            OnePattern onePattern = new OnePattern(expressions[0]);
+            this.hasCaptureGroup = onePattern.hasCaptureGroup;
+            expression = onePattern.getPattern();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (String e: expressions) {
+                OnePattern onePattern = new OnePattern(e);
+                this.hasCaptureGroup = this.hasCaptureGroup || onePattern.hasCaptureGroup;
+                String pattern1 = onePattern.getPattern();
+                if (pattern1.equals(CATCHALL_CAPTURE_GROUP_STRING)) {
+                    expression = CATCHALL_CAPTURE_GROUP_STRING + " ";
+                    break;
+                }
+                sb.append("(?:").append(pattern1).append(")|");
+            }
+            expression = sb.substring(0, sb.length() - 1);
+        }
 
         // write class variables
-        this.pattern = Pattern.compile(expression);
+        this.pattern = new SusiPattern(expression);
         if (expression.equals("(.*)")) this.type = Type.minor;
-        this.hasCaptureGroups = cgopen.matcher(expression).replaceAll("").indexOf('(') >= 0;
 
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());
-    }
-
-    private String fixExpression(String expression) {
-        if (expression == null || expression.length() == 0) return "";
-        if (expression.indexOf(".*") >= 0 ||
-            (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
-            (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) {
-        } else {
-            // this is not a regular expression, therefore we can remove superfluous dots
-            int p;
-            while ((p = expression.indexOf('.')) > 0 && expression.charAt(p - 1) != ' ') {
-                expression = expression.substring(0, p) + ' ' + expression.substring(p);
-            }
-            while ((p = expression.indexOf('.')) >= 0 && p < expression.length() - 1 && expression.charAt(p + 1) != ' ') {
-                expression = expression.substring(0, p + 1) + ' ' + expression.substring(p + 1);
-            }
-        }
-        return expression;
     }
 
     /**
@@ -155,6 +166,14 @@ public class SusiUtterance {
         return this.line;
     }
 
+    /**
+     * Query String Normalization:
+     * This must be applied to every utterance AND to every query. Applying the same normalization ensures that
+     * queries match for a certain variation of different ways to express.
+     * This includes i.e. uppercase/lowecase spelling.
+     * @param s
+     * @return a canonical form of utterances and queries
+     */
     public static String normalizeExpression(String s) {
         s = s.trim().toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
@@ -180,41 +199,63 @@ public class SusiUtterance {
         return CATCHALL_CAPTURE_GROUP_STRING.equals(expression);
     }
 
-    public static String parsePattern(String expression) {
-        String[] expressions = expression.split("\\|");
-        if (expressions.length == 0) return "";
-        if (expressions.length == 1) return parseOnePattern(expressions[0]);
-        StringBuilder sb = new StringBuilder();
-        for (String e: expressions) {
-            String pattern = parseOnePattern(e);
-            if (pattern.equals(CATCHALL_CAPTURE_GROUP_STRING)) return CATCHALL_CAPTURE_GROUP_STRING;
-            sb.append("(?:").append(pattern).append(")|");
-        }
-        return sb.substring(0, sb.length() - 1);
-    }
-
     private final static Pattern metastarp = Pattern.compile(String.format(" \\%s | \\?\\%s ", '*', '*'));
     private final static Pattern metaplusp = Pattern.compile(String.format(" \\%s | \\?\\%s ", '+', '+'));
-    
-    private static String parseOnePattern(String expression) {
-        expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
-        expression = metastarp.matcher(expression).replaceAll(" " + CATCHALL_CAPTURE_GROUP_STRING + " ");
-        expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
-        expression = metaplusp.matcher(expression).replaceAll(" " + CATCHONE_CAPTURE_GROUP_STRING + " ");
 
-        expression = sbackopen.matcher(expression).replaceAll("\\\\[");
-        expression = sbackclose.matcher(expression).replaceAll("\\\\]");
-        return expression;
-    }
+    private static class OnePattern {
 
-    private static String parseOnePattern(String expression, char meta, String regex) {
-        if (expression.length() == 0 || expression.equals("" + meta)) expression = regex;
-        if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0 && (expression.length() == 1 || expression.charAt(expression.length() - 2) !='\\')) expression = expression.substring(0, expression.length() - 1);
-        if (expression.startsWith(meta + " ")) expression = regex + " " + expression.substring(2);
-        if (expression.length() > 0 && expression.charAt(0) == meta) expression = regex + " ?" + expression.substring(1);
-        if (expression.endsWith(" " + meta)) expression = expression.substring(0, expression.length() - 2) + " " + regex;
-        if (expression.length() > 0 && expression.charAt(expression.length() - 1) == meta) expression = expression.substring(0, expression.length() - 1) + " ?" + regex;
-        return expression;
+        private String pattern;
+        private boolean hasCaptureGroup;
+
+        public OnePattern(String expression) {
+            this.hasCaptureGroup = false;
+            expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
+            Matcher m = metastarp.matcher(expression);
+            if (m.find()) this.hasCaptureGroup = true;
+            expression = m.replaceAll(" " + CATCHALL_CAPTURE_GROUP_STRING + " ");
+            expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
+            m = metaplusp.matcher(expression);
+            if (m.find()) this.hasCaptureGroup = true;
+            expression = m.replaceAll(" " + CATCHONE_CAPTURE_GROUP_STRING + " ");
+            expression = sbackopen.matcher(expression).replaceAll("\\\\[");
+            expression = sbackclose.matcher(expression).replaceAll("\\\\]");
+            this.pattern = expression;
+        }
+
+        private String parseOnePattern(String expression, char meta, String regex) {
+            if (expression.length() == 0 || expression.equals("" + meta)) {
+                expression = regex;
+                this.hasCaptureGroup = true;
+            }
+            if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0 && (expression.length() == 1 || expression.charAt(expression.length() - 2) !='\\')) {
+                expression = expression.substring(0, expression.length() - 1);
+            }
+            if (expression.startsWith(meta + " ")) {
+                expression = regex + " " + expression.substring(2);
+                this.hasCaptureGroup = true;
+            }
+            if (expression.length() > 0 && expression.charAt(0) == meta) {
+                expression = regex + " ?" + expression.substring(1);
+                this.hasCaptureGroup = true;
+            }
+            if (expression.endsWith(" " + meta)) {
+                expression = expression.substring(0, expression.length() - 2) + " " + regex;
+                this.hasCaptureGroup = true;
+            }
+            if (expression.length() > 0 && expression.charAt(expression.length() - 1) == meta) {
+                expression = expression.substring(0, expression.length() - 1) + " ?" + regex;
+                this.hasCaptureGroup = true;
+            }
+            return expression;
+        }
+
+        public String getPattern() {
+            return this.pattern;
+        }
+
+        public boolean hasCaptureGroup() {
+            return this.hasCaptureGroup;
+        }
     }
 
     public static boolean isRegularExpression(String expression) {
@@ -245,7 +286,7 @@ public class SusiUtterance {
      * get the pre-compiled regular expression pattern
      * @return a java pattern
      */
-    public Pattern getPattern() {
+    public SusiPattern getPattern() {
         return this.pattern;
     }
 
@@ -258,7 +299,8 @@ public class SusiUtterance {
     }
 
     public int getSubscore() {
-        return !this.hasCaptureGroups ? this.type.getSubscore() + 1 : this.type.getSubscore();
+        int subscore = this.type.getSubscore();
+        return this.hasCaptureGroup ? subscore : subscore + 1;
     }
 
     public int getMeatsize() {
@@ -280,4 +322,24 @@ public class SusiUtterance {
         if (this.line > 0) json.put("line", line);
         return json;
     }
+
+    public static void main(String[] args) {
+        SusiUtterance u0 = new SusiUtterance("*", false, 0);
+        SusiUtterance u1 = new SusiUtterance("hi", false, 0);
+        SusiUtterance u2 = new SusiUtterance("hi ?*", false, 0);
+        SusiUtterance u3 = new SusiUtterance("hi *", false, 0);
+
+        /*
+        (.*):0
+        hi:1
+        hi ? ?(.*):0
+        hi (.*):0
+        */
+
+        System.out.println(u0.getPattern().pattern() + ":" + u0.getSubscore());
+        System.out.println(u1.getPattern().pattern() + ":" + u1.getSubscore());
+        System.out.println(u2.getPattern().pattern() + ":" + u2.getSubscore());
+        System.out.println(u3.getPattern().pattern() + ":" + u3.getSubscore());
+    }
+    
 }

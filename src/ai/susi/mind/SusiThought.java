@@ -35,6 +35,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -78,7 +79,7 @@ public class SusiThought extends JSONObject {
      * the matching information is named '0'.
      * @param matcher
      */
-    public SusiThought(Matcher matcher) {
+    public SusiThought(SusiMatcher matcher) {
         this();
         this.setOffset(0).setHits(1);
         JSONObject row = new JSONObject();

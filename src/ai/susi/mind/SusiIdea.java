@@ -19,7 +19,11 @@
 
 package ai.susi.mind;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.regex.PatternSyntaxException;
+
+import ai.susi.mind.SusiPattern.SusiMatcher;
 
 /**
  * An idea is the application of a intent on a specific input. This matches with the idea of ideas where
@@ -31,6 +35,7 @@ public class SusiIdea {
 
     private SusiIntent intent;
     private SusiLinguistics.Token token;
+    private Collection<SusiMatcher> matchers;
     
     /**
      * create an idea based on a intent
@@ -40,6 +45,7 @@ public class SusiIdea {
     public SusiIdea(SusiIntent intent) throws PatternSyntaxException {
         this.intent = intent;
         this.token = null;
+        this.matchers = null;
     }
 
     public SusiIntent getIntent() {
@@ -57,12 +63,35 @@ public class SusiIdea {
         return this;
     }
     
+    public boolean hasToken() {
+        return this.token != null;
+    }
+    
     /**
      * get the tokens for the idea
      * @return the keyword which matched with the intent keys
      */
     public SusiLinguistics.Token getToken() {
         return this.token;
+    }
+    
+    public SusiIdea setMatchers(Collection<SusiMatcher> matchers) {
+        this.matchers = matchers;
+        return this;
+    }
+    
+    public SusiIdea addMatcher(SusiMatcher matcher) {
+        if (this.matchers == null) this.matchers = new ArrayList<>();
+        this.matchers.add(matcher);
+        return this;
+    }
+    
+    public boolean hasMatcher() {
+        return this.matchers != null && this.matchers.size() > 0;
+    }
+    
+    public Collection<SusiMatcher> getMatchers() {
+        return this.matchers;
     }
     
     public String toString() {
