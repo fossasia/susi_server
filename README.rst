@@ -332,7 +332,7 @@ What is the software license?
    :target: https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development
 .. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg
    :target: https://my.scalingo.com/deploy?source=https://github.com/fossasia/susi_server
-.. |Deploy to Docker Cloud| image:: https://user-images.githubusercontent.com/59795301/72219369-53af6d80-356b-11ea-9218-6c2ae03fd5e0.png
+.. |Deploy to Docker Cloud| image:: https://user-images.githubusercontent.com/59795301/72219546-3f6c7000-356d-11ea-977c-c6be5770d423.png
    :target: https://cloud.docker.com/stack/deploy/
 .. |Deploy to Azure| image:: https://azuredeploy.net/deploybutton.svg
    :target: https://deploy.azure.com/?repository=https://github.com/fossasia/susi_server
