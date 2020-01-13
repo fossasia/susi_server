@@ -52,26 +52,32 @@ public class SusiPattern {
 
     public class SusiMatcher {
 
-        private Matcher matcher;
+        private Object matcher;
 
         protected SusiMatcher(String s) {
             if (SusiPattern.this.pattern instanceof Pattern) {
                 this.matcher = ((Pattern) SusiPattern.this.pattern).matcher(s);
             } else {
-                this.matcher = Pattern.compile((String) SusiPattern.this.pattern).matcher(s);
+                this.matcher = s;
             }
         }
 
         public boolean matches() {
-            return new TimeoutMatcher(this.matcher).matches();
+            return this.matcher instanceof Matcher ?
+                    new TimeoutMatcher((Matcher) this.matcher).matches() :
+                    ((String) SusiPattern.this.pattern).equals((String) this.matcher);
         }
 
         public String group(int g) {
-            return this.matcher.group(g);
+            return this.matcher instanceof Matcher ?
+                    ((Matcher) this.matcher).group(g) :
+                    null;
         }
 
         public int groupCount() {
-            return this.matcher.groupCount();
+            return this.matcher instanceof Matcher ?
+                    ((Matcher) this.matcher).groupCount() :
+                    0;
         }
     }
 
