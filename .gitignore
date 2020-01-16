@@ -13,7 +13,7 @@
 # For MAC OSX
 .DS_Store
 
-# python
+#  python
 venv/*
 
 dist
