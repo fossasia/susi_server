@@ -6,7 +6,7 @@ User=@SUSI_SERVER_USER@
 Type=forking
 PIDFile=@INSTALL_DIR@/data/susi.pid
 Environment=SS_LOG_TO_STDOUT=1
-ExecStart=@INSTALL_DIR@/bin/start.sh
+ExecStart=@INSTALL_DIR@/bin/start.sh -Id
 
 [Install]
 WantedBy=multi-user.target
