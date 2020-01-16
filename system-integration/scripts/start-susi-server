@@ -20,5 +20,5 @@ else
     echo "Cannot find SUSI.AI susi_server folder, giving up" >&2
     exit 1
 fi
-"$(START)" -Id
+"$START" -Id
 
