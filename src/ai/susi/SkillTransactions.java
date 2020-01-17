@@ -29,26 +29,20 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.CanceledException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidConfigurationException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import ai.susi.DAO;
-import ai.susi.server.APIException;
 import ai.susi.tools.IO;
 
+/**
+ * This class hosts methods to maintain the public skill repository.
+ * A daemon is responsible to frequently pull latest changes from the public repository.
+ */
 public class SkillTransactions {
     
     private static Boolean pullStatus = true;
@@ -244,10 +238,10 @@ public class SkillTransactions {
                     .setAuthor(new PersonIdent(userEmail,userEmail))
                     .setMessage(commit_message)
                     .call();
-            String remote = "origin";
-            String branch = "refs/heads/master";
-            String trackingBranch = "refs/remotes/" + remote + "/master";
-            RefSpec spec = new RefSpec(branch + ":" + branch);
+            //String remote = "origin";
+            //String branch = "refs/heads/master";
+            //String trackingBranch = "refs/remotes/" + remote + "/master";
+            //RefSpec spec = new RefSpec(branch + ":" + branch);
 
             // TODO: pull & merge
 

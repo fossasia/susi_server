@@ -10,7 +10,7 @@
 
 *.xml~
 
-# For MAC OSX 
+# For MAC OSX
 .DS_Store
 
 # python
@@ -25,3 +25,6 @@ dist/loklak.jar
 
 data/settings/groups.json
 release/*
+
+deploy_rsa.pub
+deploy_rsa

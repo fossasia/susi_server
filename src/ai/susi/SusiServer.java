@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -50,6 +51,7 @@ import ai.susi.server.api.monitor.*;
 import ai.susi.server.api.service.*;
 import ai.susi.server.api.vis.*;
 import ai.susi.server.api.learning.*;
+import ai.susi.tools.Memory;
 import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
@@ -179,6 +181,9 @@ public class SusiServer {
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
         DAO.log("Starting SUSI initialization");
+        long MB = 1024*1024;
+        DAO.log("Memory: free=" + Memory.free()/MB + "MB, available=" + Memory.available()/MB + "MB, max=" + Memory.maxMemory()/MB + "MB, total=" + Memory.total()/MB + "MB, used=" + Memory.used()/MB + "MB, cores=" + Memory.cores() + ", load=" + Memory.load() + ", deadlocks=" + Memory.deadlocks());
+        // free=974527384, available=15216810904, max=15271460864, total=1029177344, used=54649960, cores=24, load=1.333984375, deadlocks=0
 
         // prepare shutdown signal
         File pid = new File(dataFile, "susi.pid");

@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# start-susi-server
+
+# user mode
+#   .../SUSI.AI/bin/
+#   .../SUSI.AI/susi_server/
+# system mode
+#   prefix/bin/
+#   prefix/lib/SUSI.AI/susi_server/
+
+DIR="$(dirname "$(readlink -f "$0")")"
+PMA="$(readlink -m "$DIR/../susi_server")"
+PMB="$(readlink -m "$DIR/../lib/SUSI.AI/susi_server")"
+if [ -d "$PMA" ] ; then
+    STOP="$PMA/bin/stop.sh"
+elif [ -d "$PMB" ] ; then
+    STOP="$PMB/bin/stop.sh"
+else
+    echo "Cannot find SUSI.AI susi_server folder, giving up" >&2
+    exit 1
+fi
+"$STOP"
+

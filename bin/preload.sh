@@ -16,8 +16,15 @@ mkdir -p data/settings
 if [ -f $PIDFILE ]; then
     PID=$(cat $PIDFILE 2>/dev/null)
     if [ -n $PID ]; then
-        echo "Server is already running. Please stop it and then start."
-        exit 1
+        # check whether this process is actually running or a leftover
+        # from a hard shutdown
+        if kill -0 $PID 2>/dev/null ; then
+            echo "Server is already running. Please stop it and then start."
+            exit 1
+        else
+            echo "Removing left over $PIDFILE"
+            rm $PIDFILE
+        fi
     else
         rm $PIDFILE
     fi

@@ -4,9 +4,9 @@ Description=Starting SUSI Server for SUSI Linux
 [Service]
 User=@SUSI_SERVER_USER@
 Type=forking
-PIDFile=@INSTALL_DIR@/data/susi.pid
+PIDFile=@SUSIDIR@/susi_server/data/susi.pid
 Environment=SS_LOG_TO_STDOUT=1
-ExecStart=@INSTALL_DIR@/bin/start.sh
+ExecStart=@SUSIDIR@/susi_server/bin/start.sh -I
 
 [Install]
 WantedBy=multi-user.target
