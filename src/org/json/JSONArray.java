@@ -249,7 +249,7 @@ public class JSONArray implements Iterable<Object> {
                         .equalsIgnoreCase("true"))) {
             return true;
         }
-        throw new JSONException("JSONArray[" + index + "] is not a boolean.");
+        throw wrongValueFormatException(index, "boolean", null);
     }
 
     /**
@@ -263,7 +263,15 @@ public class JSONArray implements Iterable<Object> {
      *             to a number.
      */
     public double getDouble(int index) throws JSONException {
-        return this.getNumber(index).doubleValue();
+        final Object object = this.get(index);
+        if(object instanceof Number) {
+            return ((Number)object).doubleValue();
+        }
+        try {
+            return Double.parseDouble(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(index, "double", e);
+        }
     }
 
     /**
@@ -277,7 +285,15 @@ public class JSONArray implements Iterable<Object> {
      *             object and cannot be converted to a number.
      */
     public float getFloat(int index) throws JSONException {
-        return this.getNumber(index).floatValue();
+        final Object object = this.get(index);
+        if(object instanceof Number) {
+            return ((Float)object).floatValue();
+        }
+        try {
+            return Float.parseFloat(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(index, "float", e);
+        }
     }
 
     /**
@@ -298,7 +314,7 @@ public class JSONArray implements Iterable<Object> {
             }
             return JSONObject.stringToNumber(object.toString());
         } catch (Exception e) {
-            throw new JSONException("JSONArray[" + index + "] is not a number.", e);
+            throw wrongValueFormatException(index, "number", e);
         }
     }
 
@@ -322,8 +338,8 @@ public class JSONArray implements Iterable<Object> {
             // JSONException should really take a throwable argument.
             // If it did, I would re-implement this with the Enum.valueOf
             // method and place any thrown exception in the JSONException
-            throw new JSONException("JSONArray[" + index + "] is not an enum of type "
-                    + JSONObject.quote(clazz.getSimpleName()) + ".");
+            throw wrongValueFormatException(index, "enum of type "
+                    + JSONObject.quote(clazz.getSimpleName()), null);
         }
         return val;
     }
@@ -345,8 +361,7 @@ public class JSONArray implements Iterable<Object> {
         Object object = this.get(index);
         BigDecimal val = JSONObject.objectToBigDecimal(object, null);
         if(val == null) {
-            throw new JSONException("JSONArray[" + index +
-                    "] could not convert to BigDecimal ("+ object + ").");
+            throw wrongValueFormatException(index, "BigDecimal", object, null);
         }
         return val;
     }
@@ -365,8 +380,7 @@ public class JSONArray implements Iterable<Object> {
         Object object = this.get(index);
         BigInteger val = JSONObject.objectToBigInteger(object, null);
         if(val == null) {
-            throw new JSONException("JSONArray[" + index +
-                    "] could not convert to BigDecimal ("+ object + ").");
+            throw wrongValueFormatException(index, "BigInteger", object, null);
         }
         return val;
     }
@@ -381,7 +395,15 @@ public class JSONArray implements Iterable<Object> {
      *             If the key is not found or if the value is not a number.
      */
     public int getInt(int index) throws JSONException {
-        return this.getNumber(index).intValue();
+        final Object object = this.get(index);
+        if(object instanceof Number) {
+            return ((Number)object).intValue();
+        }
+        try {
+            return Integer.parseInt(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(index, "int", e);
+        }
     }
 
     /**
@@ -399,7 +421,7 @@ public class JSONArray implements Iterable<Object> {
         if (object instanceof JSONArray) {
             return (JSONArray) object;
         }
-        throw new JSONException("JSONArray[" + index + "] is not a JSONArray.");
+        throw wrongValueFormatException(index, "JSONArray", null);
     }
 
     /**
@@ -417,7 +439,7 @@ public class JSONArray implements Iterable<Object> {
         if (object instanceof JSONObject) {
             return (JSONObject) object;
         }
-        throw new JSONException("JSONArray[" + index + "] is not a JSONObject.");
+        throw wrongValueFormatException(index, "JSONObject", null);
     }
 
     /**
@@ -431,7 +453,15 @@ public class JSONArray implements Iterable<Object> {
      *             to a number.
      */
     public long getLong(int index) throws JSONException {
-        return this.getNumber(index).longValue();
+        final Object object = this.get(index);
+        if(object instanceof Number) {
+            return ((Number)object).longValue();
+        }
+        try {
+            return Long.parseLong(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(index, "long", e);
+        }
     }
 
     /**
@@ -448,7 +478,7 @@ public class JSONArray implements Iterable<Object> {
         if (object instanceof String) {
             return (String) object;
         }
-        throw new JSONException("JSONArray[" + index + "] not a string.");
+        throw wrongValueFormatException(index, "String", null);
     }
 
     /**
@@ -1379,7 +1409,7 @@ public class JSONArray implements Iterable<Object> {
     public Writer write(Writer writer, int indentFactor, int indent)
             throws JSONException {
         try {
-            boolean commanate = false;
+            boolean needsComma = false;
             int length = this.length();
             writer.write('[');
 
@@ -1391,23 +1421,23 @@ public class JSONArray implements Iterable<Object> {
                     throw new JSONException("Unable to write JSONArray value at index: 0", e);
                 }
             } else if (length != 0) {
-                final int newindent = indent + indentFactor;
+                final int newIndent = indent + indentFactor;
 
                 for (int i = 0; i < length; i += 1) {
-                    if (commanate) {
+                    if (needsComma) {
                         writer.write(',');
                     }
                     if (indentFactor > 0) {
                         writer.write('\n');
                     }
-                    JSONObject.indent(writer, newindent);
+                    JSONObject.indent(writer, newIndent);
                     try {
                         JSONObject.writeValue(writer, this.myArrayList.get(i),
-                                indentFactor, newindent);
+                                indentFactor, newIndent);
                     } catch (Exception e) {
                         throw new JSONException("Unable to write JSONArray value at index: " + i, e);
                     }
-                    commanate = true;
+                    needsComma = true;
                 }
                 if (indentFactor > 0) {
                     writer.write('\n');
@@ -1424,7 +1454,7 @@ public class JSONArray implements Iterable<Object> {
     /**
      * Returns a java.util.List containing all of the elements in this array.
      * If an element in the array is a JSONArray or JSONObject it will also
-     * be converted.
+     * be converted to a List and a Map respectively.
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
      *
@@ -1453,6 +1483,39 @@ public class JSONArray implements Iterable<Object> {
      */
     public boolean isEmpty() {
         return this.myArrayList.isEmpty();
+    }
+    
+    /**
+     * Create a new JSONException in a common format for incorrect conversions.
+     * @param idx index of the item
+     * @param valueType the type of value being coerced to
+     * @param cause optional cause of the coercion failure
+     * @return JSONException that can be thrown.
+     */
+    private static JSONException wrongValueFormatException(
+            int idx,
+            String valueType,
+            Throwable cause) {
+        return new JSONException(
+                "JSONArray[" + idx + "] is not a " + valueType + "."
+                , cause);
+    }
+    
+    /**
+     * Create a new JSONException in a common format for incorrect conversions.
+     * @param idx index of the item
+     * @param valueType the type of value being coerced to
+     * @param cause optional cause of the coercion failure
+     * @return JSONException that can be thrown.
+     */
+    private static JSONException wrongValueFormatException(
+            int idx,
+            String valueType,
+            Object value,
+            Throwable cause) {
+        return new JSONException(
+                "JSONArray[" + idx + "] is not a " + valueType + " (" + value + ")."
+                , cause);
     }
 
 }

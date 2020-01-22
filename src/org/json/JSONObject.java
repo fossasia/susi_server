@@ -194,7 +194,7 @@ public class JSONObject {
     public JSONObject(boolean ordered) {
         this.map = ordered ? new LinkedHashMap<String, Object>() : new HashMap<String, Object>();
     }
-    
+
     /**
      * Construct a JSONObject from a subset of another JSONObject. An array of
      * strings is used to identify the keys that should be copied. Missing keys
@@ -205,7 +205,7 @@ public class JSONObject {
      * @param names
      *            An array of strings.
      */
-    public JSONObject(JSONObject jo, String[] names) {
+    public JSONObject(JSONObject jo, String ... names) {
         this(names.length);
         for (int i = 0; i < names.length; i += 1) {
             try {
@@ -389,7 +389,7 @@ public class JSONObject {
      *            An array of strings, the names of the fields to be obtained
      *            from the object.
      */
-    public JSONObject(Object object, String names[]) {
+    public JSONObject(Object object, String ... names) {
         this(names.length);
         Class<?> c = object.getClass();
         for (int i = 0; i < names.length; i += 1) {
@@ -532,8 +532,7 @@ public class JSONObject {
         } else if (object instanceof JSONArray) {
             this.put(key, ((JSONArray) object).put(value));
         } else {
-            throw new JSONException("JSONObject[" + key
-                    + "] is not a JSONArray.");
+            throw wrongValueFormatException(key, "JSONArray", null, null);
         }
         return this;
     }
@@ -606,9 +605,7 @@ public class JSONObject {
             // JSONException should really take a throwable argument.
             // If it did, I would re-implement this with the Enum.valueOf
             // method and place any thrown exception in the JSONException
-            throw new JSONException("JSONObject[" + quote(key)
-                    + "] is not an enum of type " + quote(clazz.getSimpleName())
-                    + ".");
+            throw wrongValueFormatException(key, "enum of type " + quote(clazz.getSimpleName()), null);
         }
         return val;
     }
@@ -634,8 +631,7 @@ public class JSONObject {
                         .equalsIgnoreCase("true"))) {
             return true;
         }
-        throw new JSONException("JSONObject[" + quote(key)
-                + "] is not a Boolean.");
+        throw wrongValueFormatException(key, "Boolean", null);
     }
 
     /**
@@ -654,8 +650,7 @@ public class JSONObject {
         if (ret != null) {
             return ret;
         }
-        throw new JSONException("JSONObject[" + quote(key)
-                + "] could not be converted to BigInteger (" + object + ").");
+        throw wrongValueFormatException(key, "BigInteger", object, null);
     }
 
     /**
@@ -677,8 +672,7 @@ public class JSONObject {
         if (ret != null) {
             return ret;
         }
-        throw new JSONException("JSONObject[" + quote(key)
-                + "] could not be converted to BigDecimal (" + object + ").");
+        throw wrongValueFormatException(key, "BigDecimal", object, null);
     }
 
     /**
@@ -692,7 +686,15 @@ public class JSONObject {
      *             object and cannot be converted to a number.
      */
     public double getDouble(String key) throws JSONException {
-        return this.getNumber(key).doubleValue();
+        final Object object = this.get(key);
+        if(object instanceof Number) {
+            return ((Number)object).doubleValue();
+        }
+        try {
+            return Double.parseDouble(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(key, "double", e);
+        }
     }
 
     /**
@@ -706,7 +708,15 @@ public class JSONObject {
      *             object and cannot be converted to a number.
      */
     public float getFloat(String key) throws JSONException {
-        return this.getNumber(key).floatValue();
+        final Object object = this.get(key);
+        if(object instanceof Number) {
+            return ((Number)object).floatValue();
+        }
+        try {
+            return Float.parseFloat(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(key, "float", e);
+        }
     }
 
     /**
@@ -727,8 +737,7 @@ public class JSONObject {
             }
             return stringToNumber(object.toString());
         } catch (Exception e) {
-            throw new JSONException("JSONObject[" + quote(key)
-                    + "] is not a number.", e);
+            throw wrongValueFormatException(key, "number", e);
         }
     }
 
@@ -743,7 +752,15 @@ public class JSONObject {
      *             to an integer.
      */
     public int getInt(String key) throws JSONException {
-        return this.getNumber(key).intValue();
+        final Object object = this.get(key);
+        if(object instanceof Number) {
+            return ((Number)object).intValue();
+        }
+        try {
+            return Integer.parseInt(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(key, "int", e);
+        }
     }
 
     /**
@@ -760,8 +777,7 @@ public class JSONObject {
         if (object instanceof JSONArray) {
             return (JSONArray) object;
         }
-        throw new JSONException("JSONObject[" + quote(key)
-                + "] is not a JSONArray.");
+        throw wrongValueFormatException(key, "JSONArray", null);
     }
 
     /**
@@ -778,8 +794,7 @@ public class JSONObject {
         if (object instanceof JSONObject) {
             return (JSONObject) object;
         }
-        throw new JSONException("JSONObject[" + quote(key)
-                + "] is not a JSONObject.");
+        throw wrongValueFormatException(key, "JSONObject", null);
     }
 
     /**
@@ -793,7 +808,15 @@ public class JSONObject {
      *             to a long.
      */
     public long getLong(String key) throws JSONException {
-        return this.getNumber(key).longValue();
+        final Object object = this.get(key);
+        if(object instanceof Number) {
+            return ((Number)object).longValue();
+        }
+        try {
+            return Long.parseLong(object.toString());
+        } catch (Exception e) {
+            throw wrongValueFormatException(key, "long", e);
+        }
     }
 
     /**
@@ -848,7 +871,7 @@ public class JSONObject {
         if (object instanceof String) {
             return (String) object;
         }
-        throw new JSONException("JSONObject[" + quote(key) + "] not a string.");
+        throw wrongValueFormatException(key, "string", null);
     }
 
     /**
@@ -864,8 +887,11 @@ public class JSONObject {
 
     /**
      * Increment a property of a JSONObject. If there is no such property,
-     * create one with a value of 1. If there is such a property, and if it is
-     * an Integer, Long, Double, or Float, then add one to it.
+     * create one with a value of 1 (Integer). If there is such a property, and if it is
+     * an Integer, Long, Double, Float, BigInteger, or BigDecimal then add one to it.
+     * No overflow bounds checking is performed, so callers should initialize the key
+     * prior to this call with an appropriate type that can handle the maximum expected
+     * value.
      *
      * @param key
      *            A key string.
@@ -878,18 +904,18 @@ public class JSONObject {
         Object value = this.opt(key);
         if (value == null) {
             this.put(key, 1);
-        } else if (value instanceof BigInteger) {
-            this.put(key, ((BigInteger)value).add(BigInteger.ONE));
-        } else if (value instanceof BigDecimal) {
-            this.put(key, ((BigDecimal)value).add(BigDecimal.ONE));
         } else if (value instanceof Integer) {
             this.put(key, ((Integer) value).intValue() + 1);
         } else if (value instanceof Long) {
             this.put(key, ((Long) value).longValue() + 1L);
-        } else if (value instanceof Double) {
-            this.put(key, ((Double) value).doubleValue() + 1.0d);
+        } else if (value instanceof BigInteger) {
+            this.put(key, ((BigInteger)value).add(BigInteger.ONE));
         } else if (value instanceof Float) {
             this.put(key, ((Float) value).floatValue() + 1.0f);
+        } else if (value instanceof Double) {
+            this.put(key, ((Double) value).doubleValue() + 1.0d);
+        } else if (value instanceof BigDecimal) {
+            this.put(key, ((BigDecimal)value).add(BigDecimal.ONE));
         } else {
             throw new JSONException("Unable to increment [" + quote(key) + "].");
         }
@@ -1507,11 +1533,11 @@ public class JSONObject {
         }
     }
 
-    private boolean isValidMethodName(String name) {
+    private static boolean isValidMethodName(String name) {
         return !"getClass".equals(name) && !"getDeclaringClass".equals(name);
     }
 
-    private String getKeyNameFromMethod(Method method) {
+    private static String getKeyNameFromMethod(Method method) {
         final int ignoreDepth = getAnnotationDepth(method, JSONPropertyIgnore.class);
         if (ignoreDepth > 0) {
             final int forcedNameDepth = getAnnotationDepth(method, JSONPropertyName.class);
@@ -1812,11 +1838,11 @@ public class JSONObject {
         }
         return this;
     }
-    
+
     public void putAll(JSONObject other) {
         this.map.putAll(other.map);
     }
-    
+
     /**
      * Put a key/value pair in the JSONObject, but only if the key and the value
      * are both non-null, and only if there is not already a member with that
@@ -2130,7 +2156,7 @@ public class JSONObject {
             //}
             //return new BigInteger(val);
             
-            // BigInteger version: We use a similar bitLenth compare as
+            // BigInteger version: We use a similar bitLength compare as
             // BigInteger#intValueExact uses. Increases GC, but objects hold
             // only what they need. i.e. Less runtime overhead if the value is
             // long lived. Which is the better tradeoff? This is closer to what's
@@ -2485,7 +2511,7 @@ public class JSONObject {
     public Writer write(Writer writer, int indentFactor, int indent)
             throws JSONException {
         try {
-            boolean commanate = false;
+            boolean needsComma = false;
             final int length = this.length();
             writer.write('{');
 
@@ -2503,15 +2529,15 @@ public class JSONObject {
                     throw new JSONException("Unable to write JSONObject value for key: " + key, e);
                 }
             } else if (length != 0) {
-                final int newindent = indent + indentFactor;
+                final int newIndent = indent + indentFactor;
                 for (final Entry<String,?> entry : this.entrySet()) {
-                    if (commanate) {
+                    if (needsComma) {
                         writer.write(',');
                     }
                     if (indentFactor > 0) {
                         writer.write('\n');
                     }
-                    indent(writer, newindent);
+                    indent(writer, newIndent);
                     final String key = entry.getKey();
                     writer.write(quote(key));
                     writer.write(':');
@@ -2519,11 +2545,11 @@ public class JSONObject {
                         writer.write(' ');
                     }
                     try {
-                        writeValue(writer, entry.getValue(), indentFactor, newindent);
+                        writeValue(writer, entry.getValue(), indentFactor, newIndent);
                     } catch (Exception e) {
                         throw new JSONException("Unable to write JSONObject value for key: " + key, e);
                     }
-                    commanate = true;
+                    needsComma = true;
                 }
                 if (indentFactor > 0) {
                     writer.write('\n');
@@ -2562,5 +2588,38 @@ public class JSONObject {
             results.put(entry.getKey(), value);
         }
         return results;
+    }
+    
+    /**
+     * Create a new JSONException in a common format for incorrect conversions.
+     * @param key name of the key
+     * @param valueType the type of value being coerced to
+     * @param cause optional cause of the coercion failure
+     * @return JSONException that can be thrown.
+     */
+    private static JSONException wrongValueFormatException(
+            String key,
+            String valueType,
+            Throwable cause) {
+        return new JSONException(
+                "JSONObject[" + quote(key) + "] is not a " + valueType + "."
+                , cause);
+    }
+    
+    /**
+     * Create a new JSONException in a common format for incorrect conversions.
+     * @param key name of the key
+     * @param valueType the type of value being coerced to
+     * @param cause optional cause of the coercion failure
+     * @return JSONException that can be thrown.
+     */
+    private static JSONException wrongValueFormatException(
+            String key,
+            String valueType,
+            Object value,
+            Throwable cause) {
+        return new JSONException(
+                "JSONObject[" + quote(key) + "] is not a " + valueType + " (" + value + ")."
+                , cause);
     }
 }
