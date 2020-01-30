@@ -70,12 +70,14 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     @Override
     protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         super.doHead(request, response);
+        setCORS(response);
     }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Query post = RemoteAccess.evaluate(request);
         process(request, response, post);
+        setCORS(response);
     }
 
     @Override
@@ -83,6 +85,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         Query query = RemoteAccess.evaluate(request);
         query.initPOST(RemoteAccess.getPostMap(request));
         process(request, response, query);
+        setCORS(response);
     }
 
     @Override
@@ -110,7 +113,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             logClient(startTime, query, null, 503, message);
             response.sendError(503, message); return;
         } // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {
+        if (DAO.getConfig("users.admin.localonly", true) && (minimalUserRole == UserRole.ADMIN || minimalUserRole == UserRole.SUPERADMIN) && !query.isLocalhostAccess()) {
             String message = "access only allowed from localhost, your request comes from " + query.getClientHost();
             logClient(startTime, query, null, 503, message);
             response.sendError(503, message); return;

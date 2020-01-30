@@ -17,13 +17,14 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.EmailHandler;
+import ai.susi.json.JsonTray;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.TimeoutMatcher;
 import org.json.JSONObject;
+import ai.susi.tools.VerifyRecaptcha;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.regex.Pattern;
@@ -67,7 +68,6 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
         String password = post.get("password", null);
         String newpassword = post.get("newpassword", null);
 
-
         ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, useremail);
         Authentication authentication = DAO.getAuthentication(pwcredential);
         ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
@@ -94,7 +94,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             result.put("message", "Invalid credentials.");
             throw new APIException(HttpStatus.UNPROCESSABLE_ENTITY_422, "Invalid credentials");
         } else {
-            String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+            String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
 
             Pattern pattern = Pattern.compile(passwordPattern);
 
@@ -105,11 +105,30 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             }
 
             if (DAO.hasAuthentication(emailcred)) {
+                JsonTray CaptchaConfig = DAO.captchaConfig;
+                JSONObject captchaObj = CaptchaConfig.has("config") ? CaptchaConfig.getJSONObject("config")
+                        : new JSONObject();
+                Boolean isChangePassowordCaptchaEnabled = captchaObj.has("changePassword")
+                        ? captchaObj.getBoolean("changePassword")
+                        : true;
+
+                if (isChangePassowordCaptchaEnabled) {
+                    String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+                    boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+                    if (!isRecaptchaVerified) {
+                        result.put("message", "Please verify recaptcha");
+                        result.put("accepted", false);
+                        return new ServiceResponse(result);
+                    }
+                }
+
                 if(passwordHash.equals(getHash(newpassword, salt))){
                     result.put("message","Your current password matches new password.");
                     result.put("accepted", false);
                     return new ServiceResponse(result);
                 }
+                
+
                 Authentication emailauth = DAO.getAuthentication(emailcred);
                 emailauth.remove("passwordHash");
                 emailauth.put("passwordHash", getHash(newpassword, salt));

@@ -32,6 +32,14 @@ public class CacheMap<K,V> {
         this.map = new LinkedHashMap<K, V>();
     }
 
+    public int size() {
+        return this.map.size();
+    }
+
+    public int maxSize() {
+        return this.maxSize;
+    }
+    
     public void clear() {
         this.map.clear();
     }

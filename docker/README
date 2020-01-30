@@ -1,0 +1,50 @@
+Docker images for SUSI.AI Server
+================================
+
+Pre-built docker images for the SUSI.AI server are available on docker hub (TODO).
+
+
+Building
+--------
+One can build local docker image by calling
+	docker build -t local-susiserver --build-arg default_branch=master  .
+This clones the server from the git repository [1] and builds the server.
+The default branch to be build can be set via the `default_branch` argument
+and defaults to `master`.
+
+Running
+-------
+The SUSI.AI server needs the skill data [2] available in the docker image
+mounted to
+	/susi_skill_data
+If you want to have persistent server data, the docker image directory
+	/susi_server/data
+needs to be mounted.
+
+The server runs on the default ports, that is 4000 and 4443 which are exposed
+to docker. Exporting them to the host system works the usual way using the -p
+options.
+
+A typical start script would be
+	SKILLDIR=/path/to/your/checkout/of/susi_skill_data
+	DATADIR=/path/to/your/server/data
+	docker run  -d -p4000:4000 -p4443:4443	\
+		-v$SKILLDIR:/susi_skill_data	\
+		-v$DATADIR:/susi_server/data	\
+		local-susiserver
+
+Notes on configuration
+----------------------
+The docker image uses the default configuration as taken from the `conf`
+directory with the following two changes:
+- `upgradeInterval` is set to a very large number
+- `skill_repo.enable` is set to false
+  this disables the git pull/push updates of the skill data directory
+
+If a different configuration is required it is enough to provide an alternative
+`conf` directory and mount it to `/susi_server/conf` using the `-v` option
+(see above).
+
+
+[1] https://github.com/fossasia/susi_server.git
+[2] https://github.com/fossasia/susi_skill_data.git

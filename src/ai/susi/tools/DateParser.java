@@ -23,15 +23,20 @@ package ai.susi.tools;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.Parser;
 
 public class DateParser {
 
@@ -45,27 +50,32 @@ public class DateParser {
     public final static String PATTERN_MONTHDAY = "yyyy-MM-dd"; // the twitter search modifier format
     public final static String PATTERN_MONTHDAYHOURMINUTE = "yyyy-MM-dd HH:mm"; // this is the format which morris.js understands for date-histogram graphs
     public final static String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss Z"; // with numeric time zone indicator as defined in RFC5322
-    
+
     /** Date formatter/non-sloppy parser for W3C datetime (ISO8601) in GMT/UTC */
     public final static SimpleDateFormat iso8601Format = new SimpleDateFormat(PATTERN_ISO8601, Locale.US);
-    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US);
+    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US); // PREFERRED FORMAT!
     public final static DateFormat dayDateFormat = new SimpleDateFormat(PATTERN_MONTHDAY, Locale.US);
-    public final static DateFormat minuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
-    public final static DateFormat secondDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US);
-    
+    public final static DateFormat dayMinuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+    public final static DateFormat daySecondDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+    public final static DateFormat minuteDateFormat = new SimpleDateFormat("HH:mm", Locale.US);
+    public final static DateFormat secondDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.US);
+    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US); // Do not use this format to format! Only for parsing!
+
     public final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
-    
+
     public final static Calendar UTCCalendar = Calendar.getInstance();
     public final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");
+    private final static List<DateFormat> tryFormats = new ArrayList<>();
     static {
         UTCCalendar.setTimeZone(UTCtimeZone);
-        iso8601Format.setCalendar(UTCCalendar);
-        iso8601MillisFormat.setCalendar(UTCCalendar);
-        dayDateFormat.setCalendar(UTCCalendar);
-        minuteDateFormat.setCalendar(UTCCalendar);
-        secondDateFormat.setCalendar(UTCCalendar);
-        FORMAT_RFC1123.setCalendar(UTCCalendar);
+        minuteDateFormat.setCalendar(UTCCalendar);    tryFormats.add(minuteDateFormat);
+        secondDateFormat.setCalendar(UTCCalendar);    tryFormats.add(secondDateFormat);
+        dayMinuteDateFormat.setCalendar(UTCCalendar); tryFormats.add(dayMinuteDateFormat);
+        daySecondDateFormat.setCalendar(UTCCalendar); tryFormats.add(daySecondDateFormat);
+        dayDateFormat.setCalendar(UTCCalendar);       tryFormats.add(dayDateFormat);
+        iso8601Format.setCalendar(UTCCalendar);       tryFormats.add(iso8601Format);
+        iso8601MillisFormat.setCalendar(UTCCalendar); tryFormats.add(iso8601MillisFormat);
+        FORMAT_RFC1123.setCalendar(UTCCalendar);      tryFormats.add(FORMAT_RFC1123);
     }
 
     /**
@@ -76,27 +86,54 @@ public class DateParser {
      * @throws ParseException if the format of the date string is not well-formed
      */
     public static Calendar parse(String dateString, final int timezoneOffset) throws ParseException {
-        Calendar cal = Calendar.getInstance(UTCtimeZone);
-        if ("now".equals(dateString)) return cal;
-        if ("hour".equals(dateString)) {cal.setTime(oneHourAgo()); return cal;}
-        if ("day".equals(dateString)) {cal.setTime(oneDayAgo()); return cal;}
-        if ("week".equals(dateString)) {cal.setTime(oneWeekAgo()); return cal;}
-        dateString = dateString.replaceAll("_", " ");
-        int p = -1;
-        if ((p = dateString.indexOf(':')) > 0) {
-            if (dateString.indexOf(':', p + 1) > 0)
-                synchronized (secondDateFormat) {
-                    cal.setTime(secondDateFormat.parse(dateString));
-                } else synchronized (minuteDateFormat) {
-                    cal.setTime(minuteDateFormat.parse(dateString));
+        Calendar cal = null;
+        dateString = dateString.replaceAll("_", " ").trim();
+        // special cases for small time numbers
+        if (dateString.endsWith("h") || dateString.endsWith("m") || dateString.endsWith("s")) {
+            try {
+                int nn = Integer.parseInt(dateString.substring(0, dateString.length() - 1));
+                cal = Calendar.getInstance(UTCtimeZone);
+                if (dateString.endsWith("h")) {
+                    cal.add(Calendar.HOUR, nn);
+                    return cal;
                 }
-        } else synchronized (dayDateFormat) {
-            cal.setTime(dayDateFormat.parse(dateString));
+                if (dateString.endsWith("m")) {
+                    cal.add(Calendar.MINUTE, nn);
+                    return cal;
+                }
+                if (dateString.endsWith("s")) {
+                    cal.add(Calendar.SECOND, nn);
+                    return cal;
+                }
+            } catch (NumberFormatException e) {}
         }
-        cal.add(Calendar.MINUTE, timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
+
+        // parse a full date format
+        for (DateFormat df: tryFormats) {
+            synchronized (df) {
+                try {
+                    Date td = df.parse(dateString);
+                    cal = Calendar.getInstance(UTCtimeZone);
+                    cal.setTime(td);
+                    break;
+                } catch (ParseException e) {
+                    continue;
+                }
+            }
+        }
+        if (cal == null) throw new ParseException("cannot find parser for time format of " + dateString, 0);
+        cal.add(Calendar.MINUTE, -timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
+
+        // fix partially given date
+        if (cal.get(Calendar.YEAR) == 1970) {
+            Calendar now = Calendar.getInstance(UTCtimeZone);
+            cal.set(Calendar.YEAR, now.get(Calendar.YEAR));
+            cal.set(Calendar.MONTH, now.get(Calendar.MONTH));
+            cal.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH));
+        }
         return cal;
     }
-    
+
     public static Date iso8601MillisParser(String date) {
         try {
             return iso8601MillisFormat.parse(date);
@@ -104,11 +141,11 @@ public class DateParser {
             return new Date();
         }
     }
-    
+
     public static String toPostDate(Date d) {
-        return secondDateFormat.format(d).replace(' ', '_');
+        return daySecondDateFormat.format(d).replace(' ', '_');
     }
-    
+
     public static int getTimezoneOffset() {
         Calendar calendar = new GregorianCalendar();
         TimeZone timeZone = calendar.getTimeZone();
@@ -118,7 +155,7 @@ public class DateParser {
     public static Date oneHourAgo() {
         return new Date(System.currentTimeMillis() - HOUR_MILLIS);
     }
-    
+
     public static Date oneDayAgo() {
         return new Date(System.currentTimeMillis() - DAY_MILLIS);
     }
@@ -130,7 +167,7 @@ public class DateParser {
     public static Date oneMonthAgo() {
         return new Date(System.currentTimeMillis() - MONTH_MILLIS);
     }
-    
+/*
     private static long lastRFC1123long = 0;
     private static String lastRFC1123string = "";
 
@@ -147,35 +184,30 @@ public class DateParser {
             return s;
         }
     }
-
-    /**
-     * Format date for GSA (short form of ISO8601 date format)
-     * @param date
-     * @return datestring "yyyy-mm-dd"
-     * @see ISO8601Formatter
-     */
-    public static final String formatGSAFS(final Date date) {
+*/
+    public static final String formatISO8601(final Date date) {
         if (date == null) return "";
-        synchronized (dayDateFormat) {
-            final String s = dayDateFormat.format(date);
-            return s;
+        synchronized (iso8601MillisFormat) {
+            return iso8601MillisFormat.format(date);
         }
     }
-    
-    /**
-     * Parse GSA date string (short form of ISO8601 date format)
-     * @param datestring
-     * @return date or null
-     * @see ISO8601Formatter
-     */
-    public static final Date parseGSAFS(final String datestring) {
-        synchronized (dayDateFormat) { try {
-            return dayDateFormat.parse(datestring);
-        } catch (final ParseException e) {
-            return null;
-        }}
+
+    public static Date parseAnyText(String text, long timezoneOffset) {
+        // first try if this is simply a number. Then it is a time delay.
+        try {
+            long delay = Long.parseLong(text);
+            return new Date(System.currentTimeMillis() + delay);
+        } catch (NumberFormatException e) {} // we ignore the exception here, because it is expected
+
+        Parser parser = new Parser();
+        List<DateGroup> groups = parser.parse(text);
+        if (groups.size() == 0) return null;
+        DateGroup group = groups.get(0);
+        List<Date> dates = group.getDates();
+        if (dates.size() == 0) return null;
+        return dates.get(0);
     }
-    
+
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
         System.out.println("the date is           : " + calendar.getTime().getTime());

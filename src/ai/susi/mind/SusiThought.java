@@ -23,7 +23,10 @@ package ai.susi.mind;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +35,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -75,7 +79,7 @@ public class SusiThought extends JSONObject {
      * the matching information is named '0'.
      * @param matcher
      */
-    public SusiThought(Matcher matcher) {
+    public SusiThought(SusiMatcher matcher) {
         this();
         this.setOffset(0).setHits(1);
         JSONObject row = new JSONObject();
@@ -138,7 +142,7 @@ public class SusiThought extends JSONObject {
     }
 
     public boolean isFailed() {
-        return getData().length() == 0;
+        return getData().length() == 0 && getActions(true).size() == 0;
     }
 
     public boolean hasEmptyObservation(String key) {
@@ -238,25 +242,44 @@ public class SusiThought extends JSONObject {
     }
     
     /**
-     * Merging of data is required during an mind-meld.
+     * "assertz" is merging of data to the end of the thought data structure.
+     * Such kind of merging of data is required i.e. during an mind-meld.
      * To meld two thoughts, we combine their data arrays into one.
      * The resulting table has at maximum the length of both source tables combined.
+     * Merged data from the 'other' tought does not overwrite the current thought.
+     * Instead, it is added as 'alternative solutions'.
      * @param table the information to be melted into our existing table.
      * @return the thought
      */
-    public SusiThought mergeData(JSONArray table1) {
+    public SusiThought assertz(JSONArray table1) {
         JSONArray table0 = this.getData();
         int t0c = 0;
         for (int i = 0; i < table1.length(); i++) {
             JSONObject j1i = table1.getJSONObject(i);
-            while (t0c < table0.length() && anyObjectKeySame(j1i, table0.getJSONObject(t0c))) {t0c++;}
+            while (t0c < table0.length()) {
+                if (allObjectsSame(j1i, table0.getJSONObject(t0c))) return this;
+                if (!anyObjectKeySame(j1i, table0.getJSONObject(t0c))) break;
+                t0c++;
+            }
             if (t0c >= table0.length()) table0.put(new JSONObject(true));
             table0.getJSONObject(t0c).putAll(table1.getJSONObject(i));
         }
         setData(table0);
         return this;
     }
-    
+
+    private final static boolean allObjectsSame(final JSONObject a, final JSONObject b) {
+        if (a.length() != b.length()) return false;
+        for (String k: a.keySet()) {
+            if (!b.has(k)) return false;
+            Object oa = a.get(k);
+            Object ob = b.get(k);
+            if (oa == null && ob == null) continue;
+            if (!oa.toString().equals(ob.toString())) return false;
+        }
+        return true;
+    }
+
     private final static boolean anyObjectKeySame(final JSONObject a, final JSONObject b) {
         for (String k: a.keySet()) if (b.has(k)) return true;
         return false;
@@ -349,13 +372,17 @@ public class SusiThought extends JSONObject {
         actions.forEach(action -> a.put(action.toJSONClone()));
         return this;
     }
-    
+
     public SusiThought addAction(SusiAction action) {
         JSONArray a = getActionsJSON();
         a.put(action.toJSONClone());
         return this;
     }
-    
+
+    public SusiThought removeActions() {
+        if (this.has("actions")) this.remove("actions");
+        return this;
+    }
     /**
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.
@@ -466,19 +493,60 @@ public class SusiThought extends JSONObject {
         Thread.currentThread().setName(threadOrigName);
         return statement;
     }
-    
+
     public JSONObject toJSON() {
         return this;
     }
-    
+
     public String toString() {
         return super.toString(0);
     }
-    
+
     public int hashCode() {
         return this.getData().toString().hashCode();
     }
-    
+
+    // below now debugging methods:
+
+    public boolean hasUniqueActions() {
+        return hasUniqueActions(this);
+    }
+
+    public static boolean hasUniqueActions(JSONObject json) {
+        JSONArray a = json.optJSONArray("actions");
+        if (a != null && a.length() > 1) {
+            Set<String> exp = new HashSet<>();
+            Iterator<Object> ai = a.iterator();
+            while (ai.hasNext()) {
+                String e = ((JSONObject) ai.next()).optString("expression");
+                if (e != null) {
+                    if (exp.contains(e)) return false;
+                    exp.add(e);
+                }
+            }
+        }
+        return true;
+    }
+
+    public void uniqueActions() {
+        uniqueActions(this);
+    }
+
+    public static void uniqueActions(JSONObject json) {
+        JSONArray a = json.optJSONArray("actions");
+        if (a != null && a.length() > 1) {
+            Set<String> exp = new HashSet<>();
+            Iterator<Object> ai = a.iterator();
+            while (ai.hasNext()) {
+                String e = ((JSONObject) ai.next()).optString("expression");
+                if (e != null) {
+                    if (exp.contains(e)) ai.remove();
+                    exp.add(e);
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
         SusiThought t = new SusiThought().addObservation("a", "letter-a");
         System.out.println(t.unifyOnce("the letter $a$", true));

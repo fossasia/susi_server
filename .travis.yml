@@ -21,8 +21,8 @@ matrix:
       # Store Gradle dependency cache and Gradle Wrapper files for next execution
       cache:
         directories:
-           - $HOME/.gradle/caches/
-           - $HOME/.gradle/wrapper/
+          - $HOME/.gradle/caches/
+          - $HOME/.gradle/wrapper/
       # main build processes
       script:
         - gradle assemble
@@ -51,3 +51,15 @@ matrix:
       script:
         - bash <(curl -s https://codecov.io/bash)
         - codecov
+
+    - language: generic
+      dist: trusty
+      sudo: false
+      script: skip
+
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: bash scripts/deploy_hcloud.sh
+          on:
+            all_branches: true

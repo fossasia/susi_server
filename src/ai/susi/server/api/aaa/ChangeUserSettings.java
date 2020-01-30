@@ -36,12 +36,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by saurabh on 20/6/17.
  * Servlet to write user setting
- * this service accepts two parameter key and value to be stored in User settings
- * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json?key=theme&value=dark
+ * this service accepts parameter to be stored in User settings
+ * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json?theme=dark
  */
 
 @Path("/aaa/changeUserSettings.json")
@@ -50,6 +51,8 @@ import java.util.Map;
 public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -7418883159709458190L;
+
+    private String[] possibleKeys = {"server", "enterAsSend", "micInput", "speechOutput", "speechOutputAlways", "speechRate", "speechPitch", "ttsLanguage", "userName", "prefLanguage", "timeZone", "countryCode", "countryDialCode", "phoneNo", "checked", "serverUrl", "theme", "backgroundImage", "messageBackgroundImage", "customThemeValue", "avatarType"};
 
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to write user setting")
@@ -80,44 +83,57 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
 
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
-
-       String countSetting = query.get("count","-1");
-       int count = Integer.parseInt(countSetting);
-       if(count == -1){
-           throw new APIException(400, "Bad Service call, count parameters not provided");
-       } else {
-           Map<String, String> settings = new HashMap<String, String>();
-           for (int i = 1; i <= count; i++) {
-               String key = query.get("key" + i, null);
-               String value = query.get("value" + i, null);
-               if (key == null || value == null) {
-                   throw new APIException(400, "Bad Service call, key or value parameters not provided");
-               } else {
-                   settings.put(key, value);
-               }
-           }
-           if (authorization.getIdentity() == null) {
-               throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
-           } else {
-               Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-               for (Map.Entry<String, String> entry : settings.entrySet()) {
-                   String key = entry.getKey();
-                   String value = entry.getValue();
-                   JSONObject jsonObject = new JSONObject();
-                   jsonObject.put(key, value);
-                   if (accounting.getJSON().has("settings")) {
-                       accounting.getJSON().getJSONObject("settings").put(key, value);
-                   } else {
-                       accounting.getJSON().put("settings", jsonObject);
-                   }
-               }
-               accounting.commit();
-               JSONObject result = new JSONObject(true);
-               result.put("accepted", true);
-               result.put("message", "You successfully changed settings of your account!");
-               return new ServiceResponse(result);
-           }
-       }
-
+        Map<String, String> settings = new HashMap<String, String>();
+        boolean flag = false;
+        for (int i = 0; i < possibleKeys.length; i++) {
+            String value = query.get(possibleKeys[i], null);
+            if(possibleKeys[i].equals("userName") && value != null){
+                String usernamePattern = DAO.getConfig("users.username.regex", "^(.{5,51})$");
+                String usernamePatternTooltip = DAO.getConfig("users.username.regex.tooltip",
+                "Enter atleast 5 character, upto 51 character");
+                Pattern pattern = Pattern.compile(usernamePattern);
+                if(!pattern.matcher(value).matches()) {
+                    throw new APIException(400, usernamePatternTooltip);
+                }
+            }
+            if(value != null){
+                settings.put(possibleKeys[i], value);
+                flag = true;
+            }
+        }
+        if(flag == false){
+            throw new APIException(400, "Bad Service call, key or value parameters not provided");
+        }
+        if (authorization.getIdentity() == null) {
+            throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
+        }
+        else {
+            String email = query.get("email", null);
+            Accounting accounting;
+            UserRole userRole = authorization.getUserRole();
+            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+                Authorization userAuthorization = DAO.getAuthorization(identity);
+                accounting = DAO.getAccounting(userAuthorization.getIdentity());
+            } else {
+                accounting = DAO.getAccounting(authorization.getIdentity());
+            }
+            for (Map.Entry<String, String> entry : settings.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(key, value);
+                if (accounting.getJSON().has("settings")) {
+                    accounting.getJSON().getJSONObject("settings").put(key, value);
+                } else {
+                    accounting.getJSON().put("settings", jsonObject);
+                }
+            }
+            accounting.commit();
+            JSONObject result = new JSONObject(true);
+            result.put("accepted", true);
+            result.put("message", "You successfully changed settings of your account!");
+            return new ServiceResponse(result);
+        }
     }
 }

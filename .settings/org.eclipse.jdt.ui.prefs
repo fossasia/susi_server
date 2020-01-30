@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+formatter_profile=_notabs
+formatter_settings_version=14
 org.eclipse.jdt.ui.exception.name=e
 org.eclipse.jdt.ui.gettersetter.use.is=true
 org.eclipse.jdt.ui.keywordthis=false

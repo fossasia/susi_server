@@ -172,8 +172,8 @@ public class ThreaddumpServlet extends HttpServlet {
         bufferappend(buffer, "");
         bufferappend(buffer, "LOG");
         bufferappend(buffer, "");
-        List<String> lines = DAO.logAppender.getLines();
-        for (int i = Math.max(0, lines.size() - 100); i < lines.size(); i++) buffer.append(lines.get(i));
+        List<String> lines = DAO.logAppender.getLines(100);
+        for (int i = 0; i < lines.size(); i++) buffer.append(lines.get(i));
         
         FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");

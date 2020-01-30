@@ -23,3 +23,6 @@ weiter | nächste | nächstes | nächstes *
 
 zurück | vorheriges | vorheriges *
 `previous`
+
+sag *
+$1$

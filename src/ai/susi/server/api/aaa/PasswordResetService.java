@@ -63,7 +63,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
 				authentication.getIdentity().getName());
 
-		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+		String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
 
 		Pattern pattern = Pattern.compile(passwordPattern);
 

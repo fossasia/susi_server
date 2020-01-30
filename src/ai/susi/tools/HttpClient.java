@@ -80,7 +80,7 @@ public class HttpClient {
     
 
 
-    public static final int defaultClientTimeout = 3000;
+    public static final int defaultClientTimeout = 6000;
     public static final int minimumLocalDeltaInit  =  10; // the minimum time difference between access of the same local domain
     public static final int minimumGlobalDeltaInit = 500; // the minimum time difference between access of the same global domain
     
@@ -234,15 +234,15 @@ public class HttpClient {
             .setContentCompressionEnabled(true)
             .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .build();
-    
+
     private int status;
     public BufferedInputStream inputStream;
-    private Map<String, List<String>> header;
+    private Map<String, List<String>> response_header;
     private CloseableHttpClient httpClient;
     private HttpRequestBase request;
     private HttpResponse httpResponse;
     private ContentType contentType;
-    
+
     private static class TrustAllHostNameVerifier implements HostnameVerifier {
         public boolean verify(String hostname, SSLSession session) {
             return true;
@@ -265,7 +265,7 @@ public class HttpClient {
         this.request.setHeader("User-Agent", getAgent(yacyInternetCrawlerAgentName).userAgent);
         this.init();
     }
-    
+
     /**
      * GET request
      * @param urlstring
@@ -274,7 +274,7 @@ public class HttpClient {
     public HttpClient(String urlstring) throws IOException {
         this(urlstring, true);
     }
-    
+
     /**
      * POST request
      * @param urlstring
@@ -299,7 +299,12 @@ public class HttpClient {
         this.request.setHeader("User-Agent", getAgent(yacyInternetCrawlerAgentName).userAgent);
         this.init();
     }
-    
+
+    public HttpClient setHeader(String key, String value) {
+        this.request.setHeader(key, value);
+        return this;
+    }
+
     /**
      * POST request
      * @param urlstring
@@ -363,18 +368,18 @@ public class HttpClient {
         PoolingHttpClientConnectionManager cm = socketFactoryRegistry != null ? 
                 new PoolingHttpClientConnectionManager(socketFactoryRegistry):
                 new PoolingHttpClientConnectionManager();
-        
+
         // twitter specific options
         cm.setMaxTotal(200);
         cm.setDefaultMaxPerRoute(20);
         HttpHost twitter = new HttpHost("twitter.com", 443);
         cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-        
+
         return cm;
     }
 
     private void init() throws IOException {
-        
+
         this.httpResponse = null;
         try {
             this.httpResponse = httpClient.execute(this.request);
@@ -398,10 +403,10 @@ public class HttpClient {
                     this.request.releaseConnection();
                     throw e;
                 }
-                this.header = new HashMap<String, List<String>>();
+                this.response_header = new HashMap<String, List<String>>();
                 for (Header header: httpResponse.getAllHeaders()) {
-                    List<String> vals = this.header.get(header.getName());
-                    if (vals == null) { vals = new ArrayList<String>(); this.header.put(header.getName(), vals); }
+                    List<String> vals = this.response_header.get(header.getName());
+                    if (vals == null) { vals = new ArrayList<String>(); this.response_header.put(header.getName(), vals); }
                     vals.add(header.getValue());
                 }
             } else {
@@ -413,11 +418,11 @@ public class HttpClient {
             throw new IOException("client connection to " + this.request.getURI() + " fail: no connection");
         }
     }
-    
+
     public ContentType getContentType() {
         return this.contentType == null ? ContentType.DEFAULT_BINARY : this.contentType;
     }
-    
+
     /**
      * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
@@ -454,7 +459,7 @@ public class HttpClient {
             throw new IOException("client connection to " + urlstring + " fail: no connection");
         }
     }
-    
+
     /**
      * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
@@ -465,7 +470,7 @@ public class HttpClient {
     public static String getRedirect(String urlstring) throws IOException {
         return getRedirect(urlstring, true);
     }
-    
+
     public void close() {
         HttpEntity httpEntity = this.httpResponse.getEntity();
         if (httpEntity != null) EntityUtils.consumeQuietly(httpEntity);
@@ -475,7 +480,7 @@ public class HttpClient {
             this.request.releaseConnection();
         }
     }
-    
+
     public static void download(String source_url, File target_file, boolean useAuthentication) {
         try {
             HttpClient connection = new HttpClient(source_url, useAuthentication);
@@ -499,45 +504,78 @@ public class HttpClient {
             e.printStackTrace();
         }
     }
-    
+
+    public static class Response {
+
+        private Map<String, String> request_header;
+        private Map<String, List<String>> response_header;
+        private byte[] data;
+
+        public Response(String source_url, Map<String, String> request_header) throws IOException {
+            this.request_header = request_header;
+            final List<byte[]> content = new ArrayList<>(1);
+            final List<IOException> exception = new ArrayList<>(1);
+            Thread loadThread = new Thread() {
+                public void run() {
+                    try {
+                        final HttpClient connection = new HttpClient(source_url);
+                        if (request_header != null) {
+                            request_header.forEach((key, value) -> connection.setHeader(key, value));
+                        }
+                        byte[] c = connection.load();
+                        Response.this.response_header = connection.response_header;
+                        if (c != null) content.add(c);
+                    } catch (IOException e) {
+                        exception.add(e);
+                    }
+                }
+            };
+            loadThread.start();
+            try {
+                loadThread.join(defaultClientTimeout);
+            } catch (InterruptedException e) {
+                throw new IOException(e.getMessage());
+            }
+            if (loadThread.isAlive()) loadThread.interrupt();
+            if (!exception.isEmpty()) throw exception.get(0);
+            if (content.isEmpty()) {
+                throw new IOException("no content available for url " + source_url);
+            }
+            this.data = content.get(0);
+        }
+
+        public byte[] getData() {
+            return this.data;
+        }
+
+        public Map<String, String> getRequest() {
+            return this.request_header;
+        }
+
+        public Map<String, List<String>> getResponse() {
+            return this.response_header;
+        }
+    }
+
     public static void load(String source_url, File target_file) {
         download(source_url, target_file, true);
     }
-    
+
     /**
      * make GET request
      * @param source_url
      * @return the response 
      * @throws IOException
      */
-    public static byte[] load(String source_url) throws IOException {
-        final List<byte[]> content = new ArrayList<>(1);
-        final List<IOException> exception = new ArrayList<>(1);
-        Thread loadThread = new Thread() {
-            public void run() {
-                try {
-                    HttpClient connection = new HttpClient(source_url);
-                    byte[] c = connection.load();
-                    if (c != null) content.add(c);
-                } catch (IOException e) {
-                    exception.add(e);
-                }
-            }
-        };
-        loadThread.start();
-        try {
-            loadThread.join(defaultClientTimeout);
-        } catch (InterruptedException e) {
-            throw new IOException(e.getMessage());
-        }
-        if (loadThread.isAlive()) loadThread.interrupt();
-        if (!exception.isEmpty()) throw exception.get(0);
-        if (content.isEmpty()) {
-            throw new IOException("no content available for url " + source_url);
-        }
-        return content.get(0);
+    public static byte[] loadGet(String source_url) throws IOException {
+        return loadGet(source_url, null);
     }
-    
+
+    public static byte[] loadGet(String source_url, Map<String, String> request_header) throws IOException {
+        Response response = new Response(source_url, request_header);
+        return response.getData();
+    }
+
     /**
      * make POST request
      * @param source_url
@@ -545,12 +583,12 @@ public class HttpClient {
      * @return the response
      * @throws IOException
      */
-    public static byte[] load(String source_url, Map<String, byte[]> post) throws IOException {
+    public static byte[] loadPost(String source_url, Map<String, byte[]> post) throws IOException {
         HttpClient connection = new HttpClient(source_url, post);
         return connection.load();
     }
 
-    public byte[] load() throws IOException {
+    private byte[] load() throws IOException {
         if (this.inputStream == null) return null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int count;
@@ -565,21 +603,21 @@ public class HttpClient {
         return baos.toByteArray();
     }
 
-    public static JSONArray loadJSONArray(String source_url) throws IOException {
-        byte[] b = load(source_url);
+    public static JSONArray loadGetJSONArray(String source_url) throws IOException {
+        byte[] b = loadGet(source_url);
         return new JSONArray(new JSONTokener(new String(b, StandardCharsets.UTF_8)));
     }
-    public static JSONArray loadJSONArray(String source_url, Map<String, byte[]> params) throws IOException {
-        byte[] b = load(source_url, params);
+    public static JSONArray loadPostJSONArray(String source_url, Map<String, byte[]> params) throws IOException {
+        byte[] b = loadPost(source_url, params);
         return new JSONArray(new JSONTokener(new String(b, StandardCharsets.UTF_8)));
     }
 
-    public static JSONObject loadJSONObject(String source_url) throws IOException {
-        byte[] b = load(source_url);
+    public static JSONObject loadGetJSONObject(String source_url) throws IOException {
+        byte[] b = loadGet(source_url);
         return new JSONObject(new JSONTokener(new String(b, StandardCharsets.UTF_8)));
     }
-    public static JSONObject loadJSONObject(String source_url, Map<String, byte[]> params) throws IOException {
-        byte[] b = load(source_url, params);
+    public static JSONObject loadPostJSONObject(String source_url, Map<String, byte[]> params) throws IOException {
+        byte[] b = loadPost(source_url, params);
         return new JSONObject(new JSONTokener(new String(b, StandardCharsets.UTF_8)));
     }
 

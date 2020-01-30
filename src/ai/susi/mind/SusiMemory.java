@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
 
@@ -88,34 +89,39 @@ public class SusiMemory {
     
     public void initializeMemory() {
         // initialize the unanswered list.
-        if (this.chatlog != null) for (String identity: this.chatlog.list()) {
+        if (this.chatlog == null) return;
+        for (String identity: this.chatlog.list()) {
             // we iterate over all users and check all their conversations
-            getCognitions(identity, false).forEach(cognition -> {
-                // copy the cognition into the log for the skill
-                List<SusiThought> thoughts = cognition.getAnswers();
-                if (!thoughts.isEmpty()) {
-                    SusiThought thought = thoughts.get(0);
-                    String logpath = thought.getLogPath();
-                    if (logpath != null) {
-                        File skillogfile = new File(this.skilllog, logpath);
-                        cognition.setIdentity(identity);
-                        SusiAwareness.memorize(skillogfile, cognition);
-                    }
-
-                    // check unanswered
-                    String query = cognition.getQuery().toLowerCase();
-                    String answer = cognition.getExpression(true);
-                    if (query.length() > 0 && failset.contains(answer)) {
-                        AtomicInteger counter = this.unanswered.get(query);
-                        if (counter == null) {
-                            counter = new AtomicInteger(0);
-                            this.unanswered.put(query,  counter);
+            try {
+                getCognitions(identity, false).forEach(cognition -> {
+                    // copy the cognition into the log for the skill
+                    List<SusiThought> thoughts = cognition.getAnswers();
+                    if (!thoughts.isEmpty()) {
+                        SusiThought thought = thoughts.get(0);
+                        String logpath = thought.getLogPath();
+                        if (logpath != null) {
+                            File skillogfile = new File(this.skilllog, logpath);
+                            cognition.setIdentity(identity);
+                            SusiAwareness.memorize(skillogfile, cognition);
                         }
-                        counter.incrementAndGet();
+    
+                        // check unanswered
+                        String query = cognition.getQuery().toLowerCase();
+                        String answer = cognition.getExpression(true);
+                        if (query.length() > 0 && failset.contains(answer)) {
+                            AtomicInteger counter = this.unanswered.get(query);
+                            if (counter == null) {
+                                counter = new AtomicInteger(0);
+                                this.unanswered.put(query,  counter);
+                            }
+                            counter.incrementAndGet();
+                        }
                     }
-                }
-                //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
-            });
+                    //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
+                });
+            } catch (OutOfMemoryError e) {
+                DAO.severe("memory for identity " + identity.toString() + " too large", e);
+            }
         }
     }
 
@@ -216,13 +222,13 @@ public class SusiMemory {
             return o instanceof TokenMapList && ((TokenMapList) o).token.equals(this.token);
         }
     }
-    
+
     public boolean removeUnanswered(String s) {
         AtomicInteger removed = this.unanswered.remove(s.toLowerCase());
         return removed != null;
         //if (removed) System.out.println("** removed unanswered " + s);
     }
-    
+
     public void removeUnanswered(Pattern p) {
         if (p.toString().indexOf("reddit") >= 0) {
             System.out.println("");
@@ -242,7 +248,7 @@ public class SusiMemory {
         }
         if (removed) System.out.println("** removed unanswered pattern " + p.pattern());
     }
-    
+
     public SusiIdentity getMemory(String client, boolean storeToCache) {
     	SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
@@ -251,7 +257,29 @@ public class SusiMemory {
         }
         return identity;
     }
-    
+
+    public SusiAwareness getAwareness(String client) {
+        File short_term_memory_file = new File(new File(chatlog, client), "log.txt");
+        if (short_term_memory_file.exists()) {
+            try {
+                SusiAwareness awareness = new SusiAwareness(short_term_memory_file, Integer.MAX_VALUE);
+                return awareness;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public SusiCognition firstCognition(String client) {
+        File short_term_memory_file = new File(new File(chatlog, client), "log.txt");
+        if (short_term_memory_file.exists()) {
+            SusiCognition firstCognition = SusiAwareness.firstCognition(short_term_memory_file);
+            return firstCognition;
+        }
+        return null;
+    }
+
     /**
      * get a list of cognitions using the client key
      * @param client

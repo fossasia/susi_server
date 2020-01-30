@@ -41,6 +41,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
+import ai.susi.tools.DateParser;
 
 
 /**
@@ -112,11 +114,14 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
             longitude = "Longitude not available.";
         }
 
+        Date currentTime = new Date();
+
         geolocation.put("latitude", latitude);
         geolocation.put("longitude", longitude);
         value.put("name", name);
         value.put("room", room);
         value.put("geolocation", geolocation);
+        value.put("deviceAddTime", DateParser.formatISO8601(currentTime));
 
         if (authorization.getIdentity() == null) {
             throw new APIException(401, "Specified user data not found, ensure you are logged in");

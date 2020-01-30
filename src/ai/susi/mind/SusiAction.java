@@ -20,20 +20,17 @@
 package ai.susi.mind;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.regex.Matcher;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
-import ai.susi.mind.SusiMind.ReactionException;
-import ai.susi.server.ClientIdentity;
-import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.DateParser;
 
 /**
  * An action is an application on the information deduced during inferences on mind states
@@ -49,23 +46,23 @@ import ai.susi.tools.TimeoutMatcher;
  * - can several actions be performed concurrently and then synchronized again with a join-step for a common follow-up action?
  * We need a declaration to express this; a logic in the client to perform this and an expression in the skills to declare this.
  */
-public class SusiAction {
-    
+public class SusiAction implements Cloneable {
+
     public static class SusiActionException extends Exception {
         private static final long serialVersionUID = -754075705722756817L;
         public SusiActionException(String message) {
             super(message);
         }
     }
-    
+
     public static enum RenderType {
         answer(196),   // show or say a text
         stop(255),     // stop any actions that are running right now
         pause(255),    // pause something that woud otherwise beeing able to be stopped
         resume(255),   // resume what has been paused
         restart,       // start over of what is happening right now
-        //previous,    // step to one thing in the sequence before
-        //next,        // step in the next thing in the sequence
+        previous,      // step to one thing in the sequence before
+        next,          // step in the next thing in the sequence
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
@@ -85,35 +82,36 @@ public class SusiAction {
         image_show,    // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
         button_push,   // push a button (either on the client device or an IoT appliance connected to the client)
-        io             // set an IO status on connected IoT device
+        io,             // set an IO status on connected IoT device
+        shuffle         // shuffle the current playlist
         ;
-    
+
         private final int score;
-        
+
         private RenderType() {
             this.score = 128;
         }
         private RenderType(int score) {
             this.score = score;
         }
-        
+
         public String action() {
             String name = this.name();
             int p = name.indexOf('_');
             return p < 0 ? name : name.substring(0, p);
         }
-        
+
         public String context() {
             String name = this.name();
             int p = name.indexOf('_');
             return p < 0 ? null : name.substring(p + 1);
         }
-        
+
         public int getScore() {
             return this.score;
         }
     }
-    
+
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer,    // a sentence which may end a conversation
@@ -123,14 +121,14 @@ public class SusiAction {
             return this.ordinal();
         }
     }
-    
-    private final static Random random = new Random(System.currentTimeMillis());
-    
+
     private JSONObject json;
 
     /**
-     * initialize an action using a json description.
-     * @param json
+     * Initialize an action using a json description.
+     * This method is only used for the definition of intents, not for the production of answers.
+     * The Exceptions are thrown for valiation purpose in case that the action declaration is not sound.
+     * @param json the action declaration
      */
     public SusiAction(JSONObject json) throws SusiActionException {
         this.json = json;
@@ -142,6 +140,10 @@ public class SusiAction {
             switch (renderType) {
                 case answer:
                     if (json.has("expression")) break;
+                    // This is a very special and (call it hacked) declaration:
+                    // - a declared answer has no expression by default!
+                    // - the select and phrases attributes are used to generate an expression on the fly during answering
+                    // So that means that an expression is usually not used for an action declaration.
                     if (!json.has("select")) this.json.put("select", "random"); // was: throw new SusiActionException("the answer action needs a select object");
                     if (!json.has("phrases")) throw new SusiActionException("the answer action needs a phrases object");
                     break;
@@ -157,14 +159,15 @@ public class SusiAction {
                 case restart:
                     //restart has no attributes
                     break;
-                    /*
                 case previous:
                     //previous has no attributes
                     break;
                 case next:
                     //next has no attributes
                     break;
-                    */
+                case shuffle:
+                    //shuffle has no attributes
+                    break;
                 case table:
                     if (!json.has("columns")) throw new SusiActionException("the table action needs a columns object");
                     if (!json.has("count")) json.put("count", -1);
@@ -216,7 +219,7 @@ public class SusiAction {
                     if (!json.has("identifier")) throw new SusiActionException("the audio_play action needs an identifier object");
                     if (!json.has("identifier_type")) throw new SusiActionException("the audio_play action needs an identifier_type object");
                     String audio_type = json.getString("identifier_type");
-                    if (!audio_type.equals("url") && !audio_type.equals("youtube")) throw new SusiActionException("the identifier_type object in unknown");
+                    if (!audio_type.equals("url") && !audio_type.equals("youtube") && !audio_type.equals("soundcloud")) throw new SusiActionException("the identifier_type object in unknown");
                     if (audio_type.equals("url")) {
                         String url = json.getString("identifier");
                         if (url.startsWith("file://") && url.length() > 8 && url.charAt(7) != '/') {
@@ -253,23 +256,35 @@ public class SusiAction {
         }
     }
 
+    public SusiAction clone() {
+        JSONObject j = new JSONObject(true);
+        this.json.keySet().forEach(key -> j.put(key, this.json.get(key)));
+        try {
+            return new SusiAction(j);
+        } catch (SusiActionException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     /**
      * answer action: produces a written or spoken answer.
      * If several answers are given one of then can be picked by random by the client.
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(SusiLanguage language, String... answers) {
+    public static JSONObject answerAction(int line, SusiLanguage language, String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
-        JSONObject json = new JSONObject()
+        JSONObject json = new JSONObject(true)
             .put("type", RenderType.answer.name())
             .put("select", SelectionType.random.name())
             .put("phrases", phrases);
+        assert language != SusiLanguage.unknown;
         if (language != SusiLanguage.unknown) json.put("language", language.name());
+        if (line > 0) json.put("line", line);
         return json;
     }
-    
+
     /**
      * anchor action: draw a single anchor with descriptive text as anchor text
      * @param link the link
@@ -283,7 +298,7 @@ public class SusiAction {
             .put("text", text);
         return json;
     }
-    
+
     /**
      * Get the render type. That can be used to filter specific information from the action JSON object
      * to create specific activities like 'saying' a sentence, painting a graph and so on.
@@ -300,7 +315,7 @@ public class SusiAction {
         if (this.getRenderType() != RenderType.answer) return DialogType.answer;
         return getDialogType(getPhrases());
     }
-    
+
     public static DialogType getDialogType(Collection<String> phrases) {
         DialogType type = DialogType.reply;
         for (String phrase: phrases) {
@@ -309,7 +324,7 @@ public class SusiAction {
         }
         return type;
     }
-    
+
     public static DialogType getDialogType(String phrase) {
         if (phrase.indexOf('?') > 3) { // the question mark must not be at the beginning
             return phrase.indexOf(". ") >= 0 ? DialogType.reply : DialogType.question;
@@ -335,7 +350,15 @@ public class SusiAction {
         return phrasesCache;
     }
     private ArrayList<String> phrasesCache = null;
-    
+
+    public boolean isSabta() {
+        return this.json.has("mood") && "sabta".equals(this.json.getString("mood"));
+    }
+
+    public boolean hasAttr(String attr) {
+        return this.json.has(attr);
+    }
+
     /**
      * if the action contains more String attributes where these strings are named, they can be retrieved here
      * @param attr the name of the string attribute
@@ -344,7 +367,12 @@ public class SusiAction {
     public String getStringAttr(String attr) {
         return this.json.has(attr) ? this.json.getString(attr) : "";
     }
-    
+
+    public SusiAction setStringAttr(String attr, String value) {
+        this.json.put(attr, value);
+        return this;
+    }
+
     /**
      * If the action contains integer attributes, they can be retrieved here
      * @param attr the name of the integer attribute
@@ -354,140 +382,35 @@ public class SusiAction {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
 
+    public long getLongAttr(String attr) {
+        return this.json.has(attr) ? this.json.getLong(attr) : 0L;
+    }
+
+    public SusiAction setIntAttr(String attr, int value) {
+        this.json.put(attr, value);
+        return this;
+    }
+
+    public SusiAction setLongAttr(String attr, long value) {
+        this.json.put(attr, value);
+        return this;
+    }
+
+    public Date getDateAttr(String attr) throws ParseException {
+        String d = this.getStringAttr(attr);
+        return DateParser.parse(d, 0).getTime();
+    }
+
+    public SusiAction setDateAttr(String attr, Date date) {
+        String d = DateParser.formatISO8601(date);
+        return setStringAttr(attr, d);
+    }
+
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
-    final static Pattern self_referrer = Pattern.compile(".*?`([^`]*?)`.*?");
-    
-    /**
-     * Action descriptions are templates for data content. Strings may refer to arguments from
-     * a thought deduction using variable templates. I.e. "$name$" inside an action string would
-     * refer to an data entity in an thought argument which has the name "name". Applying the
-     * Action to a thought will instantiate such variable templates and produces a new String
-     * attribute named "expression"
-     * @param thoughts an argument from previously applied inferences
-     * @param client the client requesting the answer
-     * @param language the language of the client
-     * @param minds a hierarchy of minds which overlap each other. top mind is the first element in the list of minds
-     * @return the action with the attribute "expression" instantiated by unification of the thought with the action
-     * @throws ReactionException
-     */
-    public List<SusiAction> execution(SusiArgument thoughts, ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... minds) throws ReactionException {
-        List<SusiAction> actions = new ArrayList<>();
-        actions.add(this);
-        if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
-            // transform the answer according to the data
-            ArrayList<String> a = getPhrases();
-            String expression = a.get(random.nextInt(a.size()));
+    final static Pattern reflection_parallel = Pattern.compile(".*?`([^`]*?)`.*?");
+    final static Pattern reflection_nested = Pattern.compile(".*?`(.*)`.*?");
 
-            boolean unificationSuccess = true;
-            boolean visibleAssignmentSuccess = true;
-            boolean invisibleAssignmentSuccess = true;
-            boolean reflectionSuccess = true;
-            Matcher m;
-            
-            eval: while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
-
-                // unification of the phrase with the thoughts
-                // this prepares reflection elements to be instantiated before the reflection is called
-                unificationSuccess = false;
-                if (expression.indexOf('$') >= 0) {
-                    String unification = thoughts.unify(expression, false, Integer.MAX_VALUE);
-                    if (unification != null) {
-                        unificationSuccess = true;
-                        expression = unification;
-                    }
-                }
-                
-                // assignments: set variables from the result expressions.
-                // These can be a visible assignment or an invisible assignment
-                // assignment must be done in advance of reflections
-                // because the reflection may use the assigned variables.
-                visibleAssignmentSuccess = false;
-                visibleAssignment: while (new TimeoutMatcher(m = visible_assignment.matcher(expression)).matches()) {
-                    String observation = m.group(1);
-                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue visibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
-                    String variable = m.group(2);
-                    expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
-                    // write the variable v as side-effect into the thoughts argument
-                    thoughts.think(new SusiThought().addObservation(variable, observation));
-                    visibleAssignmentSuccess = true;
-                }
-                
-                invisibleAssignmentSuccess = false;
-                invisibleAssignment: while (new TimeoutMatcher(m = blind_assignment.matcher(expression)).matches()) {
-                    String observation = m.group(1);
-                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue invisibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
-                    String variable = m.group(2);
-                    expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));
-                    // write the variable v as side-effect into the thoughts argument
-                    thoughts.think(new SusiThought().addObservation(variable, observation));
-                    invisibleAssignmentSuccess = true;
-                }
-                
-                // reflection: evaluate contents from the answers expressions as recursion.
-                // Susi is asking itself in another thinking request.
-                reflectionSuccess = false;
-                while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
-                    String observation = m.group(1);
-                    if (observation.indexOf('>') > 0 || observation.indexOf('`') > 0) continue;  // there is an assignment or unresolved reflection in the value
-                    SusiMind.Reaction reaction = null;
-                    ReactionException ee = null;
-                    mindlevels: for (SusiMind mind: minds) {
-                            try {
-                                reaction = mind.new Reaction(observation, language, identity, debug, new SusiThought(), minds);
-                                break mindlevels;
-                            } catch (ReactionException e) {
-                                ee = e;
-                                continue mindlevels;
-                            }
-                    }
-                    if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
-                    thoughts.think(reaction.getMindstate());
-                    SusiAction action = reaction.getAction();
-                    if (action.getRenderType() != RenderType.answer) actions.add(action);
-                    expression = expression.substring(0, m.start(1) - 1) + reaction.getExpression() + expression.substring(m.end(1) + 1);
-                    expression = expression.trim();
-                    reflectionSuccess = true;
-                }
-
-            }
-            
-            // if anything is left after this process, it is our expression
-            if (expression != null && expression.length() > 0) {
-                // the expression is answered to the communication partner
-                this.json.put("expression", expression);
-            }
-        }
-        if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
-            this.json.put("query", thoughts.unify(getStringAttr("query"), false, Integer.MAX_VALUE));
-        }
-        if (this.getRenderType() == RenderType.anchor && this.json.has("link") && this.json.has("text")) {
-            this.json.put("link", thoughts.unify(getStringAttr("link"), false, Integer.MAX_VALUE));
-            this.json.put("text", thoughts.unify(getStringAttr("text"), false, Integer.MAX_VALUE));
-        }
-        if (this.getRenderType() == RenderType.map && this.json.has("latitude") && this.json.has("longitude") && this.json.has("zoom")) {
-            this.json.put("latitude", thoughts.unify(getStringAttr("latitude"), false, Integer.MAX_VALUE));
-            this.json.put("longitude", thoughts.unify(getStringAttr("longitude"), false, Integer.MAX_VALUE));
-            this.json.put("zoom", thoughts.unify(getStringAttr("zoom"), false, Integer.MAX_VALUE));
-        }
-        if ((this.getRenderType() == RenderType.video_play || this.getRenderType() == RenderType.audio_play) && this.json.has("identifier")) {
-            this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false, Integer.MAX_VALUE));
-        }
-        if ((this.getRenderType() == RenderType.audio_volume) && this.json.has("volume")) {
-            String volume = thoughts.unify(getStringAttr("volume"), false, Integer.MAX_VALUE);
-            int p = volume.indexOf(' ');
-            if (p >= 0) volume = volume.substring(0, p).trim();
-            int v = 50;
-            try {
-                v = Integer.parseInt(volume);
-            } catch (NumberFormatException e) {
-            }
-            v = Math.min(100, Math.max(0, v));
-            this.json.put("volume", Integer.toString(v));
-        }
-        return actions;
-    }
-    
     /**
      * An action is backed with a JSON data structure. That can be retrieved here.
      * @return the json structure of the action
@@ -501,12 +424,12 @@ public class SusiAction {
         }
         return j;
     }
-    
+
     /**
      * toString
      * @return return the json representation of the object as a string
      */
     public String toString() {
-        return toJSONClone().toString();
+        return toJSONClone().toString(2);
     }
 }

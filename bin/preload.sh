@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-JARFILE="build/libs/susi_server-all.jar"
+JARFILE="build/libs/susi_server.jar"
 INSTALLATIONCONFIG="data/settings/installation.txt"
 PIDFILE="data/susi.pid"
 DFAULTCONFIG="conf/config.properties"
@@ -16,8 +16,15 @@ mkdir -p data/settings
 if [ -f $PIDFILE ]; then
     PID=$(cat $PIDFILE 2>/dev/null)
     if [ -n $PID ]; then
-        echo "Server is already running. Please stop it and then start."
-        exit 1
+        # check whether this process is actually running or a leftover
+        # from a hard shutdown
+        if kill -0 $PID 2>/dev/null ; then
+            echo "Server is already running. Please stop it and then start."
+            exit 1
+        else
+            echo "Removing left over $PIDFILE"
+            rm $PIDFILE
+        fi
     else
         rm $PIDFILE
     fi
@@ -41,7 +48,7 @@ else
     exit 1
 fi
 
-cmdline="java";
+cmdline="java -Xverify:none";
 
 if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
 elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";

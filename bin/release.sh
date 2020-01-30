@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 cd $(dirname $0)/..
-source bin/preload.sh
+
+# try to run this with
+# bin/release.sh -pb
 
 while getopts ":pb" opt; do
     case $opt in
@@ -10,7 +12,7 @@ while getopts ":pb" opt; do
             git pull origin
             ;;
         b)
-	    gradle assemble
+	    ./gradlew clean assemble
             ;;
         \?)
             echo "Usage: $0 [options...]"
@@ -20,6 +22,11 @@ while getopts ":pb" opt; do
             ;;
     esac
 done
+
+# running preload must be done after operator processing
+# to be able to make a new release which possibly provides
+# a new jar file which the preload requires
+source bin/preload.sh
 
 # variables used from preload.sh
 # JARFILE="build/libs/susi_server-all.jar"
@@ -42,12 +49,14 @@ mkdir $RELEASE_PATH/$RELEASE_FILE/release
 mkdir $RELEASE_PATH/$RELEASE_FILE/bin
 mkdir $RELEASE_PATH/$RELEASE_FILE/build
 mkdir $RELEASE_PATH/$RELEASE_FILE/build/libs
+mkdir $RELEASE_PATH/$RELEASE_FILE/system-integration
 
 # copy files
 cp -R conf $RELEASE_PATH/$RELEASE_FILE/
 cp -R html $RELEASE_PATH/$RELEASE_FILE/
 cp bin/*.sh $RELEASE_PATH/$RELEASE_FILE/bin/
 cp $JARFILE $RELEASE_PATH/$RELEASE_FILE/$JARFILE
+cp -a system-integration/* $RELEASE_PATH/$RELEASE_FILE/system-integration/
 
 # make a complete copy
 cp -R $RELEASE_PATH/$RELEASE_FILE $RELEASE_PATH/$LATEST_FILE

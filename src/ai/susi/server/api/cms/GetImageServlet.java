@@ -26,7 +26,6 @@ import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.aaa.GetAvatarServlet;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -92,15 +91,26 @@ import java.io.*;
             }
         }
 
-        if (imageFile == null || !imageFile.exists()) {response.sendError(503, "image does not exist"); return;}
+        else if(!post.get("sliderImage", "").equals("")) {
+            //For slider image
+            String image_path = post.get("sliderImage", "");
+            imageFile = new File(DAO.data_dir + File.separator + "slider_uploads" + File.separator + image_path);
+        }
+
+        if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
+            imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
+        }
 
         ByteArrayOutputStream data = new ByteArrayOutputStream();
-        byte[] b = new byte[2048];
-        InputStream is = new BufferedInputStream(new FileInputStream(imageFile));
-        int c;
         try {
+            byte[] b = new byte[2048];
+            InputStream is = new BufferedInputStream(new FileInputStream(imageFile));
+            int c;
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            data.reset();
+            e.printStackTrace();
+        }
 
         GetAvatarServlet.setMimeType(request, response, post, file);
 

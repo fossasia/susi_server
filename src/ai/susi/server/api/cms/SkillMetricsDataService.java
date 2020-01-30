@@ -73,6 +73,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
         JSONArray staffPicks = new JSONArray();
+        JSONArray systemSkills = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
@@ -96,7 +97,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
         DAO.observe(); // get a database update
-        
+
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
             File allGroup = new File(String.valueOf(model));
@@ -121,6 +122,10 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                         if (DAO.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
                             staffPicks.put(skillMetadata);
                         }
+
+                        if (DAO.isSystemSkill(model_name, temp_group_name, language_name, skill_name)) {
+                            systemSkills.put(skillMetadata);
+                        }
                     }
                 }
             }
@@ -144,6 +149,10 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     if (DAO.isStaffPick(model_name, group_name, language_name, skill_name)) {
                         staffPicks.put(skillMetadata);
                     }
+
+                    if (DAO.isSystemSkill(model_name, group_name, language_name, skill_name)) {
+                        systemSkills.put(skillMetadata);
+                    }
                 }
             }
         }
@@ -152,6 +161,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
         List<JSONObject> staffPicksList = new ArrayList<JSONObject>();
+        List<JSONObject> systemSkillsList = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -160,6 +170,10 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         for (int i = 0; i < staffPicks.length(); i++) {
             staffPicksList.add(staffPicks.getJSONObject(i));
+        }
+
+        for (int i = 0; i < systemSkills.length(); i++) {
+            systemSkillsList.add(systemSkills.getJSONObject(i));
         }
 
         // Get skills based on creation date - Returns latest skills
@@ -175,7 +189,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         skillMetrics.put("latest", modifiedDateData);
 
         // Get skills based on ratings
-        DAO.sortByAvgStar(jsonValues, false);
+        DAO.sortByMostRating(jsonValues, false);
 
         JSONArray ratingsData = getSlicedArray(jsonValues, count);
         skillMetrics.put("rating", ratingsData);
@@ -193,10 +207,13 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         skillMetrics.put("feedback", feedbackData);
 
         // Get skills based on ratings
-        DAO.sortByAvgStar(staffPicksList, false);
+        DAO.sortByMostRating(staffPicksList, false);
 
         JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
         skillMetrics.put("staffPicks", staffPicksArray);
+
+        JSONArray systemSkillsArray = getSlicedArray(systemSkillsList, count);
+        skillMetrics.put("systemSkills",systemSkillsArray);
 
         for (String metric_name : metrics_names) {
             try {
@@ -208,7 +225,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     }
                 }
                 // Get skills based on ratings of a particular group
-                DAO.sortByAvgStar(groupJsonValues, false);
+                DAO.sortByMostRating(groupJsonValues, false);
 
                 JSONArray topGroup = new JSONArray();
                 topGroup = getSlicedArray(groupJsonValues, count);

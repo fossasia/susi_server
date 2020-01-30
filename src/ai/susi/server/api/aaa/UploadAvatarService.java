@@ -12,6 +12,7 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
+import ai.susi.server.api.cms.CreateSkillService;
 import ai.susi.server.api.cms.UploadImageService;
 import org.json.JSONObject;
 
@@ -22,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -44,9 +44,9 @@ import java.nio.file.Paths;
         maxRequestSize=1024*1024*100)       // 100 MB
 public class UploadAvatarService extends AbstractAPIHandler implements APIHandler {
 
-	private static final long serialVersionUID = -3378038477776664836L;
+    private static final long serialVersionUID = -3378038477776664836L;
 
-	@Override
+    @Override
     public UserRole getMinimalUserRole() {
         return UserRole.USER;
     }
@@ -72,12 +72,20 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                 result.put("message", "Image file not received");
             } else {
                 InputStream imagePartContent = imagePart.getInputStream();
-
+                String email = req.getParameter("email");
                 ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
                 Authentication authentication = DAO.getAuthentication(credential);
                 ClientIdentity identity = authentication.getIdentity();
-                String userEmail = identity.getName();
-                String userId = identity.getUuid();
+                Authorization authorization = DAO.getAuthorization(identity);
+                UserRole userRole = authorization.getUserRole();
+                String userId;
+                if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                    ClientIdentity userIdentity = new ClientIdentity(ClientIdentity.Type.email, email);
+                    userId = userIdentity.getUuid();
+                } else {
+                    userId = identity.getUuid();
+                }
+
                     // check if access_token is valid
                 if (authentication.getIdentity() != null) {
 
@@ -85,15 +93,23 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     // Reading content for image
                     Image image = ImageIO.read(imagePartContent);
                     BufferedImage bi = UploadImageService.toBufferedImage(image);
+                    BufferedImage bi_thumbnail = UploadImageService.toBufferedImage(CreateSkillService.createResizedCopy(image,40,40,true));
                     // Checks if images directory exists or not. If not then create one
                     if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
 
                     String image_name = userId + ".jpg";
+                    String image_name_thumbnail = userId + "_thumbnail.jpg";
                     File p = new File(imagePath + File.separator + image_name);
-                    if (p.exists()) p.delete();
+                    File p_thumbnail = new File(imagePath + File.separator + image_name_thumbnail);
+                    if (p.exists()) {
+                      p.delete();
+                      p_thumbnail.delete();
+                    }
                     ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
+                    ImageIO.write(bi_thumbnail, "jpg", new File(imagePath + File.separator + image_name_thumbnail));
                     result.put("accepted", true);
                     result.put("image_path", image_name);
+                    result.put("image_thumbnail_path", image_name_thumbnail);
                 }
                 else{
                     result.put("accepted", false);

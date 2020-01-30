@@ -20,7 +20,7 @@
 package ai.susi;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
@@ -29,27 +29,25 @@ import org.apache.log4j.spi.LoggingEvent;
 public class LogAppender extends AppenderSkeleton {
 
     private int maxlines;
-    private List<String> lines;
+    private ConcurrentLinkedQueue<String> lines;
 
     public LogAppender(Layout layout, int maxlines) {
         this.layout = layout;
         this.maxlines = maxlines;
-        this.lines = new ArrayList<>();
+        this.lines = new ConcurrentLinkedQueue<>();
         String line = layout.getHeader();
-        this.lines.add(line);
+        if (line != null) this.lines.add(line);
     }
 
     @Override
     public void append(LoggingEvent event) {
         if (event == null) return;
         String line = this.layout.format(event);
-        this.lines.add(line);
+        if (line != null) this.lines.add(line);
         if (event.getThrowableInformation() != null) {
-            for (String t: event.getThrowableStrRep()) this.lines.add(t + "\n");
+            for (String t: event.getThrowableStrRep()) if (t != null)  this.lines.add(t + "\n");
         }
-        while (this.lines.size() > this.maxlines) {
-            this.lines.remove(0);
-        }
+        clean(this.maxlines);
     }
 
     @Override
@@ -62,12 +60,18 @@ public class LogAppender extends AppenderSkeleton {
     public boolean requiresLayout() {
         return true;
     }
-    
-    public int size() {
-        return this.lines.size();
+
+    public ArrayList<String> getLines(int max) {
+        Object[] a = this.lines.toArray();
+        ArrayList<String> l = new ArrayList<>();
+        int start = Math.max(0, a.length - max);
+        for (int i = start; i < a.length; i++) l.add((String) a[i]);
+        return l;
     }
-    
-    public List<String> getLines() {
-        return this.lines;
+
+    public void clean(int remaining) {
+        while (this.lines.size() > remaining) {
+            this.lines.poll();
+        }
     }
 }

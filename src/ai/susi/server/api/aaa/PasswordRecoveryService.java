@@ -66,9 +66,9 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 				if (DAO.passwordreset.has(credentialcheck.toString())) {
 					Authentication authentication = new Authentication(credentialcheck, DAO.passwordreset);
 					if (authentication.checkExpireTime()) {
-						String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+						String passwordPattern = DAO.getConfig("users.password.regex", "^((?=.*\\d)(?=.*[A-Z])(?=.*\\W).{8,64})$");
 						String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
-								"Enter a combination of atleast six characters");
+								"Enter a combination of atleast 8 characters and atleast one special character, one number and one capital letter");
 						result.put("message", "Email ID: " + authentication.getIdentity().getName());
 						result.put("regex", passwordPattern);
 						result.put("regexTooltip", passwordPatternTooltip);
@@ -113,7 +113,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = "https://accounts.susi.ai/?token=" + token;
+		String verificationLink = "https://susi.ai/resetpass?token=" + token;
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));

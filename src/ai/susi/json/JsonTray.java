@@ -25,11 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.tools.CacheMap;
 
 /**
@@ -39,121 +41,164 @@ import ai.susi.tools.CacheMap;
  * or they might be volatile (they are not written at all and only stored in case the object is closed).
  */
 public class JsonTray {
-    
+
+    private static Map<Integer, JsonTray> trayRegistry = new HashMap<>(); // all tray files are registered here
+
     private JsonFile per;
     private CacheMap<String, JSONObject> vol;
+    private File file_persistent;
     private File file_volatile;
     private long file_volatile_lastModified;
-    
+    private int cachesize;
+
     public JsonTray(File file_persistent, File file_volatile, int cachesize) throws IOException {
+        this.cachesize = cachesize;
         this.per = new JsonFile(file_persistent, false);
-        this.vol = new CacheMap<String, JSONObject>(cachesize);
+        this.vol = null;
+        this.file_persistent = file_persistent;
         this.file_volatile = file_volatile;
         this.file_volatile_lastModified = this.file_volatile.lastModified();
-        if (this.file_volatile != null && this.file_volatile.exists()) try {
+        ensureVolatileInitBase();
+
+        //DAO.log("init JsonTray persistent '" + file_persistent.getAbsolutePath() + "' " + getPersistentSize());
+        //DAO.log("init JsonTray volatile '" + file_volatile.getAbsolutePath() + "' " + getVolatileSize());
+        trayRegistry.put(this.hashCode(), this);
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.file_persistent.getAbsolutePath() + this.file_volatile.getAbsolutePath()).hashCode();
+    }
+
+    private void ensureVolatileInit() {
+        ensureVolatileInitBase();
+    }
+
+    private void ensureVolatileInitBase() {
+        if (this.vol != null) return;
+        this.vol = new CacheMap<String, JSONObject>(this.cachesize);
+        if (!this.file_volatile.exists()) return;
+
+        try {
             JSONObject j = JsonFile.readJson(this.file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DAO.severe(e);
         }
     }
-	
+
+    public int getPersistentSize() {
+        return this.per.size();
+    }
+
+    public int getVolatileSize() {
+        ensureVolatileInit();
+        return this.vol == null ? 0 : this.vol.size();
+    }
+
     public void close() {
         // commit any data that has not yet been stored.
         this.commit();
-        
+
         if (this.file_volatile != null) try {
-        	// copy the volatile data into a JSONObject to store it in a dump file
+            // copy the volatile data into a JSONObject to store it in a dump file
             JSONObject j = new JSONObject(true);
             for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {
                 j.put(entry.getKey(), entry.getValue());
             }
-            
+
             // check the storage time of the volatile file; if it was stored in between, read it again and merge the data
             if (this.file_volatile.lastModified() > this.file_volatile_lastModified) {
-            	JSONObject k = JsonFile.readJson(this.file_volatile);
-            	for (String s: k.keySet()) {
-            		if (!j.has(s)) j.put(s, k.get(s));
-            	}
+                JSONObject k = JsonFile.readJson(this.file_volatile);
+                for (String s: k.keySet()) {
+                    if (!j.has(s)) j.put(s, k.get(s));
+                }
             }
-            
+
             // finally store the data
             JsonFile.writeJson(this.file_volatile, j, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     public boolean has(String key) {
+        ensureVolatileInit();
         synchronized(this.vol) {
             if (this.vol.exist(key)) return true;
         }
         return this.per.has(key);
     }
-    
+
     public JsonTray put(String key, JSONObject value, boolean persistent) {
         if (persistent) putPersistent(key, value); else putVolatile(key, value);
         return this;
     }
-    
+
     private JsonTray putPersistent(String key, JSONObject value) {
         this.per.put(key, value);
         return this;
     }
-    
+
     private JsonTray putVolatile(String key, JSONObject value) {
+        ensureVolatileInit();
         synchronized (this.vol) {
             this.vol.put(key, value);
         }
         return this;
     }
-    
-    public JsonTray remove(String key){
-    	synchronized(this.vol) {
+
+    public JsonTray remove(String key) {
+        ensureVolatileInit();
+        synchronized(this.vol) {
             if (this.vol.exist(key)){
-            	this.vol.remove(key);
-            	return this;
+                this.vol.remove(key);
+                return this;
             }
         }
-    	if(this.per.has(key)){
-    		this.per.remove(key);
-    	}
-    	return this;
+        if(this.per.has(key)){
+            this.per.remove(key);
+        }
+        return this;
     }
-    
+
     public JsonTray commit() {
         this.per.commit();
         return this;
     }
-    
+
     public JSONObject getJSONObject(String key) {
+        ensureVolatileInit();
         synchronized(this.vol) {
             JSONObject value = this.vol.get(key);
             if (value != null) return value;
         }
         return this.per.getJSONObject(key);
     }
-    
+
     public JSONObject toJSON() {
-    	JSONObject j = new JSONObject();
-    	for (String key : this.per.keySet()){
-    		j.put(key, this.per.get(key));
-    	}
-    	synchronized (this.vol) {
-    		LinkedHashMap<String,JSONObject> map = this.vol.getMap();
-	    	for(String key : map.keySet()){
-	    		j.put(key, map.get(key));
-	    	}
-    	}
-    	return j;
+        JSONObject j = new JSONObject();
+        for (String key : this.per.keySet()){
+            j.put(key, this.per.get(key));
+        }
+        ensureVolatileInit();
+        synchronized (this.vol) {
+            LinkedHashMap<String,JSONObject> map = this.vol.getMap();
+            for(String key : map.keySet()){
+                j.put(key, map.get(key));
+            }
+        }
+        return j;
     }
-    
+
     public Collection<String> keys() {
-    	ArrayList<String> keys = new ArrayList<>();
-    	keys.addAll(this.per.keySet());
-    	synchronized (this.vol) {
-    		keys.addAll(this.vol.getMap().keySet());
-    	}
-    	return keys;
+        ArrayList<String> keys = new ArrayList<>();
+        keys.addAll(this.per.keySet());
+        ensureVolatileInit();
+        synchronized (this.vol) {
+            keys.addAll(this.vol.getMap().keySet());
+        }
+        return keys;
     }
+
 }

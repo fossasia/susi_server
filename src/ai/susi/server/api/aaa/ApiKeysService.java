@@ -34,15 +34,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * This Servlet gives a API Endpoint to add, modify and delete different API keys used by SUSI.
- * It requires user role to be ADMIN or above ADMIN
- * example:
+ * This Servlet gives a API Endpoint to add, modify and delete different API
+ * keys used by SUSI. It requires user role to be ADMIN or above ADMIN example:
  * http://localhost:4000/aaa/apiKeys.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
- * Necessary parameters : access_token, keyName
- * Other parameters (one out of two is necessary):
- * keyValue  -> string http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&keyVale=jfsdf43jss534fsdjgn
- * type  -> string http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&keyVale=jfsdf43jss534fsdjgn&type=private
- * deleteKey -> boolean http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&deleteKey=true
+ * Necessary parameters : access_token, keyName Other parameters (one out of two
+ * is necessary): keyValue -> string
+ * http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&keyVale=jfsdf43jss534fsdjgn
+ * type -> string
+ * http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&keyVale=jfsdf43jss534fsdjgn&type=private
+ * deleteKey -> boolean
+ * http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&deleteKey=true
  */
 
 @Path("/aaa/apiKeys.json")
@@ -52,7 +53,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ADMIN;
+        return UserRole.USER;
     }
 
     @Override
@@ -62,29 +63,26 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
 
     @GET
     @ApiOperation(httpMethod = "GET", value = "Endpoint to add, modify and delete diffrent API keys used by SUSI")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Removed API key successfully"),
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Removed API key successfully"),
             @ApiResponse(code = 201, message = "Added new API key xxxxxxxx successfully"),
             @ApiResponse(code = 400, message = "Bad Request. No parameter present"),
             @ApiResponse(code = 401, message = "Base user role not sufficient. Your base user role is 'ANONYMOUS', minimum user role required is 'admin'"),
             @ApiResponse(code = 500, message = "Failed: Unable to add xxxxxxxx!"),
-            @ApiResponse(code = 501, message = "Failed: xxxxxxxx doesn't exists")
-    })
+            @ApiResponse(code = 501, message = "Failed: xxxxxxxx doesn't exists") })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyName", value = "Name of the API key", required = true, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "keyValue", value = "API key", dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "type", value = "Type of API key", dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "deleteKey", value = "Parameter to specify to delete API key", dataType = "boolean", paramType = "query")
-    })
+            @ApiImplicitParam(name = "deleteKey", value = "Parameter to specify to delete API key", dataType = "boolean", paramType = "query") })
     @Override
     public String getAPIPath() {
         return "/aaa/apiKeys.json";
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
-        if (call.get("keyName", null) == null
-                && call.get("keyValue", null) == null) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization,
+            final JsonObjectWithDefault permissions) throws APIException {
+        if (call.get("keyName", null) == null && call.get("keyValue", null) == null) {
             throw new APIException(400, "Bad Request. No parameter present");
         }
 
@@ -95,33 +93,70 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
         JsonTray apiKeys = DAO.apiKeys;
         JSONObject result = new JSONObject();
         JSONObject keys = new JSONObject();
+        JSONObject userKeyObj = new JSONObject();
+        ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token,
+                call.get("access_token", null));
+        Authentication authentication = DAO.getAuthentication(credential);
+        String userId = null;
 
         if (apiKeys.has(type)) {
             keys = apiKeys.getJSONObject(type);
         }
 
-	if(!deleteKey){
-            try {
-               JSONObject api = new JSONObject();
-               api.put("value", keyValue);
-               keys.put(keyName, api);
-               apiKeys.put(type, keys, true);
-               result.put("accepted", true);
-               result.put("message", "Added new API key " + call.get("keyName") + " successfully !");
-               return new ServiceResponse(result);
-            } catch (Exception e) {
-               throw new APIException(500, "Failed : Unable to add" + call.get("keyName") + " !" );
+        if (authentication.getIdentity() != null) {
+            ClientIdentity identity = authentication.getIdentity();
+            userId = identity.getUuid();
+            authorization = DAO.getAuthorization(identity);
+            UserRole userRole = authorization.getUserRole();
+            if (!type.equals("user")) {
+                if ((!userRole.getName().equals("admin") && !userRole.getName().equals("superadmin"))
+                        || userId == null) {
+                    throw new APIException(401, "Unauthorized");
+                }
+            } else {
+                userKeyObj = keys.has(userId) ? keys.getJSONObject(userId) : new JSONObject();
             }
-	} else {
+
+        } else {
+            throw new APIException(422, "Access token is not valid");
+        }
+
+        if (!deleteKey) {
             try {
-               keys.remove(keyName);
-               apiKeys.put(type, keys, true);
-               result.put("accepted", true);
-               result.put("message", "Removed API key " + call.get("keyName") + " successfully !");
-               return new ServiceResponse(result);
+                if (type.equals("public") || type.equals("private")) {
+                    JSONObject api = new JSONObject();
+                    api.put("value", keyValue);
+                    keys.put(keyName, api);
+                } else {
+                    JSONObject key = new JSONObject();
+                    JSONObject apiValueObj = new JSONObject();
+                    apiValueObj.put("value", keyValue);
+                    key.put(keyName, apiValueObj);
+                    userKeyObj.put(keyName, apiValueObj);
+                    keys.put(userId, userKeyObj);
+                }
+                apiKeys.put(type, keys, true);
+                result.put("accepted", true);
+                result.put("message", "Added new API key " + call.get("keyName") + " successfully !");
+                return new ServiceResponse(result);
             } catch (Exception e) {
-               throw new APIException(501, "Failed : " + call.get("keyName") + " doesn't exists!" );
+                throw new APIException(500, "Failed : Unable to add" + call.get("keyName") + " !");
             }
-	}
+        } else {
+            try {
+                if (type.equals("public") || type.equals("private")) {
+                    keys.remove(keyName);
+                } else {
+                    userKeyObj.remove(keyName);
+                    keys.put(userId, userKeyObj);
+                }
+                apiKeys.put(type, keys, true);
+                result.put("accepted", true);
+                result.put("message", "Removed API key " + call.get("keyName") + " successfully !");
+                return new ServiceResponse(result);
+            } catch (Exception e) {
+                throw new APIException(501, "Failed : " + call.get("keyName") + " doesn't exists!");
+            }
+        }
     }
 }

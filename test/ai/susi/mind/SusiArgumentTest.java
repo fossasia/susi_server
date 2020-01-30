@@ -10,11 +10,12 @@ import org.junit.Test;
 
 import ai.susi.mind.SusiArgument;
 import ai.susi.mind.SusiThought;
+import ai.susi.server.ClientIdentity;
 
 public class SusiArgumentTest {
 
     public static SusiArgument generateTestArgument(String key, String value) {
-        return new SusiArgument().think(SusiThoughtTest.generateTestThought(key, value));
+        return new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(SusiThoughtTest.generateTestThought(key, value));
     }
     
     @BeforeClass

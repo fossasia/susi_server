@@ -41,13 +41,13 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
-import java.util.Objects;
-
 /**
  * This Servlet gives a API Endpoint to fetch different API keys used by SUSI.
  * It requires user role to be ANONYMOUS or above ANONYMOUS
  * example:
  * http://localhost:4000/aaa/getApiKeys.json
+ * User API Key, necessary parameters, access_token, type(user):
+ * http://localhost:4000/aaa/getApiKeys.json?type=user&access_token=gzTPX50EfAXrpTZtiZrJNao94H00P5
  */
 @Path("/aaa/getApiKeys.json")
 @Produces(MediaType.APPLICATION_JSON)
@@ -56,8 +56,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
 
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to fetch different API keys used by SUSI")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success : Fetched all API key successfully !"),
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Success : Fetched all API key successfully !"),
             @ApiResponse(code = 500, message = "Failed : Unable to fetch API keys!"),
 
     })
@@ -77,25 +76,36 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
+            final JsonObjectWithDefault permissions) throws APIException {
 
         JsonTray apiKeys = DAO.apiKeys;
-        JSONObject publicKeys = apiKeys.getJSONObject("public");
+        String type = call.get("type", "public");
+        JSONObject configKeys = new JSONObject();
         JSONObject result = new JSONObject();
-        JSONObject keys = new JSONObject();
+        if (type.equals("public")) {
+            configKeys = apiKeys.getJSONObject("public");
+        } else if (type.equals("user")) {
+            String access_token = call.get("access_token", null);
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, access_token);
+            Authentication authentication = DAO.getAuthentication(credential);
 
-        for (String key : Objects.requireNonNull(JSONObject.getNames(publicKeys))) {
-            JSONObject values =  (JSONObject)publicKeys.get(key);
-            keys.put(key, values.get("value"));
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                String userId = identity.getUuid();
+                JSONObject userKeys = userId != null && apiKeys.has("user") ? apiKeys.getJSONObject("user") : null;
+                configKeys = userKeys != null && userKeys.has(userId) ? userKeys.getJSONObject(userId) : new JSONObject();
+            } else {
+                throw new APIException(422, "Access token is not valid");
+            }
         }
-
         try {
             result.put("accepted", true);
-            result.put("keys", keys);
+            result.put("keys", configKeys);
             result.put("message", "Success : Fetched all API key successfully !");
             return new ServiceResponse(result);
         } catch (Exception e) {
-            throw new APIException(500, "Failed : Unable to fetch API keys!" );
+            throw new APIException(500, "Failed : Unable to fetch API keys!");
         }
     }
 }

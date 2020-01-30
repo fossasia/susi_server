@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * test a jsonpath
@@ -65,7 +67,9 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
         if (jsonString.equals("{}") && url.length() > 0) {
             // replace jsonString with content from web
             try {
-                byte[] b = ConsoleService.loadData(url);
+                Map<String, String> request_header = new HashMap<>();
+                request_header.put("Accept","application/json");
+                byte[] b = ConsoleService.loadData(url, request_header);
                 jsonString = new String(b, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 e.printStackTrace();

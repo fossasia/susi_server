@@ -36,13 +36,15 @@ import java.io.*;
  This Servlet gives a API Endpoint to return avatar of a user based on the avatar
  type the user has in the settings. The access token of the user is required.
  http://localhost:4000/getAvatar.png?access_token=963e84467b92c0916b27d157b1d45328
+ Other parameter (not necessary):
+ getThumbnail --> boolean http://localhost:4000/getAvatar.png?access_token=963e84467b92c0916b27d157b1d45328&getThumbnail=true
  */
 
  public class GetAvatarServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 7408901113114682419L;
+    private static final long serialVersionUID = 7408901113114682419L;
 
-	@Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         Query post = RemoteAccess.evaluate(request);
@@ -54,9 +56,15 @@ import java.io.*;
         if (post.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
             ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, post.get("access_token", null));
             Authentication authentication = DAO.getAuthentication(credential);
+            ClientIdentity identity = authentication.getIdentity();
+            Authorization authorization = DAO.getAuthorization(identity);
+            UserRole userRole = authorization.getUserRole();
+            String email=post.get("email", null);
+             if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                identity = new ClientIdentity(ClientIdentity.Type.email, email);
+            }
             // check if access_token is valid
-            if (authentication.getIdentity() != null) {
-                ClientIdentity identity = authentication.getIdentity();
+            if (identity != null) {
                 Accounting accounting = DAO.getAccounting(identity);
                 JSONObject accountingObj = accounting.getJSON();
                 if (accountingObj.has("settings") &&
@@ -64,6 +72,9 @@ import java.io.*;
                     avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
                     userId = identity.getUuid();
                     file = userId + ".jpg";
+                    if(post.get("getThumbnail", false) == true){
+                        file = userId + "_thumbnail.jpg";
+                    }
                 } else {
                     avatar_type = "default";
                     file = "default.jpg";

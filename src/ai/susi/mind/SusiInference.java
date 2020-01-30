@@ -19,22 +19,34 @@
 
 package ai.susi.mind;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonPath;
+import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiArgument.Reflection;
+import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.api.susi.ConsoleService;
+import ai.susi.tools.DateParser;
 import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.HttpClient.Response;
 import alice.tuprolog.InvalidTheoryException;
 import alice.tuprolog.Prolog;
 import alice.tuprolog.SolveInfo;
@@ -72,10 +84,12 @@ public class SusiInference {
         this.json = json;
     }
 
-    public SusiInference(String expression, Type type) {
+    public SusiInference(String expression, Type type, int line) {
+        assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);
+        this.json.put("line", line);
     }
 
     public SusiInference(JSONObject definition, Type type) {
@@ -132,6 +146,40 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
+        flowProcedures.put(Pattern.compile("PLAN\\h+?([^:]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
+            // get attributes
+            String time = flow.unify(matcher.group(1), false, 0);
+            String reflection = flow.unify(matcher.group(2), false, 0);
+            SusiThought mindstate = flow.mindmeld(true);
+
+            // parse the time
+            String timezoneOffsets = mindstate.getObservation("timezoneOffset");
+            int timezoneOffset = 0;
+            if (timezoneOffsets != null) try {timezoneOffset = Integer.parseInt(timezoneOffsets);} catch (NumberFormatException e) {}
+            final long start = System.currentTimeMillis();
+            final Date date = DateParser.parseAnyText(time, timezoneOffset);
+            if (date == null) return null;
+            final long delay = date.getTime() - start;
+
+            // create planned action
+            JSONObject actionj = SusiAction.answerAction(0, flow.getLanguage(), reflection);
+            try {
+                SusiAction planned_utterance = new SusiAction(actionj);
+                SusiThought planned_thought = flow.applyAction(planned_utterance); // this also instantiates the answer in the planned_utterance
+                planned_thought.addAction(planned_utterance); // we want the planned_utterance as well as part of the flow
+                planned_thought.getActions(true).forEach(action -> {
+                    // add a delay to the actions
+                    action.setLongAttr("plan_delay", delay);
+                    action.setDateAttr("plan_date", date);
+                });
+                flow.think(planned_thought);
+            } catch (ReactionException | SusiActionException e) {
+                return new SusiThought(); // empty thought as fail
+            }
+
+            SusiThought queued = flow.mindmeld(true);
+            return queued;
+        });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String remember = matcher.group(1), matching = matcher.group(2);
             return see(flow, flow.unify("%1% AS " + remember, false, 0), flow.unify(matching, false, 0), Pattern.compile("(.*)"));
@@ -174,16 +222,29 @@ public class SusiInference {
         });
         javascriptProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
             String term = matcher.group(1);
+            term = flow.unify(term, false, Integer.MAX_VALUE);
+            while (term.indexOf('`') >= 0) try {
+                Reflection reflection = new Reflection(term, flow, false);
+                term = reflection.expression;
+            } catch (ReactionException e) {
+                e.printStackTrace();
+                break;
+            }
             try {
                 StringWriter stdout = new StringWriter();
                 javascript.getContext().setWriter(new PrintWriter(stdout));
                 javascript.getContext().setErrorWriter(new PrintWriter(stdout));
-                Object o = javascript.eval(flow.unify(term, false, Integer.MAX_VALUE));
+                Object o;
+                try {
+                    o = javascript.eval(term);
+                } catch (ScriptException e) {
+                    o = e.getMessage();
+                }
                 String bang = o == null ? "" : o.toString().trim();
                 if (bang.length() == 0) bang = stdout.getBuffer().toString().trim();
                 return new SusiThought().addObservation("!", bang);
-            } catch (Throwable e) {
-                DAO.severe(e);
+            } catch (Throwable ee) {
+                DAO.severe(ee);
                 return new SusiThought(); // empty thought -> fail
             }
         });
@@ -290,12 +351,62 @@ public class SusiInference {
                 }
 
                 // load more data using an url and a path
-                if (definition.has("url") && definition.has("path")) try {
+                if (definition.has("url")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
-                    String path = flow.unify(definition.getString("path"), false, Integer.MAX_VALUE);
-                    byte[] b = ConsoleService.loadData(url);
-                    JSONArray data = JsonPath.parse(b, path);
-                    if (data != null) {
+                    try {while (url.indexOf('`') >= 0) {
+                        SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow, true);
+                        url = reflection.expression;
+                    }} catch (ReactionException e) {}
+                    String path = definition.has("path") ? flow.unify(definition.getString("path"), false, Integer.MAX_VALUE) : null;
+
+                    // make a custom request header
+                    Map<String, String> request_header = new HashMap<>();
+                    if (path != null) request_header.put("Accept","application/json");
+                    Map<String, Object> request =  definition.has("request") ? definition.getJSONObject("request").toMap() : null;
+                    if (request != null) request.forEach((key, value) -> request_header.put(key, value.toString()));
+                    /*
+                    request_header.put("Accept-Encoding","gzip, deflate, br");
+                    request_header.put("Accept-Language","de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7,es;q=0.6");
+                    request_header.put("Cache-Control","max-age=0");
+                    request_header.put("Connection","keep-alive");
+                    request_header.put("Cookie","WR_SID=e6de8822.59648a8a2de5a");
+                    request_header.put("Host","api.wolframalpha.com");
+                    request_header.put("Sec-Fetch-Mode","navigate");
+                    request_header.put("Sec-Fetch-Site","none");
+                    request_header.put("Sec-Fetch-User","?1");
+                    request_header.put("Upgrade-Insecure-Requests","1");
+                    request_header.put("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.70 Safari/537.36");
+                     */
+                    // issue the request
+                    Response httpresponse = null;
+                    JSONArray data = new JSONArray();
+                    try {
+                        httpresponse = new Response(url, request_header);
+                    } catch (IOException e) {
+                        DAO.log("no response from API: " + url);
+                    }
+
+                    byte[] b = httpresponse == null ? null : httpresponse.getData();
+                    if (b != null && path != null) try {
+                        data = JsonPath.parse(b, path);
+                    } catch (JSONException e) {
+                        DAO.log("JSON data from API cannot be parsed: " + url);
+                    }
+
+                    // parse response
+                    Map<String, Object> response =  definition.has("response") ? definition.getJSONObject("response").toMap() : null;
+                    if (response != null && httpresponse != null) {
+                        JSONObject obj_from_http_response_header = new JSONObject(true);
+                        Map<String, List<String>> response_header = httpresponse.getResponse();
+                        response.forEach((httpresponse_key, susi_varname) -> {
+                            List<String> values = response_header.get(httpresponse_key);
+                            if (values != null && !values.isEmpty()) obj_from_http_response_header.put(susi_varname.toString(), values.iterator().next());
+                        });
+                        if (!obj_from_http_response_header.isEmpty()) data.put(obj_from_http_response_header);
+                    }
+
+                    // evaluate the result data
+                    if (data != null && !data.isEmpty()) {
                         JSONArray learned = new SusiTransfer("*").conclude(data);
                         if (learned.length() > 0 && definition.has("actions") &&
                             learned.get(0) instanceof JSONObject &&

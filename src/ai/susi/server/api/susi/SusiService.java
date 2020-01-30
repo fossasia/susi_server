@@ -35,6 +35,9 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.OnlineCaution;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ai.susi.json.JsonTray;
@@ -45,13 +48,21 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+// http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0d!example:x%0d!expect:y%0dyee
+// http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0dyee
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
 
@@ -78,8 +89,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
 
     public static JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions, String q) throws APIException {
 
+        OnlineCaution.demand("SusiService", 5000);
+
         // parameters
-        int count = post.get("count", 1);
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         boolean debug = "true".equals(post.get("debug", ""));
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68
@@ -106,28 +118,30 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
 
         DAO.observe(); // get a database update
 
-        SusiThought recall = null;
-        if (dream == null || dream.length() == 0 || persona == null || persona.length() == 0) {
-            // compute a recall
-            SusiArgument observation_argument = new SusiArgument();
-            List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
-            cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
-            recall = observation_argument.mindmeld(false);
+        // compute a recall
+        ArrayList<SusiThought> recalls = new ArrayList<>();
+        List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
+        cognitions.forEach(cognition -> recalls.add(cognition.recallDispute()));
+        SusiThought recall = SusiArgument.mindmeld(recalls, false);
 
-            // now that we have a recall, use it to set the dream/persona
-            if (dream == null || dream.length() == 0) {
-                dream = recall.getObservation("_etherpad_dream");
-            }
-            if (persona == null || persona.length() == 0) {
-                persona = recall.getObservation("_persona_awake");
-            }
-            // the focused skill is a single skill which can be activated and has special abilities,
-            // like it may have catchall-phrases, a greeting phrase and a good-by phrase
-            if (focus == null || focus.length() == 0) {
-                focus = recall.getObservation("_focused_on");
-                
-            }
+        // now that we have a recall, use it to set the dream/persona
+        if (dream == null || dream.length() == 0) {
+            dream = recall.getObservation("_etherpad_dream");
         }
+        if (persona == null || persona.length() == 0) {
+            persona = recall.getObservation("_persona_awake");
+        }
+
+        // the focused skill is a single skill which can be activated and has special abilities,
+        // like it may have catchall-phrases, a greeting phrase and a good-by phrase
+        if (focus == null || focus.length() == 0) {
+            focus = recall.getObservation("_focused_on");
+        }
+
+        // read language preferences; this may overwrite the given call information
+        String user_language = recall.getObservation("_user_language");
+        if (user_language != null && user_language.length() > 0) language = user_language;
+        SusiLanguage susi_language = SusiLanguage.parse(language);
 
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();
@@ -143,25 +157,65 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             SusiSkill activeskill = instantMind.getSkillMetadata().get(skillid);
             instantMind.setActiveSkill(activeskill);
             minds.add(instantMind);
-        } catch (JSONException | SusiActionException e) {
+        } catch (IOException | JSONException | SusiActionException e) {
             DAO.severe(e.getMessage(), e);
         }
 
-        // etherpad dreaming
+        // local etherpad dreaming, reading from http://localhost:9001
+        // this cannot be activated, its always reading a dream named "susi"
+        File local_etherpad_apikey_file = new File(new File(new File(System.getProperty("user.home"), "SUSI.AI"), "etherpad-lite"), "APIKEY.txt");
+        String local_etherpad_apikey = null;
+        if (local_etherpad_apikey_file.exists()) {
+            // read the pad for the dream
+            try {
+                FileInputStream fis = new FileInputStream(local_etherpad_apikey_file);
+                byte[] data = new byte[(int) local_etherpad_apikey_file.length()];
+                fis.read(data);
+                fis.close();
+                local_etherpad_apikey = new String(data, "UTF-8");
+            } catch (IOException e) {
+            }
+        }
+        if (local_etherpad_apikey != null) try {
+            String padurl = "http://localhost:9001/api/1/getText?apikey=" + local_etherpad_apikey + "&padID=$query$";
+            Map<String, String> request_header = new HashMap<>();
+            request_header.put("Accept","application/json");
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
+            JSONObject json = new JSONObject(serviceResponse);
+            JSONObject data = json.optJSONObject("data");
+            String text = data == null ? "" : data.getString("text");
+            if (text.length() > 0 && !text.startsWith("Welcome to Etherpad!") && !text.startsWith("disabled")) {
+                // fill an empty mind with the dream
+                SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+                SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
+                SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
+                dreamMind.learn(skill, skillid, true);
+                SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
+                dreamMind.setActiveSkill(activeskill);
+                minds.add(dreamMind);
+            }
+        } catch (JSONException | IOException | SusiActionException e) {
+            DAO.severe(e.getMessage(), e);
+        }
+
+        // global etherpad dreaming, reading from http://dream.susi.ai
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
             String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
             String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
             String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
-            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
+            Map<String, String> request_header = new HashMap<>();
+            request_header.put("Accept","application/json");
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, dream)));
             JSONObject json = new JSONObject(serviceResponse);
-            String text = json.getJSONObject("data").getString("text");
+            JSONObject data = json.optJSONObject("data");
+            String text = data == null ? "" : data.getString("text");
             // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
             text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
             text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
             // fill an empty mind with the dream
             SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-            SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.unknown, dream);
+            SusiSkill.ID skillid = new SusiSkill.ID(susi_language, dream);
             SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
             dreamMind.learn(skill, skillid, true);
             SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
@@ -182,7 +236,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             } else {
                 for (SusiSkill focus_skill: focus_skills) {
                     String originpath = focus_skill.getID().getPath();
-                    SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.unknown, originpath);
+                    SusiSkill.ID skillid = new SusiSkill.ID(susi_language, originpath);
                     focusMind.learn(focus_skill, skillid, true);
                     minds.add(focusMind);
                 }
@@ -260,13 +314,31 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
 
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), debug, minds.toArray(new SusiMind[0]));
+        SusiCognition cognition = new SusiCognition(q, post.getClientHost(), timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
-            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug);
+            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug /*storeToCache*/);
         } catch (IOException e) {
             DAO.severe(e.getMessage());
         }
         JSONObject json = cognition.getJSON();
+
+        // for non-debugging/production use cases: make the answer short!
+        if (!debug) {
+            JSONArray a = json.optJSONArray("answers");
+            if (a != null) for (int i = 0; i < a.length(); i++) {
+                JSONObject j = a.getJSONObject(0);
+
+                // remove data object to prevent confusion of the first-time devs
+                // the data object is just for debugging, not as information to create a front-end!
+                //j.remove("data");
+                //j.remove("metadata");
+                j.remove("trace");
+
+                // now the very bad multi-answer patch TODO: fix this! remove this!
+                SusiThought.uniqueActions(j);
+            }
+        }
+
         return json;
     }
 }

@@ -64,12 +64,18 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         json.put("$EXPIRES", 0);
         json.put("accepted", false);
         String userId = null;
-        if (call.get("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
-            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token"));
-            Authentication authentication = DAO.getAuthentication(credential);
-            // check if access_token is valid
-            if (authentication.getIdentity() != null) {
-                ClientIdentity identity = authentication.getIdentity();
+        String access_token = call.get("access_token", null);
+        String email = call.get("email", null);
+        ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, access_token);
+        Authentication authentication = DAO.getAuthentication(credential);
+        if (authentication.getIdentity() != null) {
+            ClientIdentity identity = authentication.getIdentity();
+            Authorization authorization = DAO.getAuthorization(identity);
+            UserRole userRole = authorization.getUserRole();
+            if(email != null && (userRole.getName().equals("admin") || userRole.getName().equals("superadmin"))){
+                ClientIdentity userIdentity = new ClientIdentity(ClientIdentity.Type.email, email);
+                userId = userIdentity.getUuid();
+            } else {
                 userId = identity.getUuid();
             }
         }

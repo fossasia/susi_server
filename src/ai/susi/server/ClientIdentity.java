@@ -29,6 +29,8 @@ import ai.susi.tools.Digest;
  */
 public class ClientIdentity extends Client {
     
+    public final static ClientIdentity ANONYMOUS = new ClientIdentity("host:localhost");
+    
     public enum Type {
         uuid(true),  // non-anonymous identity, computed from the (first) email address as md5
         email(true), // non-anonymous identity

@@ -33,7 +33,7 @@ public class SusiTutorialTest {
 
     public static String susiAnswer(String q, ClientIdentity identity) {
         // creating a cognition means that an answer is computed
-        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others",1, identity, true, DAO.susi);
+        SusiCognition cognition = new SusiCognition(q, "", 0, 0, 0, "", "", "en", "Others", identity, true, DAO.susi);
         // evaluate the cognition, the answer is already inside!
         try {
             // memorize the cognition, this is needed to compute context-aware intents.
@@ -41,8 +41,12 @@ public class SusiTutorialTest {
             DAO.susi_memory.addCognition(identity.getClient(), cognition, true);
             // get the answer
             List<SusiThought> answers = cognition.getAnswers();
+            assert answers.size() > 0 : "no answer for q = " + q;
+            assertTrue("no answer for q = " + q, answers.size() > 0);
             SusiThought thought = answers.iterator().next();
             List<SusiAction> actions = thought.getActions(false);
+            assert actions.size() > 0;
+            assertTrue("no actions computed", actions.size() > 0);
             SusiAction action = actions.iterator().next();
             String answer = action.getPhrases().iterator().next();
             return answer;
@@ -79,10 +83,11 @@ public class SusiTutorialTest {
 
             // initialize all data
             try{
-                DAO.init(config, data);
+                DAO.init(config, data, false);
                 BufferedReader br = getTestReader();
                 SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
                 SusiSkill skill = new SusiSkill(br, skillid, true);
+                //System.out.println(skill.getIntents().get(0).clone().toString());
                 System.out.println(skill.toJSON().toString(2));
                 DAO.susi.learn(skill, skillid, true);
                 br.close();
@@ -93,10 +98,12 @@ public class SusiTutorialTest {
                 System.exit(-1);
             }
 
-            ClientIdentity identity = new ClientIdentity("host:localhost");
+            ClientIdentity identity = ClientIdentity.ANONYMOUS;
+            test("[token]", "token is working", identity);
+            test("[token2] test", "token2 handles test", identity);
             test("reset test.", "ok", identity);
-            test("roses are red", "susi is a hack", identity);
-            test("susi is a hack", "skynet is back", identity);
+            test("roses are red", "SUSI is a hack", identity);
+            //test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
             test("Bonjour", "Hello", identity);
             test("Buenos días", "Hello", identity);
@@ -108,11 +115,12 @@ public class SusiTutorialTest {
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
             test("How do I feel?", "I don't know your mood.", identity);
             test("I am getting bored.", "Make something!", identity);
-            //test("How do I feel?", "You are inactive.", identity);
+            test("How do I feel?", "You are inactive.", identity);
             test("I am so happy!", "Good for you!", identity);
             test("Shall I eat?", "You will be happy, whatever I say!", identity);
             test("javascript hello", "Hello world from Nashorn", identity);
             test("compute 10 to the power of 3", "10^3 = 1000.0", identity);
+            test("who is susi", "nlu success", identity);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -129,7 +137,7 @@ public class SusiTutorialTest {
                 System.out.println("** expected: " + e);
                 System.out.println("** returned: " + a);
             }
-            assertTrue(r);
+            assertTrue("fail for: " + q + ", expected: " + e + ", returned: " + a, r);
         } catch (JSONException x) {
             x.printStackTrace();
             assertTrue(false);
@@ -140,11 +148,17 @@ public class SusiTutorialTest {
                     "# susi EzD tutorial playground\n" +
                     "::prior\n" +
                     "\n" +
+                    "[token]\n" +
+                    "token is working\n" +
+                    "\n" +
+                    "[token2] *\n" +
+                    "token2 handles $1$\n" +
+                    "\n" +
                     "reset test.\n" +
                     "ok^^>_mood\n" +
                     "\n" +
                     "roses are red\n" +
-                    "susi is a hack\n" +
+                    "SUSI is a hack\n" +
                     "skynet is back\n" +
                     "\n" +
                     "What is your favorite dish\n" +
@@ -219,6 +233,16 @@ public class SusiTutorialTest {
                     "{\"type\":\"io\"}" +
                     "]" +
                     "eol\n" +
+                    "\n" +
+                    "set alarm\n" +
+                    "!queue: 1234 `play metallica`\n" +
+                    "alarm set\n" +
+                    "\n" +
+                    "who is *\n" +
+                    "`[who] $1$`\n" +
+                    "\n" +
+                    "[who] *\n" +
+                    "nlu success\n" +
                     "\n" +
                     "\n" +
                     "\n";
