@@ -31,18 +31,17 @@ import ai.susi.json.JsonObjectWithDefault;
  */
 public interface APIHandler {
 
-    public String[] getServerProtocolHostStub();
 
     public abstract UserRole getMinimalUserRole();
 
     public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
-    
+
     /**
      * get the path to the servlet
      * @return the url path of the servlet
      */
     public String getAPIPath();
-    
+
     /**
      * call the servlet with a query locally without a network connection
      * @return a Service Response
