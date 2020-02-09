@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,16 +57,19 @@ public class AIML2Susi {
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(is);
         doc.getDocumentElement().normalize();
+
+        System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+        
         Node root = doc.getDocumentElement();
-        Node node = root;
-        NodeList nl = node.getChildNodes();
+        NodeList nl = root.getChildNodes();
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
         json.put("intents", intents);
         for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
+            Node node = nl.item(i);
+            String nodename = node.getNodeName().toLowerCase();
             if (nodename.equals("category")) {
-                JSONObject intent = readAIMLCategory(nl.item(i));
+                JSONObject intent = readAIMLCategory(node);
                 if (intent != null && intent.length() > 0) intents.put(intent);
             }
             //System.out.println("ROOT NODE " + nl.item(i).getNodeName());
@@ -77,14 +82,15 @@ public class AIML2Susi {
         String[] phrases = null;
         String[] answers = null;
         for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
-            //System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
+            Node node = nl.item(i);
+            String nodename = node.getNodeName().toLowerCase();
+            //System.out.println("CATEGORYY NODE " + node.getNodeName());
             if (nodename.equals("pattern")) {
-                phrases = readAIMLSentences(nl.item(i));
+                phrases = readAIMLSentences(node);
             } else if (nodename.equals("that")) {
                 
             } else if (nodename.equals("template")) {
-                answers = readAIMLSentences(nl.item(i));
+                answers = readAIMLSentences(node);
             }
         }
         if (phrases != null && answers != null) {
@@ -95,19 +101,20 @@ public class AIML2Susi {
     
     public static String[] readAIMLSentences(Node pot) {
         NodeList nl = pot.getChildNodes();
-        JSONObject json = new JSONObject();
+        List<String> sentences = new ArrayList<>();
         for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
-            //System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
+            Node node = nl.item(i);
+            String nodename = node.getNodeName().toLowerCase();
+            //System.out.println("SENTENCE NODE " + node.getNodeName());
             if (nodename.equals("pattern")) {
-                
+                sentences.add(node.getTextContent());
             } else if (nodename.equals("that")) {
                 
             } else if (nodename.equals("template")) {
                 
             }
         }
-        return null;
+        return sentences.toArray(new String[sentences.size()]);
     }
     
     public static void main(String[] args) {

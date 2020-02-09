@@ -449,7 +449,7 @@ public class SusiIntent implements Cloneable {
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
         // in case that the utterances has only one alternative and does not contain any pattern, the label can be computed from it
-        if (label == null || label.length() == 0 && utterances.length == 1) {
+        if ((label == null || label.length() == 0) && utterances.length == 1) {
             String l = utterances[0].replaceAll(" ", "_");
             if (l.indexOf('*') < 0) label = l;
         }
