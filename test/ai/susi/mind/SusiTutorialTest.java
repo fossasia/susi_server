@@ -41,8 +41,8 @@ public class SusiTutorialTest {
             DAO.susi_memory.addCognition(identity.getClient(), cognition, true);
             // get the answer
             List<SusiThought> answers = cognition.getAnswers();
-            assert answers.size() > 0 : "no answer for q = " + q;
-            assertTrue("no answer for q = " + q, answers.size() > 0);
+            assert answers.size() == 0 : "no answer for q = " + q;
+            assertTrue("no answer for q = " + q, answers.size() == 0);
             SusiThought thought = answers.iterator().next();
             List<SusiAction> actions = thought.getActions(false);
             assert actions.size() > 0;
