@@ -51,6 +51,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         String privateSkill = call.get("private", null);
         String uuid = call.get("uuid", null);
         String userId = null;
+        String idvalue = rights.getIdentity().getName();
         // extract userid and check for user role
         ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, access_token);
         Authentication authentication = DAO.getAuthentication(credential);
@@ -66,8 +67,15 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             if (privateSkill == null) {
                 // if deleting a public skill, the person should be admin or superadmin
                 if (!(userRole.getName().equals("admin") || userRole.getName().equals("superadmin"))) {
-                    json.put("message", "Must be admin to delete a skill");
-                    return new ServiceResponse(json);
+                    String group_name = call.get("group", "Knowledge");
+                    String language_name = call.get("language", "en");
+                    String skill_name = call.get("skill", "whois");
+                    JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name);
+                    // the skill can be deleted if user is the author of the skill
+                    if(!(skillMetadata.get("author_email").equals(idvalue))) {
+                        json.put("message", "Must be admin to delete a skill");
+                        return new ServiceResponse(json);
+                    }  
                 }
             }
         }

@@ -118,17 +118,19 @@ public class ProfileDetailsService extends AbstractAPIHandler implements APIHand
                             JSONObject userSkillData = new JSONObject();
                             JSONObject userSkillRatings = new JSONObject();
                             int stars = Integer.parseInt(skillnameArray.getJSONObject(i).get("stars").toString());
-                            String timestamp = skillnameArray.getJSONObject(i).get("timestamp").toString();
-                            userSkillData.put("stars",stars);
-                            userSkillData.put("timestamp",timestamp);
-                            userSkillData.put("group", group_name);
-                            userSkillData.put("language", language_name);
-                            userSkillRatings.put(skill_name,userSkillData);
-                            if(result.has(jsonEmail)) {
-                                skillRating = result.getJSONArray(jsonEmail);
+                            if(stars > 0) {
+                                String timestamp = skillnameArray.getJSONObject(i).get("timestamp").toString();
+                                userSkillData.put("stars",stars);
+                                userSkillData.put("timestamp",timestamp);
+                                userSkillData.put("group", group_name);
+                                userSkillData.put("language", language_name);
+                                userSkillRatings.put(skill_name,userSkillData);
+                                if(result.has(jsonEmail)) {
+                                    skillRating = result.getJSONArray(jsonEmail);
+                                }
+                                skillRating.put(userSkillRatings);
+                                result.put("rated_skills", skillRating);
                             }
-                            skillRating.put(userSkillRatings);
-                            result.put("rated_skills", skillRating);
                         }
                     }
                 }
