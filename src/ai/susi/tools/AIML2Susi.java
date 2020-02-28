@@ -42,7 +42,6 @@ import ai.susi.mind.SusiLanguage;
 
 public class AIML2Susi {
 
-    
     public static JSONObject readAIMLSkill(File file) throws Exception {
         // read the file as string
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -50,7 +49,7 @@ public class AIML2Susi {
         StringBuilder buf=new StringBuilder();
         while ((str = br.readLine()) != null) buf.append(str);
         br.close();
-        
+
         // parse the string as xml into a node object
         InputStream is = new ByteArrayInputStream(buf.toString().getBytes(StandardCharsets.UTF_8));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -59,7 +58,7 @@ public class AIML2Susi {
         doc.getDocumentElement().normalize();
 
         System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-        
+
         Node root = doc.getDocumentElement();
         NodeList nl = root.getChildNodes();
         JSONObject json = new JSONObject();
@@ -76,7 +75,7 @@ public class AIML2Susi {
         }
         return json;
     }
-    
+
     public static JSONObject readAIMLCategory(Node category) {
         NodeList nl = category.getChildNodes();
         String[] phrases = null;
@@ -88,7 +87,7 @@ public class AIML2Susi {
             if (nodename.equals("pattern")) {
                 phrases = readAIMLSentences(node);
             } else if (nodename.equals("that")) {
-                
+
             } else if (nodename.equals("template")) {
                 answers = readAIMLSentences(node);
             }
@@ -98,7 +97,7 @@ public class AIML2Susi {
         }
         return null;
     }
-    
+
     public static String[] readAIMLSentences(Node pot) {
         NodeList nl = pot.getChildNodes();
         List<String> sentences = new ArrayList<>();
@@ -109,26 +108,34 @@ public class AIML2Susi {
             if (nodename.equals("pattern")) {
                 sentences.add(node.getTextContent());
             } else if (nodename.equals("that")) {
-                
+
             } else if (nodename.equals("template")) {
-                
+
             }
         }
         return sentences.toArray(new String[sentences.size()]);
     }
-    
+
+    private static void loadFiles(File path) {
+        if (path.isDirectory()) {
+            File[] list = path.listFiles();
+            for (File f: list) {
+                loadFiles(f);
+            }
+        } else {
+            if (path.getName().endsWith(".aiml")) try {
+                JSONObject j = readAIMLSkill(path);
+                System.out.println("AIML: " + path);
+                System.out.println(j.toString(2));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void main(String[] args) {
-    	File archive = new File("/Users/admin/git/AIMLemotions");
-    	String[] list = archive.list();
-    	for (String f: list) {
-    		if (! f.endsWith(".aiml")) continue;
-    		try {
-				JSONObject j = readAIMLSkill(new File(archive, f));
-				System.out.println("AIML: " + f);
-				System.out.println(j.toString(2));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-    	}
+        // reading test data from https://github.com/Orbiter/AIML_Archive/
+        File archive = new File("/Users/admin/git/AIML_Archive/aiml/");
+        loadFiles(archive); 
     }
 }
