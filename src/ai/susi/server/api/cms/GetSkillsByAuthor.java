@@ -10,7 +10,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -49,6 +56,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
 
         String author = call.get("author",null);
         String author_email = call.get("author_email",null);
+        String author_avatar = "";
 
         if(author == null && author_email == null){
             throw new APIException(400, "Bad service call, missing arguments.");
@@ -130,7 +138,12 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
                 result.put("message","Author hasn't created any Skill yet.");
                 return new ServiceResponse(result);
             }
+            
+            try {
+                author_avatar = getUserAvatar(author_email);
+            } catch (IOException e) {}
 
+            result.put("author_avatar", author_avatar);
             result.put("author_skills", authorSkills);
             result.put("accepted",true);
             result.put("message","Successfully fetched all Skills created by author.");
@@ -138,6 +151,63 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
         }
     }
 
+ // Method to get the avatar image of the user
+    public static String getUserAvatar(String email) throws IOException {
+        ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+        Accounting accounting = DAO.getAccounting(identity);
+        String userId = identity.getUuid();
+        String avatarType = "";
+        String file = "";
+        String avatar_string = "";
+        File imageFile = null;
+
+        JSONObject accountingObj = accounting.getJSON();
+        if (accountingObj.has("settings") &&
+            accountingObj.getJSONObject("settings").has("avatarType")) {
+            avatarType = accountingObj.getJSONObject("settings").getString("avatarType");
+            file = userId + ".jpg";
+        } else {
+            avatarType = "default";
+        }
+
+        InputStream is = null;
+        byte[] b = new byte[2048];
+        ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+        switch (avatarType) { 
+            case "gravatar":
+                String gravatarUrl = "https://www.gravatar.com/avatar/" + file;
+                URL url = new URL(gravatarUrl);
+                is = url.openStream();
+                break;
+            case "server":
+                imageFile = new File(DAO.data_dir + File.separator + "avatar_uploads" + File.separator + file);
+                if (!imageFile.exists()) {
+                    file = "default.jpg";
+                    imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
+                }
+                is = new BufferedInputStream(new FileInputStream(imageFile));
+                break;
+            default:
+                file = "default.jpg";
+                imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
+                is = new BufferedInputStream(new FileInputStream(imageFile));
+                break;
+        }
+
+        int c;
+        try {
+            while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
+        } catch (IOException e) {
+            data.reset();
+            e.printStackTrace();
+        }
+        
+        avatar_string = new String(data.toByteArray());
+        
+        return avatar_string;
+    }
+    
     private void listFilesForFolder(final File folder, ArrayList<String> fileList) {
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {

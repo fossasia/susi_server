@@ -34,6 +34,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.Iterator;
 import java.util.Random;
 
 
@@ -53,7 +55,7 @@ public class StoreDraftService extends AbstractAPIHandler implements APIHandler 
     
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ANONYMOUS; // temporary, change to USER later
+        return UserRole.USER;
     }
 
     @Override
@@ -69,17 +71,29 @@ public class StoreDraftService extends AbstractAPIHandler implements APIHandler 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
-        String objectstring = call.get("object", "");
-        String id = call.get("id", "");
-        
         JSONObject json = new JSONObject();
-        if (objectstring.length() == 0) throw new APIException(422, "no object given");
-        JSONObject object;
-        try {
-        	object = new JSONObject(new JSONTokener(objectstring));
-        } catch (JSONException e) {
-        	throw new APIException(422, "object parser error: " + e.getMessage());
+        JSONObject object = new JSONObject();
+
+        object.put("category", call.get("category", ""));
+        object.put("language", call.get("language", ""));
+        object.put("name", call.get("name", ""));
+        object.put("buildCode", call.get("buildCode", ""));
+        object.put("designCode", call.get("designCode", ""));
+        object.put("configCode", call.get("configCode", ""));
+        object.put("image", call.get("image", ""));
+
+        String id = call.get("id", "");
+
+        Iterator<String> keys = object.keys();
+        while(keys.hasNext()) {
+            String key = keys.next();
+            String value = object.getString(key);
+            // throw api exception if any of the keys have empty values
+            if(value.length()==0) {
+                throw new APIException(422, "some values of object are empty");
+            }
         }
+ 
         if (id.length() == 0) {
         	// generate an id.
         	id = Integer.toHexString(random.nextInt(Integer.MAX_VALUE)).toLowerCase();

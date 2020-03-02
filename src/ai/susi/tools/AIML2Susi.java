@@ -91,6 +91,7 @@ public class AIML2Susi {
             //System.out.println("CATEGORYY NODE " + node.getNodeName());
             if (nodename.equals("pattern")) {
                 phrases = readAIMLPattern(node.getChildNodes());
+            } else if (nodename.equals("that")) {
             } else if (nodename.equals("template")) {
                 answers = readAIMLTemplate(node.getChildNodes(), true);
             } else if (nodename.equals("that")) {

@@ -87,6 +87,8 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
                         for (int i = 0; i < feedbackList.length(); i++) {
                             JSONObject eachFeedback = feedbackList.getJSONObject(i);
                             String email = eachFeedback.getString("email");
+                            int Stars = getUserRating(email, model_name, language_name, group_name, skill_name); 
+                            eachFeedback.put("rating", Stars);
                             eachFeedback.put("avatar", getUserAvatar(email));
                             eachFeedback.put("user_name", getUserName(email));
                         }
@@ -105,6 +107,39 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         result.put("message", "Skill hasn't been given any feedback");
         return new ServiceResponse(result);
     }
+
+    // Method to get user Rating
+    public static int getUserRating (String email, String model_name,String language_name,String group_name,String skill_name) {
+
+        JsonTray fiveStarSkillRating = DAO.fiveStarSkillRating;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+
+        int Rating = 0;
+        if (fiveStarSkillRating.has(model_name)) {
+            modelName = fiveStarSkillRating.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        JSONArray skillName = languageName.getJSONArray(skill_name);
+
+                        for (int i = 0; i < skillName.length(); i++) {
+                            JSONObject ratingObject = skillName.getJSONObject(i);
+                            if (ratingObject.get("email").equals(email)) {
+                                Rating = ratingObject.getInt("stars") ;
+                                return Rating;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Rating;
+    }
+
 
     // Method to get the avatar image of the user
     public static String getUserAvatar(String email) {
