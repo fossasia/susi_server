@@ -39,10 +39,15 @@ import org.w3c.dom.NodeList;
 
 import ai.susi.mind.SusiIntent;
 import ai.susi.mind.SusiLanguage;
+import ai.susi.mind.SusiSkill;
+import ai.susi.mind.SusiUtterance;
+import ai.susi.mind.SusiAction;
+import ai.susi.mind.SusiAction.SusiActionException;
 
 public class AIML2Susi {
 
-    public static JSONObject readAIMLSkill(File file) throws Exception {
+    public static List<SusiIntent> readAIMLSkill(File file, SusiLanguage language) throws Exception {
+        SusiSkill.ID id = new SusiSkill.ID(language, file.getName());
         // read the file as string
         BufferedReader br = new BufferedReader(new FileReader(file));
         String str;
@@ -62,14 +67,14 @@ public class AIML2Susi {
         Node root = doc.getDocumentElement();
         NodeList nl = root.getChildNodes();
         JSONObject json = new JSONObject();
-        JSONArray intents = new JSONArray();
+        List<SusiIntent> intents = new ArrayList<>();
         json.put("intents", intents);
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
             String nodename = node.getNodeName().toLowerCase();
             if (nodename.equals("category")) {
-                JSONObject intent = readAIMLCategory(node);
-                if (intent != null && intent.length() > 0) intents.put(intent);
+                SusiIntent intent = readAIMLCategory(node, language, id);
+                if (intent != null) intents.add(intent);
             } else if (nodename.equals("#comment")) {
             } else if (nodename.equals("#text")) {
             } else if (nodename.equals("topic")) {
@@ -78,10 +83,10 @@ public class AIML2Susi {
             }
             //System.out.println("ROOT NODE " + nl.item(i).getNodeName());
         }
-        return json;
+        return intents;
     }
 
-    public static JSONObject readAIMLCategory(Node category) {
+    public static SusiIntent readAIMLCategory(Node category, SusiLanguage language, SusiSkill.ID id) throws SusiActionException {
         NodeList nl = category.getChildNodes();
         List<String> phrases = null;
         List<String> answers = null;
@@ -102,7 +107,13 @@ public class AIML2Susi {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases.toArray(new String[phrases.size()]), null, answers.toArray(new String[answers.size()]), false, 0, null, null, null, null, SusiLanguage.unknown);
+            List<SusiUtterance> utterances = new ArrayList<>();
+            phrases.forEach(phrase -> utterances.add(new SusiUtterance(phrase, false, 0)));
+            SusiIntent intent = new SusiIntent(utterances, false, 0, id);
+            JSONObject answerActionObject = SusiAction.answerAction(0, language, answers.toArray(new String[answers.size()]));
+            SusiAction answerAction = new SusiAction(answerActionObject);
+            intent.addAction(answerAction);
+            return intent;
         }
         return null;
     }
@@ -176,18 +187,26 @@ public class AIML2Susi {
         return sentences;
     }
 
-    public static void main(String[] args) {
-        File archive = new File("/Users/admin/git/AIMLemotions");
-        String[] list = archive.list();
-        for (String f: list) {
-            if (! f.endsWith(".aiml")) continue;
-            try {
-                JSONObject j = readAIMLSkill(new File(archive, f));
-                //System.out.println("AIML: " + f);
-                //System.out.println(j.toString(2));
-            } catch (Exception e) {
-                e.printStackTrace();
+    private static void loadFiles(File path) {
+        if (path.isDirectory()) {
+            File[] list = path.listFiles();
+            for (File f : list) {
+                loadFiles(f);
             }
+        } else {
+            if (path.getName().endsWith(".aiml"))
+                try {
+                    List<SusiIntent> intents = readAIMLSkill(path, SusiLanguage.en);
+                    System.out.println("AIML: " + path);
+                    intents.forEach(intent -> System.out.print(intent.toLoT()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         }
+    }
+
+    public static void main(String[] args) {
+        File archive = new File("/Users/admin/git/AIML_Archive/aiml/");
+        loadFiles(archive);
     }
 }

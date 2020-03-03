@@ -25,9 +25,18 @@ import java.util.regex.PatternSyntaxException;
 
 import ai.susi.tools.TimeoutMatcher;
 
+/**
+ * Just-in-time compiler for Pattern objects.
+ * 
+ * A SusiPattern object carries either a string with a Java Pattern or the Java Pattern itself.
+ * This class is here to enable a greedy compilation from the pattern string to the java pattern object.
+ * New SusiPattern are initialized with the pattern string. The first time that pattern is used,
+ * it is compiled and stored as the compiled pattern object.
+ */
 public class SusiPattern {
 
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
+    private final static Pattern REVERSE_WILDCARD = Pattern.compile(Pattern.quote("(.*)"));
 
     private final Object pattern;
 
@@ -83,6 +92,12 @@ public class SusiPattern {
 
     public SusiMatcher matcher(String s) {
         return new SusiMatcher(s);
+    }
+
+    public String toLoT() {
+        String s = this.pattern();
+        s = REVERSE_WILDCARD.matcher(s).replaceAll("*");
+        return s;
     }
 
     public String toString() {
