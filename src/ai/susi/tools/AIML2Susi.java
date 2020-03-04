@@ -31,9 +31,9 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -86,10 +86,16 @@ public class AIML2Susi {
         return intents;
     }
 
+    private static int countStars(String utterance) {
+        int c = 0;
+        for (int i = 0; i < utterance.length(); i++) if (utterance.charAt(i) == '*') c++;
+        return c;
+    }
+    
     public static SusiIntent readAIMLCategory(Node category, SusiLanguage language, SusiSkill.ID id) throws SusiActionException {
         NodeList nl = category.getChildNodes();
         List<String> phrases = null;
-        List<String> answers = null;
+        String[] answers = null;
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
             String nodename = node.getNodeName().toLowerCase();
@@ -98,7 +104,7 @@ public class AIML2Susi {
                 phrases = readAIMLPattern(node.getChildNodes());
             } else if (nodename.equals("that")) {
             } else if (nodename.equals("template")) {
-                answers = readAIMLTemplate(node.getChildNodes(), true);
+                answers = readAIMLTemplate(node.getChildNodes(), true, phrases.size() == 0 ? 0 : countStars(phrases.get(0)));
             } else if (nodename.equals("that")) {
             } else if (nodename.equals("#text")) {
             } else if (nodename.equals("category")) {
@@ -110,7 +116,7 @@ public class AIML2Susi {
             List<SusiUtterance> utterances = new ArrayList<>();
             phrases.forEach(phrase -> utterances.add(new SusiUtterance(phrase, false, 0)));
             SusiIntent intent = new SusiIntent(utterances, false, 0, id);
-            JSONObject answerActionObject = SusiAction.answerAction(0, language, answers.toArray(new String[answers.size()]));
+            JSONObject answerActionObject = SusiAction.answerAction(0, language, answers);
             SusiAction answerAction = new SusiAction(answerActionObject);
             intent.addAction(answerAction);
             return intent;
@@ -134,8 +140,8 @@ public class AIML2Susi {
         return sentences;
     }
 
-    public static List<String> readAIMLTemplate(NodeList nl, boolean visible) {
-        List<String> sentences = new ArrayList<>();
+    public static String[] readAIMLTemplate(NodeList nl, boolean visible, int stars) {
+        StringBuffer sb = new StringBuffer();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
             String nodename = node.getNodeName().toLowerCase();
@@ -146,16 +152,30 @@ public class AIML2Susi {
             if (nodename.equals("#text")) {
                 if (nodevalue == null) nodevalue = "";
                 nodevalue = nodevalue.trim();
-                if (nodevalue.length() > 0) sentences.add(nodevalue);
+                if (nodevalue.length() > 0) sb.append(nodevalue);
             } else if (nodename.equals("srai")) {
-                List<String> srai = readAIMLTemplate(node.getChildNodes(), visible);
-                if (srai.size() != 1) throw new RuntimeException("unexpected number of srai nodes: " + srai.size());
-                sentences.add("`" + srai.get(0) + "`");
+                String[] srai = readAIMLTemplate(node.getChildNodes(), visible, stars);
+                if (srai == null || srai.length == 0) continue;
+                if (srai.length != 1) throw new RuntimeException("unexpected number of srai nodes: " + srai.length);
+                sb.append(" `" + srai[0] + "` ");
             } else if (nodename.equals("think")) {
-                System.out.println("unknown template node function: " + nodename);
-                List<String> invisible = readAIMLTemplate(node.getChildNodes(), false);
-                sentences.addAll(invisible);
+                String[] invisible = readAIMLTemplate(node.getChildNodes(), false, stars);
+                if (invisible == null || invisible.length == 0) continue;
+                if (invisible.length != 1) throw new RuntimeException("unexpected number of invisible nodes: " + invisible.length);
+                String set = invisible[0];
+                int p = set.indexOf('>');
+                if (p >= 0) set = "^" + set.substring(0, p).trim() +"^" + set.substring(p);
+                sb.append(" " + set + " ");
             } else if (nodename.equals("set")) {
+                String[] set = readAIMLTemplate(node.getChildNodes(), visible, stars);
+                if (set == null || set.length == 0) continue;
+                if (set.length != 1) throw new RuntimeException("unexpected number of set nodes: " + set.length);
+                if (set[0].indexOf('>') >= 0) {sb.append(" " + set[0] + " "); continue;} // we do not do a set in set
+                NamedNodeMap attributes = node.getAttributes();
+                String[] items = readAIMLTemplate(attributes.getNamedItem("name").getChildNodes(), visible, stars);
+                if (items == null || items.length == 0) continue;
+                if (items.length != 1) throw new RuntimeException("unexpected number of items nodes: " + items.length);
+                sb.append(" " + set[0] + ">" + items[0] + " ");
             } else if (nodename.equals("random")) {
             } else if (nodename.equals("person")) {
             } else if (nodename.equals("bot")) {
@@ -167,6 +187,10 @@ public class AIML2Susi {
             } else if (nodename.equals("that")) {
             } else if (nodename.equals("em")) {
             } else if (nodename.equals("star")) {
+                String s = sb.toString();
+                int c = 1;
+                while (s.indexOf("$" + c + "$") >= 0 && c < stars) c++;
+                sb.append(" $" + c + "$ ");
             } else if (nodename.equals("a")) {
             } else if (nodename.equals("date")) {
             } else if (nodename.equals("condition")) {
@@ -184,7 +208,7 @@ public class AIML2Susi {
                 System.out.println("unknown template nodename: " + nodename); // hack until this disappears
             }
         }
-        return sentences;
+        return new String[]{sb.toString().trim()};
     }
 
     private static void loadFiles(File path) {
