@@ -131,19 +131,19 @@ public class JsonPath {
         if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("!", decomposition.toString()));
         throw new JSONException("unrecognized object type: " + decomposition.getClass().getName());
     }
-    
+
     private static void test(String json, String path) {
-    	JSONTokener tokener = new JSONTokener(json.trim());
-    	JSONArray array = parse(tokener, path);
-    	System.out.println("json:" + json.toString());
-    	System.out.println("path:" + path);
-    	System.out.println("pars:" + (array == null ? "NULL" : array.toString()));
+        JSONTokener tokener = new JSONTokener(json.trim());
+        JSONArray array = parse(tokener, path);
+        System.out.println("json:" + json.toString());
+        System.out.println("path:" + path);
+        System.out.println("pars:" + (array == null ? "NULL" : array.toString()));
     }
-    
+
     public static void main(String[] args) {
-    	// https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DYHOO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv%27%20and%20columns%3D%27symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2%27&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
-    	test("{\"query\":{\"count\":1,\"created\":\"2017-03-13T12:41:55Z\",\"lang\":\"de-DE\",\"results\":{\"row\":{\"symbol\":\"YHOO\",\"price\":\"45.98\",\"date\":\"3/10/2017\",\"time\":\"5:00pm\",\"change\":\"+0.04\",\"col1\":\"46.20\",\"high\":\"46.20\",\"low\":\"45.75\",\"col2\":\"3824629\"}}}}",
-    			"$.query.results.row");
+        // https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DYHOO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv%27%20and%20columns%3D%27symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2%27&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+        // test("{\"query\":{\"count\":1,\"created\":\"2017-03-13T12:41:55Z\",\"lang\":\"de-DE\",\"results\":{\"row\":{\"symbol\":\"YHOO\",\"price\":\"45.98\",\"date\":\"3/10/2017\",\"time\":\"5:00pm\",\"change\":\"+0.04\",\"col1\":\"46.20\",\"high\":\"46.20\",\"low\":\"45.75\",\"col2\":\"3824629\"}}}}","$.query.results.row");
+        test("{\"d0\":0;\"d1\":1;\"d2\":1;\"d3\":0;\"d4\":0;\"d5\":0;\"d6\":1;\"d7\":1;\"d8\":0;\"a0\":21}","$.a0"); // result is in "!"
     }
-    
+
 }
