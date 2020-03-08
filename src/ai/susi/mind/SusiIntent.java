@@ -35,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.mind.SusiAction.RenderType;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.server.ClientIdentity;
@@ -79,10 +80,10 @@ public class SusiIntent implements Cloneable {
         this.hashCode = 0; // set with lazy computation
         this.depth = 0;
     }
-    
+
     public Object clone() {
-    	SusiIntent i = new SusiIntent();
-    	this.utterances.forEach(u -> i.utterances.add(u));
+        SusiIntent i = new SusiIntent();
+        this.utterances.forEach(u -> i.utterances.add(u));
         this.actions.forEach(a -> i.actions.add(a));
         this.inferences.forEach(f -> i.inferences.add(f));
         this.keys.forEach(k -> i.keys.add(k));
@@ -106,7 +107,7 @@ public class SusiIntent implements Cloneable {
      * @throws PatternSyntaxException
      */
     private SusiIntent(SusiSkill.ID skillid, JSONObject json) throws PatternSyntaxException {
-    	assert skillid != null;
+        assert skillid != null;
 
         // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -198,7 +199,7 @@ public class SusiIntent implements Cloneable {
             String l = this.utterances.get(0).getPattern().toString();
             if (l.indexOf('*') < 0) this.label = l.replace(' ', '_');
         } catch (IndexOutOfBoundsException e) {
-        	throw new SusiActionException(e.toString() + " in " + skillid.toString());
+            throw new SusiActionException(e.toString() + " in " + skillid.toString());
         }
         this.label = (this.label != null && this.label.length() > 0) ? this.label : "";
         this.implication = "";
@@ -251,8 +252,8 @@ public class SusiIntent implements Cloneable {
     }
     
     public SusiIntent addInference(SusiInference inference) {
-    	this.inferences.add(inference);
-    	return this;
+        this.inferences.add(inference);
+        return this;
     }
 
     public SusiIntent setInferences(List<SusiInference> inferences) {
@@ -279,10 +280,10 @@ public class SusiIntent implements Cloneable {
         this.actions = actions;
         return this;
     }
-    
+
     public SusiIntent addAction(SusiAction action) {
-    	this.actions.add(action);
-    	return this;
+        this.actions.add(action);
+        return this;
     }
 
     public SusiIntent addActions(SusiAction... actions) {
@@ -383,6 +384,32 @@ public class SusiIntent implements Cloneable {
         return json;
     }
 
+    public String toLoT() {
+        StringBuilder sb = new StringBuilder();
+
+        // utterances
+        for (int i = 0; i < this.utterances.size(); i++) {
+            SusiPattern pattern = this.utterances.get(i).getPattern();
+            sb.append(pattern.toLoT());
+            if (i < this.utterances.size() - 1) sb.append(" | ");
+        }
+        sb.append("\n");
+
+        // actions
+        for (SusiAction action: this.actions) {
+            if (action.getRenderType() == RenderType.answer) {
+                List<String> phrases = action.getPhrases();
+                for (int i = 0; i < phrases.size(); i++) {
+                    sb.append(phrases.get(i));
+                    if (i < phrases.size() - 1) sb.append(" | ");
+                }
+            }
+        }
+        sb.append("\n\n");
+
+        return sb.toString();
+    }
+
     /**
      * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
      * object which creates a set of intents, one for each option. The options combine with one set of utterances
@@ -449,7 +476,7 @@ public class SusiIntent implements Cloneable {
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
         // in case that the utterances has only one alternative and does not contain any pattern, the label can be computed from it
-        if (label == null || label.length() == 0 && utterances.length == 1) {
+        if ((label == null || label.length() == 0) && utterances.length == 1) {
             String l = utterances[0].replaceAll(" ", "_");
             if (l.indexOf('*') < 0) label = l;
         }
@@ -462,7 +489,7 @@ public class SusiIntent implements Cloneable {
         a.put(SusiAction.answerAction(0, language, answers));
         return intent;
     }
-    
+
     /**
      * if no keys are given, we compute them from the given utterances
      * @param utterances
@@ -535,6 +562,78 @@ public class SusiIntent implements Cloneable {
     }
 
     /**
+     * The utterances of an intent are the matching intents which must apply to make it possible that the utterance is applied.
+     * This returns the utterances of the intent.
+     * @return the utterances of the intent. The intent fires if ANY of the utterances apply
+     */
+    public List<SusiUtterance> getUtterances() {
+        return this.utterances;
+    }
+
+    /**
+     * getting a untterance sample can be used for debugging.
+     * @return a String containing the regular expression of the utterances
+     */
+    public String getUtterancesSample() {
+        StringBuilder sb = new StringBuilder();
+        for (SusiUtterance utterance: this.utterances) {
+            sb.append(" | ").append(utterance.getPattern().toString());
+        }
+        return sb.length() == 0 ? "" : sb.toString().substring(3);
+    }
+
+    /**
+     * The inferences of a intent are a set of operations that are applied if the intent is selected as response
+     * mechanism. The inferences are feeded by the matching parts of the utterances to have an initial data set.
+     * Inferences are lists because they represent a set of lambda operations on the data stream. The last
+     * Data set is the response. The stack of data sets which are computed during the inference processing
+     * is the thought argument, a list of thoughts in between of the inferences.
+     * @return the (ordered) list of inferences to be applied for this intent
+     */
+    public List<SusiInference> getInferences() {
+        return this.inferences;
+    }
+
+    /**
+     * Actions are operations that are activated when inferences terminate and something should be done with the
+     * result. Actions describe how data should be presented, i.e. painted in graphs or just answer lines.
+     * Because actions may get changed during computation, we return a clone here
+     * @return a list of possible actions. It might be possible to use only a subset, but it is recommended to activate all of them
+     */
+    public List<SusiAction> getActionsClone() {
+        List<SusiAction> clonedList = new ArrayList<>();
+        this.actions.forEach(a -> {
+            JSONObject actionJson = a.toJSONClone();
+            try {
+                SusiAction action = new SusiAction(actionJson);
+                clonedList.add(action);
+            } catch (SusiActionException e) {
+                DAO.severe("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
+            }
+        });
+        return clonedList;
+    }
+
+    /**
+     * The matcher of a intent is the result of the application of the intent's utterances,
+     * the pattern which allow to apply the intent
+     * @param s the string which should match
+     * @return a matcher on the intent utterances
+     */
+    public Collection<SusiMatcher> matcher(String s) {
+        List<SusiMatcher> l = new ArrayList<>();
+        s = s.toLowerCase();
+        for (SusiUtterance p: this.utterances) {
+            SusiMatcher m = p.getPattern().matcher(s);
+            if (m.matches()) {
+                //System.out.println("MATCHERGROUP=" + m.group().toString());
+                l.add(m); // TODO: exclude double-entries
+            }
+        }
+        return l;
+    }
+
+    /**
      * get the intent score
      * @param expression the user expression where we are looking for an answer
      * @param language this is the language the user is speaking
@@ -546,7 +645,7 @@ public class SusiIntent implements Cloneable {
         if (this.score.score == Integer.MIN_VALUE) this.score = null;
         return this.score;
     }
-    
+
     /**
      * The score is used to prefer one intent over another if that other intent has a lower score.
      * The reason that this score is used is given by the fact that we need intents which have
@@ -565,7 +664,7 @@ public class SusiIntent implements Cloneable {
 
         public long score;
         public String log;
-        
+
         public Score(String expression, SusiLanguage userLanguage) {
         if (SusiIntent.this.score != null) return;
 
@@ -672,78 +771,6 @@ public class SusiIntent implements Cloneable {
     }
 
     /**
-     * The utterances of an intent are the matching intents which must apply to make it possible that the utterance is applied.
-     * This returns the utterances of the intent.
-     * @return the utterances of the intent. The intent fires if ANY of the utterances apply
-     */
-    public List<SusiUtterance> getUtterances() {
-        return this.utterances;
-    }
-
-    /**
-     * getting a untterance sample can be used for debugging.
-     * @return a String containing the regular expression of the utterances
-     */
-    public String getUtterancesSample() {
-        StringBuilder sb = new StringBuilder();
-        for (SusiUtterance utterance: this.utterances) {
-            sb.append(" | ").append(utterance.getPattern().toString());
-        }
-        return sb.length() == 0 ? "" : sb.toString().substring(3);
-    }
-    
-    /**
-     * The inferences of a intent are a set of operations that are applied if the intent is selected as response
-     * mechanism. The inferences are feeded by the matching parts of the utterances to have an initial data set.
-     * Inferences are lists because they represent a set of lambda operations on the data stream. The last
-     * Data set is the response. The stack of data sets which are computed during the inference processing
-     * is the thought argument, a list of thoughts in between of the inferences.
-     * @return the (ordered) list of inferences to be applied for this intent
-     */
-    public List<SusiInference> getInferences() {
-        return this.inferences;
-    }
-
-    /**
-     * Actions are operations that are activated when inferences terminate and something should be done with the
-     * result. Actions describe how data should be presented, i.e. painted in graphs or just answer lines.
-     * Because actions may get changed during computation, we return a clone here
-     * @return a list of possible actions. It might be possible to use only a subset, but it is recommended to activate all of them
-     */
-    public List<SusiAction> getActionsClone() {
-        List<SusiAction> clonedList = new ArrayList<>();
-        this.actions.forEach(a -> {
-            JSONObject actionJson = a.toJSONClone();
-            try {
-                SusiAction action = new SusiAction(actionJson);
-                clonedList.add(action);
-            } catch (SusiActionException e) {
-                DAO.severe("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
-            }
-        });
-        return clonedList;
-    }
-
-    /**
-     * The matcher of a intent is the result of the application of the intent's utterances,
-     * the pattern which allow to apply the intent
-     * @param s the string which should match
-     * @return a matcher on the intent utterances
-     */
-    public Collection<SusiMatcher> matcher(String s) {
-        List<SusiMatcher> l = new ArrayList<>();
-        s = s.toLowerCase();
-        for (SusiUtterance p: this.utterances) {
-            SusiMatcher m = p.getPattern().matcher(s);
-            if (m.matches()) {
-                //System.out.println("MATCHERGROUP=" + m.group().toString());
-                l.add(m); // TODO: exclude double-entries
-            }
-        }
-        return l;
-    }
-    
-    /**
      * If a intent is applied to an input stream, it must follow a specific process which is implemented
      * in this consideration method. It is called a consideration in the context of an AI process which
      * tries different procedures to get the optimum result, thus considering different intents.
@@ -799,5 +826,5 @@ public class SusiIntent implements Cloneable {
         // fail, no alternative was successful
         return null;
     }
-    
+
 }

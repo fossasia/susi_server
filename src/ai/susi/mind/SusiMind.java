@@ -165,8 +165,19 @@ public class SusiMind {
                         learn(skill, skillid, false);
                     }
                     if (f.getName().endsWith(".aiml")) {
-                        JSONObject lesson = AIML2Susi.readAIMLSkill(f);
-                        learn(lesson, f, false);
+                        SusiSkill.ID skillid = new SusiSkill.ID(f);
+                        List<SusiIntent> intents = AIML2Susi.readAIMLSkill(f, skillid.language());
+                        intents.forEach(intent -> {
+                            intent.getKeys().forEach(key -> {
+                                Set<SusiIntent> l = this.intenttrigger.get(key);
+                                if (l == null) {
+                                    l = ConcurrentHashMap.newKeySet();
+                                    this.intenttrigger.put(key, l);
+                                }
+                                l.add(intent);
+                            });
+                        
+                        });
                     }
                 } catch (Throwable e) {
                     DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
@@ -341,7 +352,22 @@ public class SusiMind {
 
         return this;
     }
-    
+
+    public void learn(List<SusiIntent> intents) {
+        intents.forEach(intent -> {
+            // add removal pattern
+            intent.getKeys().forEach(key -> {
+                Set<SusiIntent> l = this.intenttrigger.get(key);
+                if (l == null) {
+                    l = ConcurrentHashMap.newKeySet();
+                    this.intenttrigger.put(key, l);
+                }
+                l.add(intent);
+            });
+
+        });
+    }
+
     /**
      * extract the mind system from the intenttrigger
      * @return
