@@ -35,6 +35,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.HttpClient;
 import ai.susi.tools.OnlineCaution;
 
 import org.json.JSONArray;
@@ -161,10 +162,13 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.severe(e.getMessage(), e);
         }
 
-        // local etherpad dreaming, reading from http://localhost:9001
-        // this cannot be activated, its always reading a dream named "susi"
-        File local_etherpad_apikey_file = new File(new File(new File(System.getProperty("user.home"), "SUSI.AI"), "etherpad-lite"), "APIKEY.txt");
+        // Local etherpad dreaming, reading from http://localhost:9001
+        // This cannot be activated, its always reading a dream named "susi"
+        // We consider two location options for the etherpad,
+        // either ~/SUSI.AI/etherpad-lite or data/etherpad-lite
         String local_etherpad_apikey = null;
+        File local_etherpad_apikey_file = new File(new File(new File(System.getProperty("user.home"), "SUSI.AI"), "etherpad-lite"), "APIKEY.txt");
+        if (!local_etherpad_apikey_file.exists()) local_etherpad_apikey_file = new File(new File(DAO.data_dir, "etherpad-lite"), "APIKEY.txt");
         if (local_etherpad_apikey_file.exists()) {
             // read the pad for the dream
             try {
@@ -183,8 +187,26 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
             JSONObject json = new JSONObject(serviceResponse);
             JSONObject data = json.optJSONObject("data");
+            if (data == null) {
+                // pad does not exist, so we create it!
+                String createurl = "http://localhost:9001/api/1/createPad?apikey=" + local_etherpad_apikey + "&padID=susi";
+                HttpClient.loadGet(createurl, request_header);
+                serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
+                json = new JSONObject(serviceResponse);
+                data = json.optJSONObject("data");
+            }
+            assert data != null; // because we created the pad on the fly!
             String text = data == null ? "" : data.getString("text");
-            if (text.length() > 0 && !text.startsWith("Welcome to Etherpad!") && !text.startsWith("disabled")) {
+            if (text.startsWith("Welcome to Etherpad!")) {
+                // fill the pad with a default skill, a tutorial skill
+                String writeurl = "http://localhost:9001/api/1/setText?apikey=" + local_etherpad_apikey + "&padID=susi&text=helloworld";
+                HttpClient.loadGet(writeurl, request_header);
+                serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
+                json = new JSONObject(serviceResponse);
+                data = json.optJSONObject("data");
+                text = data == null ? "" : data.getString("text");
+            }
+            if (!text.startsWith("disabled")) {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
