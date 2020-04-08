@@ -1,0 +1,167 @@
+# SUSI.AI Skill Language Tutorial
+# This text is a placeholder for your own skills
+# that you can host at the etherpad at http://localhost:9001
+
+# Quick Intro:
+# - SUSI skills are just plain text files, like this one.
+# - comment lines start with '#'
+# - each utterance + answer pair are simply two lines, first one for the utterance, second for the answer
+# This notion is called the "Susi Language of Thought" ("LoT")
+
+
+###
+### IF YOU WANT TO KNOW HOW TO CALL AN API FROM SUSI, CHECK EXAMPLE 11
+###
+
+
+# EXAMPLE 0: Fixed Query-Answer Phrase Collections
+# The first line is the question, the second line is the answer.
+
+roses are red
+SUSI is a hack
+
+
+
+# EXAMPLE 1: Random Answers
+# Susi answers with one of the words in the answer line.
+
+What is your favorite dish
+Potatoes|Vegetables|Fish
+
+
+
+# EXAMPLE 2: Query Alternatives
+# Susi answers on any of the phrases in the question line
+
+Bonjour|Buenos días|Ciao
+Hello
+
+
+
+# EXAMPLE 3: Patterns in Queries
+# Query patterns can be declared using the `*` wildcard character.
+# A `*` matches any sentence token, but not a substring. That means a `*` replaces a word or a list of words.
+
+May I * you?
+Yes you may.
+
+
+
+# EXAMPLE 4: Using Query-Patterns in Answers
+# Usage of the phrase that matched the question with the variable $1$
+
+May I get a *?
+Yes you may get a $1$!
+
+
+
+# EXAMPLE 5: Multiple Patterns in Queries and Answers
+# Matching phrases are numbered.
+
+For * I can buy a *
+Yeah, I believe $1$ is a good price for a $2$
+
+# You can also ignore one or any of the matched phrases.
+# $0$ denotes the whole sentence, identical to what the user asked susi.
+
+* buy a *
+Sure, you should buy a $2$!
+
+
+
+# EXAMPLE 6: storing variables
+# Any phrase can be assigned to variables, also phrases that are created from other variables.
+# In this case the variable $2$ is stored into _beerbrand.
+
+I * like * beer
+You then should have one $2$>_beerbrand!
+
+# Note that the variable starts with a leading '\_'.
+# That has a special meaning: variables without a leading '\_' are only valid while SUSI.AI is thinking about
+# a phrase, not after the response has computed. SUSI.AI will not remember a variable if
+# that variable was set in a past conversation and has not a leading '\_'.
+
+# You can now use that variable in another rule:
+
+* beer * best?
+I bet you like $_beerbrand$ beer!
+
+# Note that the `*` wildcards in the query are not used at all. They are just there
+# to make it easy that this rule matches. It will i.e. match on "What beer brand is the best?"
+
+
+
+# EXAMPLE 7: Setting "Invisible" Status Variables
+# The difference here is that the source of the assignment is not visible in the answer.
+
+I am so happy!
+Good for you!^excited^>_mood
+
+I am bored.
+Make something!^inactive^>_mood
+
+How do I feel?
+You are $_mood$.
+
+# In this example, SUSI.AI remembers your mood and can tell you about it.
+# The actual word which was used to describe the mood was never printed to the user before because using the `^^` symbols, it got quoted and became invisible.
+
+
+
+# EXAMPLE 8: Conditions for Answers
+# Answer lines beginning with a "?" start with a condition.
+# The answer is only given if the condition is true.
+
+How do I feel?
+?$_mood$:You are $_mood$.:I don't know your mood.
+
+Shall I *?
+?$_mood$=excited:You will be happy, whatever I say!
+
+
+
+# EXAMPLE 9: Rules used as Functions/Templates (Basic Self-Reflection)
+# Answers may contain (possibly recursive) calls to other intents. It's like a function call.
+
+any colour
+red|green|blue|white|black|yellow|purple|brown
+
+What is your favorite color?
+?$_mycolour$:My favorite colour is $_mycolour$!:I like `any colour`>_mycolour!
+
+# This will give a random colour after the first time "What is your favorite color" was asked,
+# but the second time Susi is aked it will remember the colour.
+
+
+
+# EXAMPLE 10: Embed Javascript into an intent
+# The result from javascript computation is returned in $!$
+
+javascript hello
+!javascript:$!$ from Nashorn
+print('Hello world');
+eol
+
+compute * to the power of *
+!javascript:$1$^$2$ = $!$
+Math.pow($1$, $2$)
+eol
+
+
+
+# EXAMPLE 11: Call an external API
+# This requires that you provide two attributes:
+# - the url to the API
+# - a json path to the result
+
+tweet about *
+!console:$text$
+{
+  "url":"http://api.loklak.org/api/search.json?q=$1$",
+  "path":"$.statuses"
+}
+eol
+
+# Explanation:
+# - The JSON result contains a list which is denoted by the path $.statuses
+# - The object in the result list has an attribute named 'text', that is returned in the answer line as $text$

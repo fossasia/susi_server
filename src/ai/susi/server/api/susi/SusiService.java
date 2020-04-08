@@ -56,8 +56,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -198,13 +196,26 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             assert data != null; // because we created the pad on the fly!
             String text = data == null ? "" : data.getString("text");
             if (text.startsWith("Welcome to Etherpad!")) {
-                // fill the pad with a default skill, a tutorial skill
-                String writeurl = "http://localhost:9001/api/1/setText?apikey=" + local_etherpad_apikey + "&padID=susi&text=helloworld";
-                HttpClient.loadGet(writeurl, request_header);
-                serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
-                json = new JSONObject(serviceResponse);
-                data = json.optJSONObject("data");
-                text = data == null ? "" : data.getString("text");
+                // fill the pad with a default skill, a set of examples
+                // read the examples
+                try {
+                    File example_file = new File(new File(DAO.conf_dir, "example_skills"), "susi_lot_tutorial.txt");
+                    FileInputStream fis = new FileInputStream(example_file);
+                    byte[] example = new byte[(int) example_file.length()];
+                    fis.read(example);
+                    fis.close();
+                    String writeurl = "http://localhost:9001/api/1/setText";
+                    Map<String, byte[]> p = new HashMap<>();
+                    p.put("apikey", local_etherpad_apikey.getBytes());
+                    p.put("padID", "susi".getBytes());
+                    p.put("text", example);
+                    HttpClient.loadPost(writeurl, p);
+                    serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
+                    json = new JSONObject(serviceResponse);
+                    data = json.optJSONObject("data");
+                    text = data == null ? "" : data.getString("text");
+                } catch (IOException e) {
+                }
             }
             if (!text.startsWith("disabled")) {
                 // fill an empty mind with the dream
