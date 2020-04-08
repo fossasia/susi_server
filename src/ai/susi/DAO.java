@@ -394,7 +394,7 @@ public class DAO {
             susi.addLayer(system_skills_operation);
             susi.addLayer(system_skills_system);
             susi.addLayer(system_skills_test);
-            if (model_watch_dir.exists()) {
+            if (model_watch_dir.exists() && getConfig("skill_repo.use_enable", false)) {
                 SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
                 susi.addLayer(model_skills);
             }
@@ -467,7 +467,7 @@ public class DAO {
         access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
         access.start(); // start monitor
 
-        if (getConfig("skill_repo.enable", true)) {
+        if (getConfig("skill_repo.pull_enable", false)) {
                 log("Starting Skill Data pull thread");
                 SkillTransactions.init(getConfig("skill_repo.pull_delay", 60000));
         }
