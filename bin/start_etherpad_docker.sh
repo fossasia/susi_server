@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 cd "`dirname $0`"
 
+### THIS IS MADE FOR DOCKER
+### Please install docker before use
+### If you prefer, use start_etherpad_nodejs.sh instead (requires nodejs)
+
 # run or start the container
 if [ "$(docker ps -q -f name=etherpad)" ]; then
     echo "etherpad is already running at http://localhost:9001"
