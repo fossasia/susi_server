@@ -72,11 +72,20 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                 result.put("message", "Image file not received");
             } else {
                 InputStream imagePartContent = imagePart.getInputStream();
-
+                String email = req.getParameter("email");
                 ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
                 Authentication authentication = DAO.getAuthentication(credential);
                 ClientIdentity identity = authentication.getIdentity();
-                String userId = identity.getUuid();
+                Authorization authorization = DAO.getAuthorization(identity);
+                UserRole userRole = authorization.getUserRole();
+                String userId;
+                if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                    ClientIdentity userIdentity = new ClientIdentity(ClientIdentity.Type.email, email);
+                    userId = userIdentity.getUuid();
+                } else {
+                    userId = identity.getUuid();
+                }
+
                     // check if access_token is valid
                 if (authentication.getIdentity() != null) {
 

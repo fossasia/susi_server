@@ -26,7 +26,10 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +39,7 @@ import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
@@ -47,6 +51,7 @@ import ai.susi.server.api.monitor.*;
 import ai.susi.server.api.service.*;
 import ai.susi.server.api.vis.*;
 import ai.susi.server.api.learning.*;
+import ai.susi.tools.Memory;
 import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
@@ -69,7 +74,6 @@ import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.security.Constraint;
@@ -89,11 +93,23 @@ import ai.susi.server.RemoteAccess;
 import ai.susi.tools.OS;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.json.JSONException;
 
 
 public class SusiServer {
 
-    public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
+    public final static Set<String> blacklistedHosts = ConcurrentHashMap.newKeySet();
+    public final static Map<String, String> hostInfo = new ConcurrentHashMap<>();
+
+    static {
+        try {
+            InetAddress localhost = InetAddress.getLocalHost();
+            hostInfo.put("host_loopback", InetAddress.getLoopbackAddress().getHostAddress());
+            hostInfo.put("host_address", localhost.getHostAddress());
+            hostInfo.put("host_fqdm", localhost.getCanonicalHostName());
+            hostInfo.put("host_name", localhost.getHostName());
+        } catch (JSONException | UnknownHostException e) {}
+    }
 
     private static Server server = null;
     private static Caretaker caretaker = null;
@@ -129,6 +145,17 @@ public class SusiServer {
         Properties customized_config_props = new Properties();
         customized_config_props.load(new FileInputStream(customized_config));
         for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
+
+        // overwrite the config with environment variables. Because a '.' (dot) is not allowed in system environments
+        // the dot can be replaced by "_" (underscore), i.e. like:
+        // users_public_signup="false" java -jar build/libs/susi_server-all.jar
+        String[] keys = config.keySet().toArray(new String[config.size()]); // create a clone of the keys to prevent a ConcurrentModificationException
+        for (String key: keys) if (System.getenv().containsKey(key.replace('.', '_'))) config.put(key, System.getenv().get(key.replace('.', '_')));
+
+        // the config can further be overwritten by System Properties, i.e. like:
+        // java -jar -Dusers.public.signup="false" build/libs/susi_server-all.jar
+        for (String key: keys) if (System.getProperties().containsKey(key)) config.put(key, System.getProperties().getProperty(key));
+
         return config;
     }
 
@@ -141,6 +168,10 @@ public class SusiServer {
     }
 
     public static void main(String[] args) throws Exception {
+        // recommended start parameters:
+        // -ea -Xverify:none -Xms512m
+        // to enable asserts and disable bytecode verification which increases turnaround time
+
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         long starttime = System.currentTimeMillis();
 
@@ -150,6 +181,9 @@ public class SusiServer {
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
         DAO.log("Starting SUSI initialization");
+        long MB = 1024*1024;
+        DAO.log("Memory: free=" + Memory.free()/MB + "MB, available=" + Memory.available()/MB + "MB, max=" + Memory.maxMemory()/MB + "MB, total=" + Memory.total()/MB + "MB, used=" + Memory.used()/MB + "MB, cores=" + Memory.cores() + ", load=" + Memory.load() + ", deadlocks=" + Memory.deadlocks());
+        // free=974527384, available=15216810904, max=15271460864, total=1029177344, used=54649960, cores=24, load=1.333984375, deadlocks=0
 
         // prepare shutdown signal
         File pid = new File(dataFile, "susi.pid");
@@ -206,7 +240,7 @@ public class SusiServer {
         DAO.log("Start time before DAO: " + (System.currentTimeMillis() - starttime) + " milliseconds");
         // initialize all data
         try{
-            DAO.init(config, data);
+            DAO.init(config, data, true);
         } catch(Exception e){
             e.printStackTrace();
             DAO.severe(e.getMessage());
@@ -464,6 +498,8 @@ public class SusiServer {
                 AppsService.class,
                 ApiKeysService.class,
                 GetApiKeys.class,
+                CaptchaConfigService.class,
+                GetCaptchaConfig.class,
                 AuthorizationDemoService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,

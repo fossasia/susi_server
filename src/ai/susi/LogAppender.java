@@ -70,8 +70,7 @@ public class LogAppender extends AppenderSkeleton {
     }
 
     public void clean(int remaining) {
-        while (this.lines.size() > remaining) {
-            this.lines.poll();
-        }
+        int c = this.lines.size() - remaining;
+        while (c-- > 0) this.lines.poll();
     }
 }

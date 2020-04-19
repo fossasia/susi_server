@@ -33,8 +33,6 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.HttpClient;
-import api.external.transit.BahnService;
-import api.external.transit.BahnService.NoStationFoundException;
 import ai.susi.json.JsonTray;
 
 import org.json.JSONArray;
@@ -47,6 +45,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,9 +81,13 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             byte[] b = new byte[0];
+            String bs = "";
             try {
                 String testquery = matcher.group(2);
-                b = loadData(serviceURL, testquery);
+                Map<String, String> request_header = new HashMap<>();
+                request_header.put("Accept","application/json");
+                b = loadDataWithQuery(serviceURL, request_header, testquery);
+                bs = new String(b, StandardCharsets.UTF_8);
                 JSONArray data = JsonPath.parse(b, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
@@ -91,21 +95,21 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(json.getCount());
             } catch (Throwable e) {
                 DAO.severe(e);
-                DAO.severe(new String(b, StandardCharsets.UTF_8));
+                DAO.severe(bs);
             }
             return json;
         });
     }
 
-    public static byte[] loadData(String serviceURL, String testquery) throws IOException {
-        String encodedQuery = URLEncoder.encode(testquery, "UTF-8");
+    public static byte[] loadDataWithQuery(String serviceURL, Map<String, String> request_header, String query) throws IOException {
+        String encodedQuery = URLEncoder.encode(query, "UTF-8");
         int qp = serviceURL.indexOf("$query$");
         String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
-        return loadData(url);
+        return loadData(url, request_header);
     }
 
-    public static byte[] loadData(String url) throws IOException {
-        byte[] b = HttpClient.load(url);
+    public static byte[] loadData(String url, Map<String, String> request_header) throws IOException {
+        byte[] b = HttpClient.loadGet(url, request_header);
 
         // check if this is jsonp
         //System.out.println("DEBUG CONSOLE:" + new String(b, StandardCharsets.UTF_8));
@@ -156,46 +160,29 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 JsonTray apiKeys = DAO.apiKeys;
                 JSONObject publicKeys = apiKeys.getJSONObject("public");
                 String appid = DAO.getConfig("wolframalpha.appid", "");
-                if(publicKeys.has("wolframalphaKey")) {
-                    appid = publicKeys.getString("wolframalphaKey");
+                if (appid.length() == 0 && publicKeys.has("wolframalphaKey")) {
+                    appid = publicKeys.getJSONObject("wolframalphaKey").getString("value");
                 }
                 String serviceURL = "https://api.wolframalpha.com/v2/query?input=$query$&format=plaintext&output=JSON&appid=" + appid;
-                    JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
-                    JSONObject wa = new JSONObject(serviceResponse);
-                    JSONArray pods = wa.getJSONObject("queryresult").getJSONArray("pods");
-                    // get the relevant pod
-                    JSONObject subpod = pods.getJSONObject(1).getJSONArray("subpods").getJSONObject(0);
-                    String response = subpod.getString("plaintext");
-                    int p = response.indexOf('\n');
-                    if (p >= 0) response = response.substring(0, p);
-                    p = response.lastIndexOf('|');
-                    if (p >= 0) response = response.substring(p + 1).trim();
-                    subpod.put("plaintext", response);
-                    json.setQuery(query);
-                    SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-                    json.setData(transfer.conclude(new JSONArray().put(subpod)));
-                    json.setHits(json.getCount());
+                Map<String, String> request_header = new HashMap<>();
+                request_header.put("Accept","application/json");
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadDataWithQuery(serviceURL, request_header, query)));
+                JSONObject wa = new JSONObject(serviceResponse);
+                JSONArray pods = wa.getJSONObject("queryresult").getJSONArray("pods");
+                // get the relevant pod
+                JSONObject subpod = pods.getJSONObject(1).getJSONArray("subpods").getJSONObject(0);
+                String response = subpod.getString("plaintext");
+                int p = response.indexOf('\n');
+                if (p >= 0) response = response.substring(0, p);
+                p = response.lastIndexOf('|');
+                if (p >= 0) response = response.substring(p + 1).trim();
+                subpod.put("plaintext", response);
+                json.setQuery(query);
+                SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                json.setData(transfer.conclude(new JSONArray().put(subpod)));
+                json.setHits(json.getCount());
             } catch (Throwable e) {
                 // probably a time-out or a json error
-                DAO.severe(e);
-            }
-            return json;
-        });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
-            String query = matcher.group(1);
-            String from = matcher.group(2);
-            String to = matcher.group(3);
-            SusiThought json = new SusiThought();
-            try {
-                json = (new BahnService()).getConnections(from, to);
-                SusiTransfer transfer = new SusiTransfer(query);
-                json.setData(transfer.conclude(json.getData()));
-                return json;
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                DAO.severe(e);
-            } catch (NoStationFoundException e) {
-                // TODO Auto-generated catch block
                 DAO.severe(e);
             }
             return json;
@@ -206,7 +193,9 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 String query = matcher.group(2);
                 String language = matcher.group(3);
                 String serviceURL = "https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&titles=$query$&redirects=true";
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
+                Map<String, String> request_header = new HashMap<>();
+                request_header.put("Accept","application/json");
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadDataWithQuery(serviceURL, request_header, query)));
                 JSONObject w = new JSONObject(serviceResponse);
                 JSONObject q = w.has("query") ? w.getJSONObject("query") : null;
                 JSONObject p = q != null && q.has("pages") ? q.getJSONObject("pages") : null;
@@ -232,7 +221,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String query = matcher.group(2);
                 String serviceURL = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8");
-                String s = new String(HttpClient.load(serviceURL), "UTF-8");
+                String s = new String(HttpClient.loadGet(serviceURL), "UTF-8");
                 JSONArray a = new JSONArray();
                 //System.out.println(s);
                 Matcher m = videoPattern.matcher(s);
@@ -268,7 +257,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String query = matcher.group(2);
                 String serviceURL = "https://soundcloud.com/search?q=" + URLEncoder.encode(query, "UTF-8");
-                String s = new String(HttpClient.load(serviceURL), "UTF-8");
+                String s = new String(HttpClient.loadGet(serviceURL), "UTF-8");
                 DAO.log("loaded " + s.length() + " bytes from soundcloud");
                 JSONArray a = new JSONArray();
                 //System.out.println(s);

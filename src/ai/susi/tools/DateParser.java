@@ -17,7 +17,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package ai.susi.tools;
 
 import java.text.DateFormat;
@@ -53,13 +52,13 @@ public class DateParser {
 
     /** Date formatter/non-sloppy parser for W3C datetime (ISO8601) in GMT/UTC */
     public final static SimpleDateFormat iso8601Format = new SimpleDateFormat(PATTERN_ISO8601, Locale.US);
-    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US);
+    public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US); // PREFERRED FORMAT!
     public final static DateFormat dayDateFormat = new SimpleDateFormat(PATTERN_MONTHDAY, Locale.US);
     public final static DateFormat dayMinuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     public final static DateFormat daySecondDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
     public final static DateFormat minuteDateFormat = new SimpleDateFormat("HH:mm", Locale.US);
     public final static DateFormat secondDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.US);
-    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US);
+    public final static SimpleDateFormat FORMAT_RFC1123 = new SimpleDateFormat(PATTERN_RFC1123, Locale.US); // Do not use this format to format! Only for parsing!
 
     public final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
 
@@ -87,8 +86,6 @@ public class DateParser {
      */
     public static Calendar parse(String dateString, final int timezoneOffset) throws ParseException {
         Calendar cal = null;
-        dateString = dateString.replaceAll("_", " ").trim();
-        // special cases for small time numbers
         if (dateString.endsWith("h") || dateString.endsWith("m") || dateString.endsWith("s")) {
             try {
                 int nn = Integer.parseInt(dateString.substring(0, dateString.length() - 1));
@@ -107,6 +104,12 @@ public class DateParser {
                 }
             } catch (NumberFormatException e) {}
         }
+        // special cases for small time numbers
+        if ("now".equals(dateString)) return cal;
+        if ("hour".equals(dateString)) {cal.setTime(oneHourAgo()); return cal;}
+        if ("day".equals(dateString)) {cal.setTime(oneDayAgo()); return cal;}
+        if ("week".equals(dateString)) {cal.setTime(oneWeekAgo()); return cal;}
+        dateString = dateString.replaceAll("_", " ").trim();
 
         // parse a full date format
         for (DateFormat df: tryFormats) {
@@ -190,6 +193,34 @@ public class DateParser {
         synchronized (iso8601MillisFormat) {
             return iso8601MillisFormat.format(date);
         }
+    }
+
+    /**
+     * Format date for GSA (short form of ISO8601 date format)
+     * @param date
+     * @return datestring "yyyy-mm-dd"
+     * @see ISO8601Formatter
+     */
+    public static final String formatGSAFS(final Date date) {
+        if (date == null) return "";
+        synchronized (dayDateFormat) {
+            final String s = dayDateFormat.format(date);
+            return s;
+        }
+    }
+
+    /**
+     * Parse GSA date string (short form of ISO8601 date format)
+     * @param datestring
+     * @return date or null
+     * @see ISO8601Formatter
+     */
+    public static final Date parseGSAFS(final String datestring) {
+        synchronized (dayDateFormat) { try {
+            return dayDateFormat.parse(datestring);
+        } catch (final ParseException | NumberFormatException e) {
+            return null;
+        }}
     }
 
     public static Date parseAnyText(String text, long timezoneOffset) {

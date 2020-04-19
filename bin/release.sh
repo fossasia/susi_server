@@ -49,14 +49,14 @@ mkdir $RELEASE_PATH/$RELEASE_FILE/release
 mkdir $RELEASE_PATH/$RELEASE_FILE/bin
 mkdir $RELEASE_PATH/$RELEASE_FILE/build
 mkdir $RELEASE_PATH/$RELEASE_FILE/build/libs
-mkdir $RELEASE_PATH/$RELEASE_FILE/systemd
+mkdir $RELEASE_PATH/$RELEASE_FILE/system-integration
 
 # copy files
 cp -R conf $RELEASE_PATH/$RELEASE_FILE/
 cp -R html $RELEASE_PATH/$RELEASE_FILE/
 cp bin/*.sh $RELEASE_PATH/$RELEASE_FILE/bin/
 cp $JARFILE $RELEASE_PATH/$RELEASE_FILE/$JARFILE
-cp systemd/* $RELEASE_PATH/$RELEASE_FILE/systemd/
+cp -a system-integration/* $RELEASE_PATH/$RELEASE_FILE/system-integration/
 
 # make a complete copy
 cp -R $RELEASE_PATH/$RELEASE_FILE $RELEASE_PATH/$LATEST_FILE

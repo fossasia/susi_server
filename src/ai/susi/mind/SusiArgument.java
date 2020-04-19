@@ -19,8 +19,11 @@
 
 package ai.susi.mind;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -47,7 +50,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
 
     // working data
     private final ArrayList<SusiThought> recall;
-    private final List<SusiSkill.ID> skills;
+    private final LinkedHashMap<SusiSkill.ID, Integer> skills;
 
     /**
      * Create an empty argument
@@ -57,13 +60,13 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         this.language = language;
         this.minds = minds;
         this.recall = new ArrayList<>();
-        this.skills = new ArrayList<>();
+        this.skills = new LinkedHashMap<>();
     }
 
     public SusiArgument clone() {
         SusiArgument c = new SusiArgument(this.identity, this.language, this.minds);
         this.recall.forEach(thought -> c.recall.add(thought));
-        this.skills.forEach(skill -> c.skills.add(skill));
+        this.skills.forEach((skill, line) -> c.skills.put(skill, line));
         return c;
     }
 
@@ -306,34 +309,12 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // reflection: evaluate contents from the answers expressions as recursion.
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
-                while ((m = appropriateReflectionMatcher(expression)) != null) {
-                    String observation = m.group(1);
-                    if (observation.indexOf('>') > 0) continue;  // there is an assignment in the value
-                    SusiMind.Reaction reaction = null;
-                    ReactionException ee = null;
-                    SusiThought mindstate = this.mindmeld(true);
-                    mindlevels: for (SusiMind mind: this.getMinds()) {
-                        try {
-                            reaction = mind.new Reaction(observation, this.getLanguage(), this.getClientIdentity(), false, mindstate, this.getMinds());
-                            break mindlevels;
-                        } catch (ReactionException e) {
-                            ee = e;
-                            continue mindlevels;
-                        }
-                    }
-                    if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
-                    deducedThought = reaction.getMindstate();
-                    List<SusiAction> reactionActions = new ArrayList<>();
-                    reaction.getActions().forEach(reactionAction -> {
-                        // we add only non-answer actions, because the answer actions are added within the expression (see below)!
-                        if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
-                    }); 
-                    List<String> expressions = reaction.getExpressions();
-                    expression = expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + expression.substring(m.end(1) + 1);
-                    expression = expression.trim();
+                while (expression.indexOf('`') >= 0) {
+                    Reflection reflection = new Reflection(expression, this, false);
+                    deducedThought = reflection.deducedThought;
+                    expression = reflection.expression;
                     reflectionSuccess = true;
                 }
-
             }
 
             // if anything is left after this process, it is our expression
@@ -370,10 +351,58 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
             v = Math.min(100, Math.max(0, v));
             action.setStringAttr("volume", Integer.toString(v));
         }
+        deducedThought.addAction(action);
         return deducedThought;
     }
 
-    private Matcher appropriateReflectionMatcher(String expression) {
+    public static class Reflection {
+        SusiThought deducedThought;
+        List<SusiAction> reactionActions;
+        String expression;
+
+        public Reflection(String query, SusiArgument argument, boolean urlencode) throws ReactionException {
+            this.expression = query;
+            boolean reflectionSuccess = false;
+            Matcher m;
+            while ((m = appropriateReflectionMatcher(expression)) != null) {
+                String observation = m.group(1);
+                if (observation.indexOf('>') > 0) continue;  // there is an assignment in the value
+                SusiMind.Reaction reaction = null;
+                ReactionException ee = null;
+                SusiThought mindstate = argument.mindmeld(true);
+                mindlevels: for (SusiMind mind: argument.getMinds()) {
+                    try {
+                        reaction = mind.new Reaction(observation, argument.getLanguage(), argument.getClientIdentity(), false, mindstate, argument.getMinds());
+                        break mindlevels;
+                    } catch (ReactionException e) {
+                        ee = e;
+                        continue mindlevels;
+                    }
+                }
+                if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
+                this.deducedThought = reaction.getMindstate();
+                this.reactionActions = new ArrayList<>();
+                for (SusiAction reactionAction: reaction.getActions()) {
+                    // we add only non-answer actions, because the answer actions are added within the expression (see below)!
+                    if (reactionAction.getRenderType() != RenderType.answer) reactionActions.add(reactionAction);
+                    if (reactionAction.isSabta()) throw new ReactionException("sabta in reflection answer"); // the reflection found no answer, just one which pretended to be a proper answer
+                }
+                List<String> reflExprs = reaction.getExpressions();
+                if (reflExprs.size() == 0) {
+                    this.expression = "";
+                } else {
+                    String reflExpr = reflExprs.get(random.nextInt(reflExprs.size()));
+                    if (urlencode) try {reflExpr = URLEncoder.encode(reflExpr, "UTF-8");} catch (UnsupportedEncodingException e) {}
+                    this.expression = this.expression.substring(0, m.start(1) - 1) + reflExpr + this.expression.substring(m.end(1) + 1);
+                    this.expression = this.expression.trim();
+                }
+                reflectionSuccess = true;
+            }
+            if (!reflectionSuccess) throw new ReactionException("no reflection inside expression: " + query);
+        }
+    }
+
+    private static Matcher appropriateReflectionMatcher(String expression) {
         Matcher nested_matcher = SusiAction.reflection_nested.matcher(expression);
         Matcher parallel_matcher = SusiAction.reflection_parallel.matcher(expression);
         if (!nested_matcher.matches() && !parallel_matcher.matches()) return null;
@@ -391,6 +420,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         // beside these trivial heuristics above, we can see that mostly reflection phrases should not have superfluous spaces at the end
         if (nested_observation.length() == nested_observation_trim.length() && parallel_observation.length() != parallel_observation_trim.length()) return nested_matcher;
         if (nested_observation.length() != nested_observation_trim.length() && parallel_observation.length() == parallel_observation_trim.length()) return parallel_matcher;
+        // special cases
+        for (int i = 0; i < nested_observation.length(); i++) if (nested_observation.charAt(i) < '0') return parallel_matcher;
         // we don't know :(
         return nested_matcher;
     }
@@ -401,9 +432,9 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * @param skill a relative path to the skill
      * @return the argument
      */
-    public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    public SusiArgument addSkill(final SusiSkill.ID skillid, int line) {
         assert skillid != null;
-        this.skills.add(skillid);
+        this.skills.put(skillid, line);
         return this;
     }
 
@@ -418,16 +449,22 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      */
     public SusiThought finding(ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... mind) throws ReactionException {
         // all actions must be instantiated with variables from this arguments
-        for (SusiAction action: this.getActionsClone()) { // we need a clone from the here (but not from the actions itself) because we modify/extend the actions list object inside the loop
-            SusiThought t = this.applyAction(action); // apply but not add - these actions are already here in this argument
-            if (!t.isFailed()) this.think(t);
+        List<SusiAction> extractedActions = this.getActionsClone();
+        JSONArray appliedActions = new JSONArray();
+        for (SusiAction action: extractedActions) { // we need a clone from the here (but not from the actions itself) because we modify/extend the actions list object inside the loop
+            SusiThought t = this.applyAction(action);
+            if (!t.isFailed()) {
+                for (SusiAction a: t.getActions(true)) appliedActions.put(a.toJSONClone());
+                t.removeActions(); // we do not want to copy the actions to our argument here, we do this later (below)
+                this.think(t); // remember data that has been computed within action evaluation
+            }
         }
         // the 'applyAction' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
-        answer.put("actions", getActionsJSON());
+        answer.put("actions", appliedActions);  // this overwrites the result of the mindmeld
         List<String> skillpaths = new ArrayList<>();
-        this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
+        this.skills.forEach((skill, line) -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
         JSONObject persona = new JSONObject();
         SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
@@ -442,7 +479,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> actionClone = new ArrayList<>();
-        this.recall.forEach(thought -> thought.getActions(true).forEach(action -> actionClone.add(action)));
+        this.recall.forEach(thought -> thought.getActions(true).forEach(action -> actionClone.add(action.clone())));
         return actionClone;
     }
 
@@ -459,7 +496,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         JSONArray actionsJson = new JSONArray();
         getActionsClone().forEach(action -> actionsJson.put(action.toJSONClone()));
         JSONArray skillJson = new JSONArray();
-        this.skills.forEach(skill -> skillJson.put(skill));
+        this.skills.forEach((skill, line) -> skillJson.put(new JSONObject().put(skill.toString(), line)));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
         json.put("skill", skillJson);

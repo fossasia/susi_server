@@ -34,7 +34,16 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
         if ( authorization.getIdentity()!=null ) {
-            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            String email = query.get("email", null);
+            Accounting accounting;
+            UserRole userRole = authorization.getUserRole();
+            if((userRole.getName().equals("admin") || userRole.getName().equals("superadmin")) && email != null) {
+                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+                Authorization userAuthorization = DAO.getAuthorization(identity);
+                accounting = DAO.getAccounting(userAuthorization.getIdentity());
+            } else {
+                accounting = DAO.getAccounting(authorization.getIdentity());
+            }
             JSONObject result = new JSONObject(accounting.getJSON().toMap()); // make a clone
             JSONObject responseObj = new JSONObject();
             if(result.has("settings")) {

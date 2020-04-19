@@ -4,7 +4,6 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,6 +12,7 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * This Servlet gives a API Endpoint to list all the Skills given its model,
@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
  * http://127.0.0.1:4000/cms/getSkillList.json Other params are - applyFilter,
  * filter_type, filter_name, count This servlet also gives an API endpoint to
  * list all the private skills if the access_token is given. Can be tested on
- * http://127.0.0.1:4000/cms/getSkillList.json?private=1&access_token=accessTokenHere
+ * http://127.0.0.1:4000/cms/getSkillList.json?private=1
+ * http://127.0.0.1:4000/cms/getSkillList.json?group=All&language=en&applyFilter=true&filter_name=descending&filter_type=rating&reviewed=true&staff_picks=false&q=testtt&search_type=skill_name,%20descriptions,%20examples,%20author
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -60,8 +61,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String privateSkill = call.get("private", null);
         if (call.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless
                                                       // equivalent of sessions for browsers
-            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token,
-                    call.get("access_token", null));
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token", null));
             Authentication authentication = DAO.getAuthentication(credential);
             // check if access_token is valid
             if (authentication.getIdentity() != null) {
@@ -90,7 +90,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 JSONObject groupObject = new JSONObject();
                 JSONObject languageObject = new JSONObject();
 
-                Iterator groupNames = userObject.keys();
+                Iterator<String> groupNames = userObject.keys();
                 List<String> groupnameKeysList = new ArrayList<String>();
 
                 while (groupNames.hasNext()) {
@@ -100,7 +100,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
                 for (String group_name : groupnameKeysList) {
                     groupObject = userObject.getJSONObject(group_name);
-                    Iterator languageNames = groupObject.keys();
+                    Iterator<String> languageNames = groupObject.keys();
                     List<String> languagenameKeysList = new ArrayList<String>();
 
                     while (languageNames.hasNext()) {
@@ -110,7 +110,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
                     for (String language_name : languagenameKeysList) {
                         languageObject = groupObject.getJSONObject(language_name);
-                        Iterator skillNames = languageObject.keys();
+                        Iterator<String> skillNames = languageObject.keys();
                         List<String> skillnamesKeysList = new ArrayList<String>();
 
                         while (skillNames.hasNext()) {
@@ -153,7 +153,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
         int offset = call.get("offset", 0);
-        String searchQuery = call.get("q", null);
+        String q = call.get("q", null);
         int page = call.get("page", 0);
         Integer count = null;
         Boolean countFilter = false;
@@ -161,8 +161,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean searchFilter = false;
         String reviewed = call.get("reviewed", "false");
         String staff_picks = call.get("staff_picks", "false");
-        String[] language_names = language_list.split(",");
-        String[] search_types = search_type_list.split(",");
+        String[] language_names = language_list.split(","); for (int i = 0; i < language_names.length; i++) language_names[i] = language_names[i].trim();
+        String[] search_types = search_type_list.split(","); for (int i = 0; i < search_types.length; i++) search_types[i] = search_types[i].trim();
         // Initialises the stat counters
         initStatCounters();
 
@@ -178,19 +178,21 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             if (Integer.parseInt(countString) < 0) {
                 throw new APIException(422, "Invalid count value. It should be positive.");
             } else {
-                countFilter = true;
                 try {
                     count = Integer.parseInt(countString);
                     offset = page * count;
+                    countFilter = true;
                 } catch (NumberFormatException ex) {
                     throw new APIException(422, "Invalid count value.");
                 }
             }
         }
 
-        if (searchQuery != null && !StringUtils.isBlank(searchQuery)) {
+        Pattern searchQuery = null;
+        if (q != null) q = q.trim().toLowerCase();
+        if (q != null && q.length() > 0) {
             searchFilter = true;
-            searchQuery = "(.*)" + searchQuery.toLowerCase() + "(.*)";
+            searchQuery = Pattern.compile(".*" + q + ".*");
         }
 
         // Returns susi skills list of all groups
@@ -289,7 +291,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             }
 
             int countTillOffset = 0;
-            for (int i = 0; i < jsonArray.length(); i++) {
+            filterloop: for (int i = 0; i < jsonArray.length(); i++) {
                 if (avg_rating > 0) {
                     Object skill_rating = jsonValues.get(i).opt("skill_rating");
                     if (skill_rating == null || !((skill_rating instanceof JSONObject)))
@@ -318,25 +320,25 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                 }
                 if (searchFilter) {
-                    for(String searchType: search_types ) {
-                    JSONObject skillMetadata = jsonValues.get(i);
-                    if (searchType.equals("skill_name") || searchType.equals("author")
-                            || searchType.equals("descriptions")) {
-                        String skillData = skillMetadata.get(searchType).toString().toLowerCase();
-                        if (!skillData.matches(searchQuery)) {
-                            continue;
+                    boolean found = false;
+                    fieldsloop: for (String searchType: search_types ) {
+                        JSONObject skillMetadata = jsonValues.get(i);
+                        if (searchType.equals("skill_name") || searchType.equals("author") || searchType.equals("descriptions")) {
+                            String skillData = skillMetadata.get(searchType).toString().toLowerCase();
+                            if (searchQuery.matcher(skillData).matches()) {found = true; break fieldsloop;}
+                            continue fieldsloop;
                         }
-                    } else if (searchType.equals("examples")) {
-                        LinkedHashSet<String> examples = (LinkedHashSet<String>) skillMetadata.get("examples");
-                        Iterator<String> itr = examples.iterator();
-                        while (itr.hasNext()) {
-                            if (searchQuery.matches(itr.next())) {
-                                break;
+                        if (searchType.equals("examples")) {
+                            Set<String> examples = (Set<String>) skillMetadata.get("examples");
+                            Iterator<String> itr = examples.iterator();
+                            while (itr.hasNext()) {
+                                if (searchQuery.matcher(itr.next()).matches()) {found = true; break fieldsloop;}
                             }
+                            continue fieldsloop;
                         }
-                        continue;
+                        //continues fieldsloop..
                     }
-                }
+                    if (!found) continue filterloop;
                 }
                 if (countTillOffset++ < offset) {
                     continue;
@@ -410,7 +412,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             for(String skillKey: Objects.requireNonNull(JSONObject.getNames(skillObject))){
                 JSONObject skillObj = skillObject.getJSONObject(skillKey);
                 if(skillObj.has("lastModifiedTime")) {
-                    String lastModifiedTime = skillObj.get("lastModifiedTime").toString().substring(0, 8);
+                    String lastModifiedTime = skillObj.get("lastModifiedTime").toString().substring(0, 7);
                     if(lastModifiedOverTimeObj.has(lastModifiedTime)) {
                         lastModifiedOverTimeObj.put(lastModifiedTime, lastModifiedOverTimeObj.getInt(lastModifiedTime) + 1);
                     }
@@ -419,7 +421,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                 }
                 if(skillObj.has("creationTime")) {
-                    String creationOverTime = skillObj.get("creationTime").toString().substring(0, 8);
+                    String creationOverTime = skillObj.get("creationTime").toString().substring(0, 7);
                     if(creationOverTimeObj.has(creationOverTime)) {
                         creationOverTimeObj.put(creationOverTime, creationOverTimeObj.getInt(creationOverTime) + 1);
                     }
@@ -428,7 +430,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                 }
                 if(skillObj.has("lastAccessTime")) {
-                    String lastAccessTime = skillObj.get("lastAccessTime").toString().substring(0, 8);
+                    String lastAccessTime = skillObj.get("lastAccessTime").toString().substring(0, 7);
                     if(lastAccessOverTimeObj.has(lastAccessTime)) {
                         lastAccessOverTimeObj.put(lastAccessTime, lastAccessOverTimeObj.getInt(lastAccessTime) + 1);
                     }
@@ -451,13 +453,13 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 JSONObject timeObj = new JSONObject();
                 timeObj.put("timeStamp", timeStamp);
                 timeObj.put("count", creationOverTimeObj.getInt(timeStamp));
-                lastModifiedOverTimeList.add(timeObj);
+                creationOverTimeList.add(timeObj);
             }
             for(String timeStamp: Objects.requireNonNull(JSONObject.getNames(lastAccessOverTimeObj))){
                 JSONObject timeObj = new JSONObject();
                 timeObj.put("timeStamp", timeStamp);
                 timeObj.put("count", lastAccessOverTimeObj.getInt(timeStamp));
-                lastModifiedOverTimeList.add(timeObj);
+                lastAccessOverTimeList.add(timeObj);
             }
             json.put("lastModifiedOverTime", lastModifiedOverTimeList);
             json.put("creationOverTime", creationOverTimeList);

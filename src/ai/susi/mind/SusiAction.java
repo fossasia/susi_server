@@ -46,7 +46,7 @@ import ai.susi.tools.DateParser;
  * - can several actions be performed concurrently and then synchronized again with a join-step for a common follow-up action?
  * We need a declaration to express this; a logic in the client to perform this and an expression in the skills to declare this.
  */
-public class SusiAction {
+public class SusiAction implements Cloneable {
 
     public static class SusiActionException extends Exception {
         private static final long serialVersionUID = -754075705722756817L;
@@ -256,21 +256,32 @@ public class SusiAction {
         }
     }
 
+    public SusiAction clone() {
+        JSONObject j = new JSONObject(true);
+        this.json.keySet().forEach(key -> j.put(key, this.json.get(key)));
+        try {
+            return new SusiAction(j);
+        } catch (SusiActionException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     /**
      * answer action: produces a written or spoken answer.
      * If several answers are given one of then can be picked by random by the client.
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(SusiLanguage language, String... answers) {
+    public static JSONObject answerAction(int line, SusiLanguage language, String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
-        JSONObject json = new JSONObject()
+        JSONObject json = new JSONObject(true)
             .put("type", RenderType.answer.name())
             .put("select", SelectionType.random.name())
             .put("phrases", phrases);
         assert language != SusiLanguage.unknown;
         if (language != SusiLanguage.unknown) json.put("language", language.name());
+        if (line > 0) json.put("line", line);
         return json;
     }
 
@@ -339,6 +350,10 @@ public class SusiAction {
         return phrasesCache;
     }
     private ArrayList<String> phrasesCache = null;
+
+    public boolean isSabta() {
+        return this.json.has("mood") && "sabta".equals(this.json.getString("mood"));
+    }
 
     public boolean hasAttr(String attr) {
         return this.json.has(attr);

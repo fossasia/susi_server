@@ -21,7 +21,6 @@ package ai.susi;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -113,6 +112,7 @@ public class DAO {
     private static JsonFile login_keys;
     public static JsonTray group;
     public static JsonTray apiKeys;
+    public static JsonTray captchaConfig;
 
     // CMS Schema for server usage
     public static JsonTray skillInfo;
@@ -158,7 +158,7 @@ public class DAO {
      * @param configMap
      * @param dataPath the path to the data directory
      */
-    public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
+    public static void init(Map<String, String> configMap, Path dataPath, boolean learnWorldKnowledge) throws Exception{
 
         log("initializing SUSI DAO");
 
@@ -179,77 +179,6 @@ public class DAO {
         if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
         if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
         if (!draft_dir.exists()) draft_dir.mkdirs();
-        
-        // initialize the memory as a background task to prevent that this blocks too much
-        susi_memory = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
-        new Thread() {
-            public void run() {
-                susi_memory.initializeMemory();
-            }
-        }.start();
-        
-        deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
-
-        if(!deleted_skill_dir.exists()){
-            DAO.deleted_skill_dir.mkdirs();
-        }
-        model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
-        private_skill_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data"), "users");
-        susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
-        susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
-        File susi_generic_skills = new File(data_dir, "generic_skills");
-        if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
-        SusiMind.Layer susi_generic_skills_media_discovery = new SusiMind.Layer("Media Discovery", new File(susi_generic_skills, "media_discovery"), false);
-        if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
-
-        // wake up susi
-        SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
-        SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
-        SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
-        SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
-        SusiMind.Layer system_skills_test = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "test"), true);
-        susi = new SusiMind(susi_memory);
-        susi.addLayer(system_skills_include);
-        susi.addLayer(system_skills_linuguistic);
-        susi.addLayer(system_skills_operation);
-        susi.addLayer(system_skills_system);
-        susi.addLayer(system_skills_test);
-        if (model_watch_dir.exists()) {
-            SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
-            susi.addLayer(model_skills);
-        }
-        if (DAO.getConfig("local.mode", false)) {
-            susi.addLayer(susi_generic_skills_media_discovery);
-        }
-
-        // initialize public and private keys
-        public_settings = new Settings(new File("data/settings/public.settings.json"));
-        File private_file = new File("data/settings/private.settings.json");
-        private_settings = new Settings(private_file);
-        OS.protectPath(private_file.toPath());
-
-        if (!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()) {
-            log("Can't load key pair. Creating new one");
-
-            // create new key pair
-            KeyPairGenerator keyGen;
-            try {
-                String algorithm = "RSA";
-                keyGen = KeyPairGenerator.getInstance(algorithm);
-                keyGen.initialize(2048);
-                KeyPair keyPair = keyGen.genKeyPair();
-                private_settings.setPrivateKey(keyPair.getPrivate(), algorithm);
-                public_settings.setPublicKey(keyPair.getPublic(), algorithm);
-            } catch (NoSuchAlgorithmException e) {
-                throw e;
-            }
-            log("Key creation finished. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
-        }
-        else{
-            log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
-        }
-
-        // check if elasticsearch shall be accessed as external cluster
 
         // open AAA storage
         Path settings_dir = dataPath.resolve("settings");
@@ -279,6 +208,14 @@ public class DAO {
         login_keys = new JsonFile(login_keys_path.toFile(), false);
         OS.protectPath(login_keys_path);
 
+        // Skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
+        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
+        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
+        OS.protectPath(skillUsage_per);
+        OS.protectPath(skillUsage_vol);
 
         Path groups_per = settings_dir.resolve("groups.json");
         Path groups_vol = settings_dir.resolve("groups_session.json");
@@ -294,6 +231,13 @@ public class DAO {
         apiKeys = new JsonTray(apiKeys_per.toFile(), apiKeys_vol.toFile(), 1000000);
         OS.protectPath(apiKeys_per);
         OS.protectPath(apiKeys_vol);
+
+        /*ReCaptcha config*/
+        Path captchaConfig_per = settings_dir.resolve("captchaConfig.json");
+        Path captchaConfig_vol = settings_dir.resolve("captchaConfig_session.json");
+        captchaConfig = new JsonTray(captchaConfig_per.toFile(), captchaConfig_vol.toFile(), 1000000);
+        OS.protectPath(captchaConfig_per);
+        OS.protectPath(captchaConfig_vol);
 
         /* Basic attributes related to a skill*/
         Path susi_skill_info_dir = dataPath.resolve("skill_info");
@@ -384,15 +328,6 @@ public class DAO {
         OS.protectPath(countryWiseSkillUsage_per);
         OS.protectPath(countryWiseSkillUsage_vol);
 
-        // Skill usage storage
-        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
-        susi_skill_usage_dir.toFile().mkdirs();
-        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
-        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
-        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
-        OS.protectPath(skillUsage_per);
-        OS.protectPath(skillUsage_vol);
-
         // Device wise skill usage
         Path device_wise_skill_usage_dir = dataPath.resolve("skill_usage");
         device_wise_skill_usage_dir.toFile().mkdirs();
@@ -423,6 +358,85 @@ public class DAO {
         OS.protectPath(skillSlideshow_per);
         OS.protectPath(skillSlideshow_vol);
 
+        // initialize the memory as a background task to prevent that this blocks too much
+        susi_memory = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
+        new Thread() {
+            public void run() {
+                susi_memory.initializeMemory();
+            }
+        }.start();
+
+        // prepare skill repository
+        deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
+
+        if(!deleted_skill_dir.exists()){
+            DAO.deleted_skill_dir.mkdirs();
+        }
+        model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
+        private_skill_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data"), "users");
+        susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
+        susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
+        File susi_generic_skills = new File(data_dir, "generic_skills");
+        if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
+        SusiMind.Layer susi_generic_skills_media_discovery = new SusiMind.Layer("Media Discovery", new File(susi_generic_skills, "media_discovery"), false);
+        if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
+
+        // wake up susi
+        susi = new SusiMind(susi_memory);
+        if (learnWorldKnowledge) {
+            SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
+            SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
+            SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
+            SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
+            SusiMind.Layer system_skills_test = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "test"), true);
+            susi.addLayer(system_skills_include);
+            susi.addLayer(system_skills_linuguistic);
+            susi.addLayer(system_skills_operation);
+            susi.addLayer(system_skills_system);
+            susi.addLayer(system_skills_test);
+            if (model_watch_dir.exists() && getConfig("skill_repo.use_enable", false)) {
+                SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
+                susi.addLayer(model_skills);
+            }
+            if (DAO.getConfig("local.mode", false)) {
+                susi.addLayer(susi_generic_skills_media_discovery);
+            }
+        }
+
+        // learn all available intents
+        new Thread() {
+            public void run() {
+                observe();
+            }
+        }.start();
+        
+        // initialize public and private keys
+        public_settings = new Settings(new File("data/settings/public.settings.json"));
+        File private_file = new File("data/settings/private.settings.json");
+        private_settings = new Settings(private_file);
+        OS.protectPath(private_file.toPath());
+
+        if (!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()) {
+            log("Can't load key pair. Creating new one");
+
+            // create new key pair
+            KeyPairGenerator keyGen;
+            try {
+                String algorithm = "RSA";
+                keyGen = KeyPairGenerator.getInstance(algorithm);
+                keyGen.initialize(2048);
+                KeyPair keyPair = keyGen.genKeyPair();
+                private_settings.setPrivateKey(keyPair.getPrivate(), algorithm);
+                public_settings.setPublicKey(keyPair.getPublic(), algorithm);
+            } catch (NoSuchAlgorithmException e) {
+                throw e;
+            }
+            log("Key creation finished. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
+        }
+        else{
+            log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
+        }
+
         // open index
         Path index_dir = dataPath.resolve("index");
         if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
@@ -436,6 +450,7 @@ public class DAO {
         // initializing susi minf concurrently
         Thread susi_mind_init = new Thread() {
             public void run() {
+                Thread.currentThread().setName("ObserveLearn");
                 try {
                     susi.observe();
                 } catch (IOException e) {
@@ -452,7 +467,7 @@ public class DAO {
         access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
         access.start(); // start monitor
 
-        if (getConfig("skill_repo.enable", true)) {
+        if (getConfig("skill_repo.pull_enable", false)) {
                 log("Starting Skill Data pull thread");
                 SkillTransactions.init(getConfig("skill_repo.pull_delay", 60000));
         }
@@ -466,7 +481,7 @@ public class DAO {
             DAO.log(e.getMessage());
         }
     }
-    
+
     public static File getAssetFile(String screen_name, String id_str, String file) {
         String letter0 = ("" + screen_name.charAt(0)).toLowerCase();
         String letter1 = ("" + screen_name.charAt(1)).toLowerCase();
@@ -491,7 +506,7 @@ public class DAO {
 
         // close pull thread
         SkillTransactions.close();
-        
+
         log("closed DAO");
     }
 

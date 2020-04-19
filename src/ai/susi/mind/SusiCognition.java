@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.SusiServer;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
 
@@ -81,6 +82,7 @@ public class SusiCognition {
      */
     public SusiCognition(
             final String query,
+            final String clientHost,
             int timezoneOffset,
             double latitude, double longitude,
             String countryCode, String countryName,
@@ -95,6 +97,8 @@ public class SusiCognition {
         String client = identity.getClient();
         this.setQuery(query);
         SusiThought observation = new SusiThought();
+        observation.addObservation("client_host", clientHost);
+        SusiServer.hostInfo.forEach((key, value) -> observation.addObservation(key, value));
         observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
 
         if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {
@@ -111,9 +115,7 @@ public class SusiCognition {
         assert language != SusiLanguage.unknown; // we should always know a language
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
 
-        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
         long query_date = System.currentTimeMillis();
-        this.json.put("query_date", DateParser.utcFormatter.print(query_date));
 
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         SusiThought dispute = SusiMind.reactMinds(query, language, identity, debug, observation, mindLayers);
@@ -142,16 +144,19 @@ public class SusiCognition {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // store answer and actions into json
         if (dispute != null) {
-        	List<SusiThought> thoughts = new ArrayList<>();
-        	thoughts.add(dispute);
-        	this.json.put("answers", new JSONArray(thoughts));
+            List<SusiThought> thoughts = new ArrayList<>();
+            thoughts.add(dispute);
+            this.json.put("answers", new JSONArray(thoughts));
         }
+        this.json.put("query_date", DateParser.utcFormatter.print(query_date));
+        this.json.put("query_language", language.name());
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
-        this.json.put("language", language.name());
+        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
+
     }
 
     public void updateDeviceWiseUsageData(String skillPath, String deviceType) {
@@ -365,19 +370,19 @@ public class SusiCognition {
         if (phrases == null || phrases.size() == 0) return "";
         return phrases.get(0);
     }
-    
+
     /**
      * The cognition is the result of a though extraction. We can reconstruct
      * the dispute as list of last mindstates using the cognition data.
      * @return a backtrackable thought reconstructed from the cognition data
-     */    
+     */
     public SusiThought recallDispute() {
         SusiThought dispute = new SusiThought();
         if (this.json.has("answers")) {
             JSONArray answers = this.json.getJSONArray("answers"); // in most cases there is only one answer
             for (int i = answers.length() - 1; i >= 0; i--) {
                 SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
-                
+
                 // add observations from metadata as variable content:
                 // the query:
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
@@ -393,13 +398,13 @@ public class SusiCognition {
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
                     if(skills.get(0).startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {
-                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length()));
+                        dispute.addObservation("skill_source", "Etherpad Dream: " +skills.get(0).substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length()));
                     } else {
-                        dispute.addObservation("skill", skills.get(0));
+                        dispute.addObservation("skill_source", skills.get(0));
                     }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
                 }
-                
+
                 // add all data from the old dispute
                 JSONArray clonedData = clonedThought.getData();
                 if (clonedData.length() > 0) {
@@ -421,16 +426,16 @@ public class SusiCognition {
         }
         return dispute;
     }
-    
+
     public JSONObject getJSON() {
         return this.json;
     }
-    
+
     public String toString() {
         return this.json.toString();
     }
 
-    public String getSkillLink(String skillPath) {
+    public static String getSkillLink(String skillPath) {
         String link=skillPath;
         if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER)) {
             if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {

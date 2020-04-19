@@ -34,7 +34,7 @@ public class SusiProcedures extends LinkedHashMap<Pattern, BiFunction<SusiArgume
     public SusiProcedures() {
         super();
     }
-    
+
     /**
      * Deduction is the application of an intent on perception and a world model.
      * In this method the mappings from the intent set is applied to the perception q and previous
@@ -65,11 +65,11 @@ public class SusiProcedures extends LinkedHashMap<Pattern, BiFunction<SusiArgume
                 // we silently ignore these exceptions as they are normal and acceptable during thinking
             }
         }
-        
+
         // no success: produce an empty thought
         return new SusiThought();
     }
-    
+
     /**
      * Inspiration is the application of an intent on a minimum perception. In this method the mappings
      * from the intent set is applied only to the perception q.

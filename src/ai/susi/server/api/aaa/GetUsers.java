@@ -1,15 +1,39 @@
+/**
+ *  GetUsers
+ *  Created by chetankaushik on 31/05/17.
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *  
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiCognition;
 import ai.susi.server.*;
+import ai.susi.tools.DateParser;
 
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Iterator;
@@ -157,32 +181,50 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                       json.put("lastLoginIP", "");
                   }
 
-                  if(accounting.getJSON().has("signupTime")) {
-                    String signupTime = accounting.getJSON().getString("signupTime");
-                    json.put("signupTime", signupTime);
-                    signupTime = signupTime.substring(8, 16);
-                    if(signupOverTimeObj.has(signupTime)){
-                      int count = signupOverTimeObj.getInt(signupTime);
-                      signupOverTimeObj.put(signupTime, count + 1);
-                    }
-                    else {
-                      signupOverTimeObj.put(signupTime, 0);
-                    }
+                  if (!accounting.getJSON().has("signupTime")) {
+                      // the time was missing because of an bug. We patch that here.
+                      // after all missing signupTime values have been patched, the code can be removed again.
+                      // we reconstruct the signupTime using the first entry in the chatlog.
+                      SusiCognition cog = DAO.susi_memory.firstCognition(authorization.getIdentity().getClient());
+                      if (cog != null) {
+                          accounting.getJSON().put("signupTime", DateParser.formatISO8601(cog.getQueryDate()));
+                      }
+                  }
+
+                  if (accounting.getJSON().has("signupTime")) {
+                      String signupTime = accounting.getJSON().getString("signupTime");
+                      if (signupTime.endsWith("0000")) { try { // time is in RFC1123, it should be in ISO8601: patching here; remove code later
+                          Date d = DateParser.FORMAT_RFC1123.parse(signupTime);
+                          signupTime = DateParser.formatISO8601(d);
+                          accounting.getJSON().put("signupTime", signupTime);
+                      } catch (ParseException e) {e.printStackTrace();}}
+                      json.put("signupTime", signupTime);
+                      signupTime = signupTime.substring(0, 7);
+                      if (signupOverTimeObj.has(signupTime)){
+                          int count = signupOverTimeObj.getInt(signupTime);
+                          signupOverTimeObj.put(signupTime, count + 1);
+                      } else {
+                          signupOverTimeObj.put(signupTime, 1);
+                      }
                   } else {
                       json.put("signupTime", "");
                   }
 
-                  if(accounting.getJSON().has("lastLoginTime")) {
-                    String lastLoginTime = accounting.getJSON().getString("lastLoginTime");
-                    json.put("lastLoginTime", lastLoginTime);
-                    lastLoginTime = lastLoginTime.substring(8, 16);
-                    if(lastLoginOverTimeObj.has(lastLoginTime)){
-                      int count = lastLoginOverTimeObj.getInt(lastLoginTime);
-                      lastLoginOverTimeObj.put(lastLoginTime, count + 1);
-                    }
-                    else {
-                      lastLoginOverTimeObj.put(lastLoginTime, 1);
-                    }
+                    if (accounting.getJSON().has("lastLoginTime")) {
+                        String lastLoginTime = accounting.getJSON().getString("lastLoginTime");
+                        if (lastLoginTime.endsWith("0000")) { try { // time is in RFC1123, it should be in ISO8601: patching here; remove code later
+                            Date d = DateParser.FORMAT_RFC1123.parse(lastLoginTime);
+                            lastLoginTime = DateParser.formatISO8601(d);
+                            accounting.getJSON().put("lastLoginTime", lastLoginTime);
+                        } catch (ParseException e) {e.printStackTrace();}}
+                        json.put("lastLoginTime", lastLoginTime);
+                        lastLoginTime = lastLoginTime.substring(0, 7);
+                        if (lastLoginOverTimeObj.has(lastLoginTime)) {
+                            int count = lastLoginOverTimeObj.getInt(lastLoginTime);
+                            lastLoginOverTimeObj.put(lastLoginTime, count + 1);
+                        } else {
+                            lastLoginOverTimeObj.put(lastLoginTime, 1);
+                        }
                   } else {
                       json.put("lastLoginTime", "");
                   }
@@ -195,8 +237,19 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                         String key = (String)keys.next();
                         if (devices.get(key) instanceof JSONObject) {
                             JSONObject device = new JSONObject(devices.get(key).toString());
-                            if(device.has("deviceAddTime")) {
-                                String deviceAddTime = device.get("deviceAddTime").toString().substring(8,16);
+                            String deviceAddTime = device.optString("deviceAddTime");
+                            if (deviceAddTime != null && deviceAddTime.length() > 0) {
+                                try {
+                                    Date d = DateParser.FORMAT_RFC1123.parse(deviceAddTime);
+                                    deviceAddTime = DateParser.formatISO8601(d).substring(0,7);
+                                } catch (ParseException e) {
+                                    try {
+                                    Date d = DateParser.iso8601MillisFormat.parse(deviceAddTime);
+                                    deviceAddTime = DateParser.formatISO8601(d).substring(0,7);
+                                    } catch (ParseException ee) {
+                                        ee.printStackTrace();
+                                    }
+                                }
                                 if(deviceAddedOverTimeObj.has(deviceAddTime)) {
                                     int count = deviceAddedOverTimeObj.getInt(deviceAddTime);
                                     deviceAddedOverTimeObj.put(deviceAddTime, count + 1);

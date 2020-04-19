@@ -48,7 +48,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
     
     public SusiSkillFile(final BufferedReader br) throws IOException {
     	this();
-        List<List<String>> blocks = textBlockReader(br);
+        List<List<Line>> blocks = textBlockReader(br);
         blocks.forEach(block -> intents.add(new IntentBlock(block)));
     }
 
@@ -68,30 +68,33 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
     public static class IntentBlock {
 
         public final String utterance;
-        public final List<String> model;
+        public final List<Line> model;
+        public int lineNumber;
 
-        public IntentBlock(final List<String> lines) {
-            List<String> a = new ArrayList<>();
+        public IntentBlock(final List<Line> numberedLines) {
+            List<Line> a = new ArrayList<>();
 
             // first merge lines with line-glue "\\" into one line
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                assert line.length() > 0;
-                if (line.charAt(0) == '\\') {
+            for (int i = 0; i < numberedLines.size(); i++) {
+                Line numberedLine = numberedLines.get(i);
+                assert numberedLine.line.length() > 0;
+                if (numberedLine.line.charAt(0) == '\\') {
                     if (a.size() == 0) {
-                        a.add(line.substring(1));
+                        a.add(new Line(numberedLine.line.substring(1), numberedLine.number));
                     } else {
-                        a.set(a.size() - 1, a.get(a.size() - 1) + ' ' + line.substring(1));
+                        Line prevLine = a.get(a.size() - 1);
+                        a.set(a.size() - 1, new Line(prevLine.line + ' ' + numberedLine.line.substring(1), prevLine.number));
                     }
                 } else {
                     if (a.size() == 0) {
-                        a.add(line);
+                        a.add(numberedLine);
                     } else {
-                        String lasta = a.get(a.size() - 1);
+                        Line prevLine = a.get(a.size() - 1);
+                        String lasta = prevLine.line;
                         if (lasta.charAt(lasta.length() - 1) == '\\') {
-                            a.set(a.size() - 1, lasta.substring(0, lasta.length() - 1) + ' ' + line);
+                            a.set(a.size() - 1, new Line(lasta.substring(0, lasta.length() - 1) + ' ' + numberedLine.line, prevLine.number));
                         } else {
-                            a.add(line);
+                            a.add(numberedLine);
                         }
                     }
                 }
@@ -101,9 +104,10 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
             this.model = a.size() < 2 ? null : new ArrayList<>();
             String impl = null;
             for (int i = 0; i < a.size(); i++) {
-                String line = a.get(i);
+                Line line = a.get(i);
                 if (impl == null) {
-                    impl = line;
+                    impl = line.line;
+                    this.lineNumber = line.number;
                 } else {
                     model.add(line);
                 }
@@ -115,8 +119,8 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
             StringBuilder sb = new StringBuilder();
             sb.append(utterance).append("\n");
             if (this.model != null) {
-                for (String p: model) {
-                    sb.append(p).append("\n");
+                for (Line p: model) {
+                    sb.append(p.line).append("\n");
                 }
             }
             sb.append("\n");
@@ -126,11 +130,31 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
 
     public final static Pattern tabPattern = Pattern.compile("\t");
 
-    public static List<List<String>> textBlockReader(final BufferedReader br) throws IOException {
+    public final static class Line {
+        public String line;
+        public int number;
+        public Line(String line, int number) {
+            this.line = line;
+            this.number = number;
+        }
+    }
+    
+    /**
+     * Read bags of lines:
+     * Each bag is a set of lines which have no empty lines between them.
+     * Inside the bag there are lines of the section.
+     * @param br
+     * @return a list of line bags, with lines inside
+     * @throws IOException
+     */
+    public static List<List<Line>> textBlockReader(final BufferedReader br) throws IOException {
         String line = "";
-        List<String> line_bag = new ArrayList<>();
-        List<List<String>> blocks = new ArrayList<>();
+        List<Line> line_bag = new ArrayList<>();
+        List<List<Line>> blocks = new ArrayList<>();
+        int lineNumber = -1;
         while ((line = br.readLine()) != null) {
+            lineNumber++;
+
             line = tabPattern.matcher(righttrim(line)).replaceAll("    ");
 
             // empty lines close a block
@@ -147,7 +171,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
                     blocks.add(line_bag);
                     line_bag = new ArrayList<>();
                 }
-                line_bag.add(line);
+                line_bag.add(new Line(line, lineNumber));
                 blocks.add(line_bag);
                 line_bag = new ArrayList<>();
                 continue;
@@ -157,7 +181,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
             if (line.charAt(0) == '#') continue;
 
             // all other lines are added to a block
-            line_bag.add(line);
+            line_bag.add(new Line(line, lineNumber));
         }
         // there might be a unsaved block at the end
         if (line_bag.size() > 0) {
@@ -223,7 +247,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
 
         try {
             Map<String, String> config = SusiServer.readConfig(data);
-            DAO.init(config, data);
+            DAO.init(config, data, true);
             File f = new File("conf/os_skills/operation/en/en_0001_foundation.txt");
             SusiSkill.ID skillid = new SusiSkill.ID(f);
             

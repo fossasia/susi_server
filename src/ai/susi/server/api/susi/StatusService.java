@@ -24,15 +24,20 @@ import ai.susi.SusiServer;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.OS;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 
+// http://127.0.0.1:4000/susi/status.json
 public class StatusService extends AbstractAPIHandler implements APIHandler {
-   
+
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
@@ -64,7 +69,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
         post.setResponse(response, "application/javascript");
-        
+
         // generate json
         Runtime runtime = Runtime.getRuntime();
         JSONObject json = new JSONObject(true);
@@ -80,6 +85,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         system.put("load_process_cpu", OS.getProcessCpuLoad());
         system.put("server_threads", SusiServer.getServerThreads());
         system.put("server_uri", SusiServer.getServerURI());
+        SusiServer.hostInfo.forEach((key, value) -> system.put(key, value));
 
         JSONObject index = new JSONObject(true);
         JSONObject messages = new JSONObject(true);

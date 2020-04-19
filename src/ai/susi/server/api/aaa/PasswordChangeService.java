@@ -17,6 +17,7 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.EmailHandler;
+import ai.susi.json.JsonTray;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.TimeoutMatcher;
@@ -104,13 +105,21 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             }
 
             if (DAO.hasAuthentication(emailcred)) {
-                String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+                JsonTray CaptchaConfig = DAO.captchaConfig;
+                JSONObject captchaObj = CaptchaConfig.has("config") ? CaptchaConfig.getJSONObject("config")
+                        : new JSONObject();
+                Boolean isChangePassowordCaptchaEnabled = captchaObj.has("changePassword")
+                        ? captchaObj.getBoolean("changePassword")
+                        : true;
 
-                boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
-                if(!isRecaptchaVerified){
-                    result.put("message", "Please verify recaptcha");
-                    result.put("accepted", false);
-                    return new ServiceResponse(result);
+                if (isChangePassowordCaptchaEnabled) {
+                    String gRecaptchaResponse = post.get("g-recaptcha-response", null);
+                    boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
+                    if (!isRecaptchaVerified) {
+                        result.put("message", "Please verify recaptcha");
+                        result.put("accepted", false);
+                        return new ServiceResponse(result);
+                    }
                 }
 
                 if(passwordHash.equals(getHash(newpassword, salt))){

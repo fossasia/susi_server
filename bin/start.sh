@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This starts the susi_server
+# The default port after start is 4000, sou you can reach the server
+# at http://localhost:4000 after startup
+
 # If you're looking for the variables, please go to bin/preload.sh
 
 # Make sure we're on project root

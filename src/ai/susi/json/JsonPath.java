@@ -37,7 +37,7 @@ public class JsonPath {
             return data;
         } catch (JSONException e) {
             if (jsonPath.equals("$")) {
-                return new JSONArray().put(new JSONObject().put("object", new String(b, StandardCharsets.UTF_8)));
+                return new JSONArray().put(new JSONObject().put("!", new String(b, StandardCharsets.UTF_8)));
             } else {
                 throw e;
             }
@@ -49,8 +49,8 @@ public class JsonPath {
         if (a.length() == 0) return a; // length == 1 will cause an empty thought. Its not wrong, it will just cause that thinking fails. May be wanted.
         Object f = a.get(0);
         if (a.length() == 1 && (!(f instanceof JSONObject))) {
-            // wrap this atom into an object with key name "object"
-            return new JSONArray().put(new JSONObject().put("object", a.get(0)));
+            // wrap this atom into an object with key name "!"
+            return new JSONArray().put(new JSONObject().put("!", a.get(0)));
         }
         // now, all objects in the array must be of the same type!
         Class<? extends Object> c = f.getClass();
@@ -62,7 +62,7 @@ public class JsonPath {
         // the atomic objects must be wrapped
         JSONArray b = new JSONArray();
         for (int i = 0; i < a.length(); i++) {
-            b.put(new JSONObject().put("object", a.get(i)));
+            b.put(new JSONObject().put("!", a.get(i)));
         }
         return b;
     }
@@ -93,16 +93,22 @@ public class JsonPath {
         for (int domc = 1; domc < dompath.length; domc++) {
             String path = dompath[domc];
             int p = path.indexOf('[');
+            int q = p < 0 ? -1 : path.indexOf(']', p + 1);
             if (p < 0) {
                 decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
             } else if (p == 0) {
-                int idx = Integer.parseInt(path.substring(1, path.length() - 1));
+                int idx = Integer.parseInt(path.substring(1, q));
                 decomposition = ((decomposition == null) ? new JSONArray(tokener) : ((JSONArray) decomposition)).get(idx);
             } else {
-                int idx = Integer.parseInt(path.substring(p + 1, path.length() - 1));
-                path = path.substring(0, p);
-                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
+                int idx = Integer.parseInt(path.substring(p + 1, q));
+                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path.substring(0, p));
                 decomposition = ((JSONArray) decomposition).get(idx);
+                path = path.substring(q + 1);
+                if (path.length() > 0 && path.charAt(0) == '[' && (q = path.indexOf(']')) > 0) {
+                    // another dimension
+                    idx = Integer.parseInt(path.substring(1, q));
+                    decomposition = ((JSONArray) decomposition).get(idx);
+                }
             }
         }
         if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
@@ -120,24 +126,24 @@ public class JsonPath {
             ((JSONObject) decomposition).put("mapsize", columns.length);
             return new JSONArray().put((JSONObject) decomposition);
         }
-        if (decomposition instanceof String) return new JSONArray().put(new JSONObject().put("object", (String) decomposition));
-        if (decomposition instanceof Integer) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
-        if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
+        if (decomposition instanceof String) return new JSONArray().put(new JSONObject().put("!", (String) decomposition));
+        if (decomposition instanceof Integer) return new JSONArray().put(new JSONObject().put("!", decomposition.toString()));
+        if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("!", decomposition.toString()));
         throw new JSONException("unrecognized object type: " + decomposition.getClass().getName());
     }
-    
+
     private static void test(String json, String path) {
-    	JSONTokener tokener = new JSONTokener(json.trim());
-    	JSONArray array = parse(tokener, path);
-    	System.out.println("json:" + json.toString());
-    	System.out.println("path:" + path);
-    	System.out.println("pars:" + (array == null ? "NULL" : array.toString()));
+        JSONTokener tokener = new JSONTokener(json.trim());
+        JSONArray array = parse(tokener, path);
+        System.out.println("json:" + json.toString());
+        System.out.println("path:" + path);
+        System.out.println("pars:" + (array == null ? "NULL" : array.toString()));
     }
-    
+
     public static void main(String[] args) {
-    	// https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DYHOO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv%27%20and%20columns%3D%27symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2%27&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
-    	test("{\"query\":{\"count\":1,\"created\":\"2017-03-13T12:41:55Z\",\"lang\":\"de-DE\",\"results\":{\"row\":{\"symbol\":\"YHOO\",\"price\":\"45.98\",\"date\":\"3/10/2017\",\"time\":\"5:00pm\",\"change\":\"+0.04\",\"col1\":\"46.20\",\"high\":\"46.20\",\"low\":\"45.75\",\"col2\":\"3824629\"}}}}",
-    			"$.query.results.row");
+        // https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DYHOO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv%27%20and%20columns%3D%27symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2%27&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+        // test("{\"query\":{\"count\":1,\"created\":\"2017-03-13T12:41:55Z\",\"lang\":\"de-DE\",\"results\":{\"row\":{\"symbol\":\"YHOO\",\"price\":\"45.98\",\"date\":\"3/10/2017\",\"time\":\"5:00pm\",\"change\":\"+0.04\",\"col1\":\"46.20\",\"high\":\"46.20\",\"low\":\"45.75\",\"col2\":\"3824629\"}}}}","$.query.results.row");
+        test("{\"d0\":0;\"d1\":1;\"d2\":1;\"d3\":0;\"d4\":0;\"d5\":0;\"d6\":1;\"d7\":1;\"d8\":0;\"a0\":21}","$.a0"); // result is in "!"
     }
-    
+
 }

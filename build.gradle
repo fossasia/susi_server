@@ -22,24 +22,12 @@ buildscript {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-sourceSets.main.java.srcDirs = ['dependencies/public-transport-enabler/enabler/src', 'src']
+sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
 sourceSets.test.java.srcDirs = ['test']
 
 
 import org.ajoberstar.grgit.*
-
-task clone{
- //This task will download public-transport-enabler project from git 
- 
- def localPath='dependencies/public-transport-enabler/'
- //if public-transport-enabler is already exist  in the dependencies folder Task wont download it again
- def f = file(localPath)
- if (!f.exists()) {
-  	Grgit.clone(dir: file(localPath), uri: 'https://github.com/schildbach/public-transport-enabler.git')
-  }
-}
-
 
 jar {
     manifest {
@@ -50,12 +38,6 @@ jar {
 shadowJar {
   mergeServiceFiles()
 }
-
-  
-
-assemble.dependsOn shadowJar
-//compileJava run only after the clone task is executed
-compileJava.dependsOn clone
 
 repositories {
   mavenCentral()
@@ -97,12 +79,8 @@ dependencies {
   compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: versionJersey
   compile group: 'org.webjars', name: 'swagger-ui', version: '2.1.4'
   compile group: 'commons-io', name: 'commons-io', version: '2.6'
-  // the following is required for public-transport-enabler
-  compile 'com.squareup.okhttp3:okhttp:3.8.0'
-  compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'
-  compile 'net.sf.kxml:kxml2:2.3.0' // provided by Android
-  compile group: 'javax.xml', name: 'jaxb-api', version: '2.1'
   compile group: 'com.joestelmach', name: 'natty', version: '0.13'
+  compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.+'
 }
 
 task stage(dependsOn: ['assemble', 'clean'])
@@ -110,6 +88,10 @@ assemble.mustRunAfter clean
 
 tasks.withType(Javadoc) {
   options.addBooleanOption('Xdoclint:none', true)
+}
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
 }
 
 task start(type: JavaExec, dependsOn: classes) {

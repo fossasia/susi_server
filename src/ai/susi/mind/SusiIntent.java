@@ -29,17 +29,16 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.mind.SusiAction.RenderType;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.server.ClientIdentity;
-import ai.susi.tools.TimeoutMatcher;
 
 /**
  * An intent in the Susi AI framework is a collection of utterances, inference processes and actions that are applied
@@ -81,10 +80,10 @@ public class SusiIntent implements Cloneable {
         this.hashCode = 0; // set with lazy computation
         this.depth = 0;
     }
-    
+
     public Object clone() {
-    	SusiIntent i = new SusiIntent();
-    	this.utterances.forEach(u -> i.utterances.add(u));
+        SusiIntent i = new SusiIntent();
+        this.utterances.forEach(u -> i.utterances.add(u));
         this.actions.forEach(a -> i.actions.add(a));
         this.inferences.forEach(f -> i.inferences.add(f));
         this.keys.forEach(k -> i.keys.add(k));
@@ -108,7 +107,7 @@ public class SusiIntent implements Cloneable {
      * @throws PatternSyntaxException
      */
     private SusiIntent(SusiSkill.ID skillid, JSONObject json) throws PatternSyntaxException {
-    	assert skillid != null;
+        assert skillid != null;
 
         // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -138,15 +137,15 @@ public class SusiIntent implements Cloneable {
             this.inferences = new ArrayList<>(0);
         }
 
-        // extract (or compute) the keys; there may be none key given, then they will be computed
+        // extract and compute the keys; there may be none key given, then they will be computed
         this.keys = new HashSet<>();
         JSONArray k;
         if (json.has("keys")) {
             k = json.getJSONArray("keys");
-            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromUtterance(this.utterances);
-        } else {
-            k = computeKeysFromUtterance(this.utterances);
+            k.forEach(o -> this.keys.add((String) o));
         }
+        k = computeKeysFromUtterance(this.utterances);
+        
         k.forEach(o -> this.keys.add((String) o));
 
         this.cues = new LinkedHashSet<>();
@@ -176,10 +175,10 @@ public class SusiIntent implements Cloneable {
             boolean prior,
             int depth,
             SusiSkill.ID skillid) throws SusiActionException {
-    	assert skillid != null;
-    	assert utterances != null : "utterances is null in " + skillid.getPath();
-    	assert utterances.size() > 0 : "utterance size is 0 in " + skillid.getPath();
-    	
+        assert skillid != null;
+        if (utterances == null) throw new SusiActionException("utterances is null in " + skillid.getPath());
+        if (utterances.size() == 0) throw new SusiActionException("utterances size is 0 in " + skillid.getPath());
+
         this.utterances = new ArrayList<>();
         for (SusiUtterance u: utterances) this.utterances.add(u);
         this.actions = new ArrayList<>();
@@ -196,13 +195,13 @@ public class SusiIntent implements Cloneable {
         this.skillid = skillid;
         this.example = "";
         this.expect = "";
-        if (label == null || label.length() == 0 && this.utterances.size() == 1) try {
-            String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
-            if (l.indexOf('*') < 0) label = l;
+        if ((this.label == null || this.label.length() == 0) && this.utterances.size() == 1) try {
+            String l = this.utterances.get(0).getPattern().toString();
+            if (l.indexOf('*') < 0) this.label = l.replace(' ', '_');
         } catch (IndexOutOfBoundsException e) {
-        	throw new SusiActionException(e.toString() + " in " + skillid.toString());
+            throw new SusiActionException(e.toString() + " in " + skillid.toString());
         }
-        this.label = (label != null && label.length() > 0) ? label : "";
+        this.label = (this.label != null && this.label.length() > 0) ? this.label : "";
         this.implication = "";
         this.hashCode = 0; // will be computed later
         this.depth = depth;
@@ -253,8 +252,8 @@ public class SusiIntent implements Cloneable {
     }
     
     public SusiIntent addInference(SusiInference inference) {
-    	this.inferences.add(inference);
-    	return this;
+        this.inferences.add(inference);
+        return this;
     }
 
     public SusiIntent setInferences(List<SusiInference> inferences) {
@@ -281,10 +280,10 @@ public class SusiIntent implements Cloneable {
         this.actions = actions;
         return this;
     }
-    
+
     public SusiIntent addAction(SusiAction action) {
-    	this.actions.add(action);
-    	return this;
+        this.actions.add(action);
+        return this;
     }
 
     public SusiIntent addActions(SusiAction... actions) {
@@ -344,10 +343,11 @@ public class SusiIntent implements Cloneable {
 
     public int hashCode() {
         if (this.hashCode != 0) return this.hashCode;
-        String ids0 = this.skillid == null ? "" : this.skillid.getPath();
-        String ids1 = this.actions.toString();
-        String ids2 = this.utterances.toString();
-        this.hashCode = ids0.hashCode() + ids1.hashCode() + ids2.hashCode();
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.skillid == null ? "" : this.skillid.getPath());
+        sb.append(this.actions.toString());
+        sb.append(this.utterances.toString());
+        this.hashCode = sb.toString().hashCode();
         return this.hashCode;
     }
 
@@ -360,7 +360,11 @@ public class SusiIntent implements Cloneable {
         json.put("id", this.hashCode());
         json.put("depth", this.depth);
         if (this.score != null) json.put("score", this.score.score);
-        if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill", this.skillid.getPath());
+        if (this.skillid != null && this.skillid.getPath().length() > 0) {
+            json.put("skill_source", this.skillid.getPath());
+            json.put("skill_link", SusiCognition.getSkillLink(this.skillid.getPath()));
+            json.put("skill_line", this.utterances.iterator().next().getLine());
+        }
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
         JSONArray phrases = new JSONArray();
         this.utterances.forEach(utterance -> phrases.put(utterance.toJSON()));
@@ -378,6 +382,32 @@ public class SusiIntent implements Cloneable {
         if (this.label != null && this.label.length() > 0) json.put("label", label);
         if (this.implication != null && this.implication.length() > 0) json.put("implication", implication);
         return json;
+    }
+
+    public String toLoT() {
+        StringBuilder sb = new StringBuilder();
+
+        // utterances
+        for (int i = 0; i < this.utterances.size(); i++) {
+            SusiPattern pattern = this.utterances.get(i).getPattern();
+            sb.append(pattern.toLoT());
+            if (i < this.utterances.size() - 1) sb.append(" | ");
+        }
+        sb.append("\n");
+
+        // actions
+        for (SusiAction action: this.actions) {
+            if (action.getRenderType() == RenderType.answer) {
+                List<String> phrases = action.getPhrases();
+                for (int i = 0; i < phrases.size(); i++) {
+                    sb.append(phrases.get(i));
+                    if (i < phrases.size() - 1) sb.append(" | ");
+                }
+            }
+        }
+        sb.append("\n\n");
+
+        return sb.toString();
     }
 
     /**
@@ -405,7 +435,7 @@ public class SusiIntent implements Cloneable {
                 SusiIntent intent = new SusiIntent(skillid, json);
                 intents.add(intent);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillid.getPath() + ": " + json.toString(2));
+                Logger.getLogger("SusiIntent").warning("Regular Expression error (\"" + e.getPattern() + "\") in Susi Intent " + skillid.getPath() + ": \n" + json.toString(2));
             }
         }
         return intents;
@@ -439,14 +469,14 @@ public class SusiIntent implements Cloneable {
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
             intent.put("process", c);
-            c.put(new SusiInference(condition, SusiInference.Type.memory).getJSON());
+            c.put(new SusiInference(condition, SusiInference.Type.memory, 0).getJSON());
         }
 
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
         // in case that the utterances has only one alternative and does not contain any pattern, the label can be computed from it
-        if (label == null || label.length() == 0 && utterances.length == 1) {
+        if ((label == null || label.length() == 0) && utterances.length == 1) {
             String l = utterances[0].replaceAll(" ", "_");
             if (l.indexOf('*') < 0) label = l;
         }
@@ -456,12 +486,10 @@ public class SusiIntent implements Cloneable {
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
-        a.put(SusiAction.answerAction(language, answers));
+        a.put(SusiAction.answerAction(0, language, answers));
         return intent;
     }
 
-    private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
-    
     /**
      * if no keys are given, we compute them from the given utterances
      * @param utterances
@@ -475,7 +503,7 @@ public class SusiIntent implements Cloneable {
         final AtomicBoolean needsCatchall = new AtomicBoolean(false);
         utterances.forEach(utterance -> {
             Set<String> s = new HashSet<>();
-            for (String token: SPACE_PATTERN.split(utterance.getPattern().toString())) {
+            for (String token: utterance.getPattern().token()) {
                 String m = SusiUtterance.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
@@ -534,127 +562,6 @@ public class SusiIntent implements Cloneable {
     }
 
     /**
-     * get the intent score
-     * @param language this is the language the user is speaking
-     * @return an intent score: the higher, the better
-     */
-    public Score getScore(SusiLanguage language) {
-        if (this.score != null) return score;
-        this.score = new Score(language);
-        return this.score;
-    }
-    
-    /**
-     * The score is used to prefer one intent over another if that other intent has a lower score.
-     * The reason that this score is used is given by the fact that we need intents which have
-     * fuzzy utterance definitions and several intents might be selected because these fuzzy utterances match
-     * on the same input sequence. One example is the catch-all intent which fires always but has
-     * lowest priority.
-     * In the context of artificial mind modeling the score plays the role of a positive emotion.
-     * If the AI learns that a intent was applied and caused a better situation (see also: game playing gamefield
-     * evaluation) then the intent might get the score increased. Having many intents which have a high score
-     * therefore might induce a 'good feeling' because it is known that the outcome will be good.
-     * @return a score which is used for sorting of the intents. The higher the better. Highest score wins.
-     */
-    public class Score {
-
-        public long score;
-        public String log;
-        
-        public Score(SusiLanguage userLanguage) {
-        if (SusiIntent.this.score != null) return;
-        
-        /*
-         * Score Computation:
-         * see: https://github.com/loklak/loklak_server/issues/767
-         * Criteria:
-
-         * (0) the language
-         * We do not want to switch skills for languages because people sometimes
-         * speak several languages. Therefore we use a likelihood that someone who speaks language A
-         * also speaks language B. 
-
-         * (1) the existence of a pattern where we decide between prior and minor intents
-         * pattern: {false, true} with/without pattern could be computed from the intent string
-         * all intents with pattern are ordered in the middle between prior and minor
-         * this is combined with
-         * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
-         * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
-         * The resulting criteria is a property with three possible values: {minor, pattern, major}
-    
-         * (2) the meatsize (number of characters that are non-patterns)
-    
-         * (3) the whole size (total number of characters)
-    
-         * (4) the conversation plan:
-         * purpose: {answer, question, reply} purpose would have to be defined
-         * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
-
-         * (5) the operation type
-         * op: {retrieval, computation, storage} the operation could be computed from the intent string
-
-         * (6) the IO activity (-location)
-         * io: {remote, local, ram} the storage location can be computed from the intent string
-    
-         
-         * (7) finally the subscore can be assigned manually
-         * subscore a score in a small range which can be used to distinguish intents within the same categories
-         */
-        
-        // compute the score
-
-        // (0) language
-        final int language_subscore = SusiIntent.this.skillid == null ? 0 : (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
-        this.score = language_subscore;
-         
-        // (1) pattern score
-        final AtomicInteger utterances_subscore = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
-        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
-
-        // (2) meatsize: length of a utterance (counts letters)
-        final AtomicInteger utterances_meatscore = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.max(utterances_meatscore.get(), utterance.getMeatsize())));
-        this.score = this.score * 100 + utterances_meatscore.get();
-        
-        // (3) whole size: length of the pattern
-        final AtomicInteger utterances_wholesize = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.max(utterances_wholesize.get(), utterance.getPattern().toString().length())));
-        this.score = this.score * 100 + utterances_wholesize.get();
-
-        // (4) conversation plan from the answer purpose
-        final AtomicInteger dialogType_subscore = new AtomicInteger(0);
-        if (!(utterances.size() == 1 && utterances.get(0).equals("(.*)"))) {
-            SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
-        }
-        this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
-        
-        // (5) action render type score
-        final AtomicInteger actionRenderType_subscore = new AtomicInteger(0);
-        SusiIntent.this.actions.forEach(action -> actionRenderType_subscore.set(Math.max(actionRenderType_subscore.get(), action.getRenderType().getScore())));
-        this.score = this.score * 256 + actionRenderType_subscore.get();
-        
-        // (6) operation type - there may be no operation at all
-        final AtomicInteger inference_subscore = new AtomicInteger(0);
-        SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
-        this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
-        
-        // (7) subscore from the user
-        this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
-        
-        this.log = 
-                "language=" + language_subscore +
-                ", dialog=" + dialogType_subscore.get() +
-                ", utterance=" + utterances_subscore.get() +
-                ", meatscore=" + utterances_meatscore.get() +
-                ", wholesize=" + utterances_wholesize.get() +
-                ", inference=" + inference_subscore.get() +
-                ", subscore=" + user_subscore +
-                ", pattern=" + (utterances.size() > 0 ? utterances.get(0).toString() : "") + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
-        }
-    }
-
-    /**
      * The utterances of an intent are the matching intents which must apply to make it possible that the utterance is applied.
      * This returns the utterances of the intent.
      * @return the utterances of the intent. The intent fires if ANY of the utterances apply
@@ -662,7 +569,19 @@ public class SusiIntent implements Cloneable {
     public List<SusiUtterance> getUtterances() {
         return this.utterances;
     }
-    
+
+    /**
+     * getting a untterance sample can be used for debugging.
+     * @return a String containing the regular expression of the utterances
+     */
+    public String getUtterancesSample() {
+        StringBuilder sb = new StringBuilder();
+        for (SusiUtterance utterance: this.utterances) {
+            sb.append(" | ").append(utterance.getPattern().toString());
+        }
+        return sb.length() == 0 ? "" : sb.toString().substring(3);
+    }
+
     /**
      * The inferences of a intent are a set of operations that are applied if the intent is selected as response
      * mechanism. The inferences are feeded by the matching parts of the utterances to have an initial data set.
@@ -701,19 +620,156 @@ public class SusiIntent implements Cloneable {
      * @param s the string which should match
      * @return a matcher on the intent utterances
      */
-    public Collection<Matcher> matcher(String s) {
-        List<Matcher> l = new ArrayList<>();
+    public Collection<SusiMatcher> matcher(String s) {
+        List<SusiMatcher> l = new ArrayList<>();
         s = s.toLowerCase();
         for (SusiUtterance p: this.utterances) {
-            Matcher m = p.getPattern().matcher(s);
-            if (new TimeoutMatcher(m).matches()) {
+            SusiMatcher m = p.getPattern().matcher(s);
+            if (m.matches()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
                 l.add(m); // TODO: exclude double-entries
             }
         }
         return l;
     }
-    
+
+    /**
+     * get the intent score
+     * @param expression the user expression where we are looking for an answer
+     * @param language this is the language the user is speaking
+     * @return an intent score: the higher, the better; null if the expression cannot be matched
+     */
+    public Score getScore(String expression, SusiLanguage language) {
+        if (this.score != null) return score;
+        this.score = new Score(expression, language);
+        if (this.score.score == Integer.MIN_VALUE) this.score = null;
+        return this.score;
+    }
+
+    /**
+     * The score is used to prefer one intent over another if that other intent has a lower score.
+     * The reason that this score is used is given by the fact that we need intents which have
+     * fuzzy utterance definitions and several intents might be selected because these fuzzy utterances match
+     * on the same input sequence. One example is the catch-all intent which fires always but has
+     * lowest priority.
+     * In the context of artificial mind modeling the score plays the role of a positive emotion.
+     * If the AI learns that a intent was applied and caused a better situation (see also: game playing gamefield
+     * evaluation) then the intent might get the score increased. Having many intents which have a high score
+     * therefore might induce a 'good feeling' because it is known that the outcome will be good.
+     * @param expression the user expression where we are looking for an answer
+     * @param language this is the language the user is speaking
+     * @return a score which is used for sorting of the intents. The higher the better. Highest score wins.
+     */
+    public class Score {
+
+        public long score;
+        public String log;
+
+        public Score(String expression, SusiLanguage userLanguage) {
+        if (SusiIntent.this.score != null) return;
+
+        /*
+         * Score Computation:
+         * see: https://github.com/loklak/loklak_server/issues/767
+         * Criteria:
+
+         * (0) the language
+         * We do not want to switch skills for languages because people sometimes
+         * speak several languages. Therefore we use a likelihood that someone who speaks language A
+         * also speaks language B. 
+
+         * (1) the existence of a pattern where we decide between prior and minor intents
+         * pattern: {false, true} with/without pattern could be computed from the intent string
+         * all intents with pattern are ordered in the middle between prior and minor
+         * this is combined with
+         * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
+         * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
+         * The resulting criteria is a property with three possible values: {minor, pattern, major}
+
+         * (2) the meatsize (number of characters that are non-patterns)
+
+         * (3) the whole size (total number of characters)
+
+         * (4) the conversation plan:
+         * purpose: {answer, question, reply} purpose would have to be defined
+         * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
+
+         * (5) the operation type
+         * op: {retrieval, computation, storage} the operation could be computed from the intent string
+
+         * (6) the IO activity (-location)
+         * io: {remote, local, ram} the storage location can be computed from the intent string
+
+         * (7) finally the subscore can be assigned manually
+         * subscore a score in a small range which can be used to distinguish intents within the same categories
+         */
+
+        // compute the score
+
+        // (0) language
+        final int language_subscore = SusiIntent.this.skillid == null ? 0 : (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
+        this.score = language_subscore;
+
+        // (1) pattern score
+        // (2) meatsize: length of a utterance (counts letters)
+        // (3) whole size: length of the pattern
+        final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger utterances_wholesize = new AtomicInteger(Integer.MAX_VALUE);
+        for (SusiUtterance utterance : SusiIntent.this.utterances) {
+            if (!utterance.getPattern().matcher(expression).matches()) continue;
+
+            utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore()));
+            utterances_meatscore.set(Math.min(utterances_meatscore.get(), utterance.getMeatsize()));
+            String p = utterance.getPattern().toString();
+            utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length()));
+        }
+        if (utterances_subscore.get() == Integer.MAX_VALUE ||
+            utterances_meatscore.get() == Integer.MAX_VALUE ||
+            utterances_wholesize.get() == Integer.MAX_VALUE) {
+            // no match of any utterance, do not consider this
+            this.score = Integer.MIN_VALUE;
+            this.log = "";
+            return;
+        }
+        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
+        this.score = this.score * 100 + utterances_meatscore.get();
+        this.score = this.score * 100 + utterances_wholesize.get();
+
+        // (4) conversation plan from the answer purpose
+        final AtomicInteger dialogType_subscore = new AtomicInteger(Integer.MAX_VALUE);
+        if (!(utterances.size() == 1 && utterances.get(0).equals("(.*)"))) {
+            SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.min(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+        }
+        this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
+
+        // (5) action render type score
+        final AtomicInteger actionRenderType_subscore = new AtomicInteger(0);
+        SusiIntent.this.actions.forEach(action -> actionRenderType_subscore.set(Math.max(actionRenderType_subscore.get(), action.getRenderType().getScore())));
+        this.score = this.score * 256 + actionRenderType_subscore.get();
+
+        // (6) operation type - there may be no operation at all
+        final AtomicInteger inference_subscore = new AtomicInteger(0);
+        SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
+        this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
+
+        // (7) subscore from the user
+        this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
+
+        this.log = 
+                "language=" + language_subscore +
+                ", utterance=" + utterances_subscore.get() +
+                ", meatscore=" + utterances_meatscore.get() +
+                ", wholesize=" + utterances_wholesize.get() +
+                ", dialog=" + dialogType_subscore.get() +
+                ", inference=" + inference_subscore.get() +
+                ", subscore=" + user_subscore +
+                ", pattern=" + (utterances.size() > 0 ? utterances.get(0).toString() : "") + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
+
+        //System.out.println("*** " + SusiIntent.this.utterances + ": " + this.log);
+        }
+    }
+
     /**
      * If a intent is applied to an input stream, it must follow a specific process which is implemented
      * in this consideration method. It is called a consideration in the context of an AI process which
@@ -722,14 +778,13 @@ public class SusiIntent implements Cloneable {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiIdea idea, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
 
+        SusiLinguistics.Token token = idea.getToken();
         HashSet<SusiThought> keynotes = new HashSet<>();
 
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
-        alternatives: for (Matcher matcher: this.matcher(query)) {
-            // check if the intent may match
-            if (!new TimeoutMatcher(matcher).matches()) continue;
+        alternatives: for (SusiMatcher matcher: idea.getMatchers()) {
 
             // initialize keynote (basic data for unification) for flow
             SusiThought keynote = new SusiThought(matcher);
@@ -764,12 +819,12 @@ public class SusiIntent implements Cloneable {
             }
 
             // add skill source
-            flow.addSkill(this.skillid);
+            flow.addSkill(this.skillid, utterances.iterator().next().getLine());
 
             return flow;
         }
         // fail, no alternative was successful
         return null;
     }
-    
+
 }

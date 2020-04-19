@@ -17,7 +17,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package ai.susi.mind;
 
 import java.io.File;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.susi.DAO;
 
 /**
  * Identity is the mental model of a being represented with a SusiMind.
@@ -44,7 +44,7 @@ public class SusiIdentity {
     private SusiAwareness short_term_memory;
     private SusiSkillFile long_term_memory;
     private int attention;
-    
+
     /**
      * Create a new identity.
      * The identity is initialized if it did not exist yet
@@ -57,7 +57,7 @@ public class SusiIdentity {
      */
     public SusiIdentity(File memorypath, int attention) {
         this.attention = attention;
-        
+
         // initialize short term memory
         this.short_term_memory = new SusiAwareness();
         memorypath.mkdirs();
@@ -67,24 +67,26 @@ public class SusiIdentity {
                 this.short_term_memory = new SusiAwareness(this.short_term_memory_file, attention);
                 this.short_term_memory.limitAwareness(this.attention);
             } catch (IOException e) {
-                e.printStackTrace();
+                DAO.severe("error reading short memory file " + this.short_term_memory_file.getAbsolutePath() + " - deleting file", e);
+                this.short_term_memory_file.delete();
+                this.short_term_memory = new SusiAwareness();
             }
         }
-        
+
         // initialize long term memory
         this.long_term_memory_file = new File(memorypath, "rules.txt");
         if (!this.long_term_memory_file.exists()) try {
-			this.long_term_memory_file.createNewFile();
-		} catch (IOException e) {
-			this.long_term_memory = null;
-		}
+            this.long_term_memory_file.createNewFile();
+        } catch (IOException e) {
+            this.long_term_memory = null;
+        }
         try {
-	        this.long_term_memory = SusiSkillFile.load(this.long_term_memory_file);
-		} catch (IOException e) {
-			this.long_term_memory = null;
-		}
+            this.long_term_memory = SusiSkillFile.load(this.long_term_memory_file);
+        } catch (IOException e) {
+            this.long_term_memory = null;
+        }
     }
-    
+
     /**
      * Add a cognition to the identity. This will cause that we forget cognitions after
      * the awareness threshold has passed.
@@ -97,7 +99,7 @@ public class SusiIdentity {
         cognition.appendToFile(this.short_term_memory_file);
         return this;
     }
-    
+
     /**
      * To be able to increase or decrease the current attention the attention level can be set here.
      * Setting the attention to Integer.MAX_VALUE means, to be GOD
@@ -108,7 +110,7 @@ public class SusiIdentity {
         this.attention = attention;
         return this;
     }
-    
+
     /**
      * Get the current attention dimension which is the number of cognitions in the maintained awareness
      * @return the attention dimension
@@ -116,7 +118,7 @@ public class SusiIdentity {
     public int getAttention() {
         return this.attention;
     }
-    
+
     /**
      * Get the current awareness as list of cognitions.
      * The list is reverse ordered, latest cognitions are first in the list.
@@ -127,4 +129,5 @@ public class SusiIdentity {
         this.short_term_memory.forEach(cognition -> cognitions.add(cognition));
         return cognitions;
     }
+
 }
