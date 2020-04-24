@@ -145,7 +145,7 @@ public class SusiIntent implements Cloneable {
             k.forEach(o -> this.keys.add((String) o));
         }
         k = computeKeysFromUtterance(this.utterances);
-        
+
         k.forEach(o -> this.keys.add((String) o));
 
         this.cues = new LinkedHashSet<>();
@@ -713,16 +713,20 @@ public class SusiIntent implements Cloneable {
         // (1) pattern score
         // (2) meatsize: length of a utterance (counts letters)
         // (3) whole size: length of the pattern
-        final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
-        final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
+        //final AtomicInteger utterances_subscore = new AtomicInteger(Integer.MAX_VALUE);
+        //final AtomicInteger utterances_meatscore = new AtomicInteger(Integer.MAX_VALUE);
         final AtomicInteger utterances_wholesize = new AtomicInteger(Integer.MAX_VALUE);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length())));
+        /*
         for (SusiUtterance utterance : SusiIntent.this.utterances) {
-            if (!utterance.getPattern().matcher(expression).matches()) continue;
+            SusiPattern t = utterance.getPattern();
+            SusiMatcher m = t.matcher(expression);
+            if (!m.matches()) continue;
 
             utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore()));
             utterances_meatscore.set(Math.min(utterances_meatscore.get(), utterance.getMeatsize()));
             String p = utterance.getPattern().toString();
-            utterances_wholesize.set(Math.min(utterances_wholesize.get(), utterance.getPattern().toString().length()));
+            utterances_wholesize.set(Math.min(utterances_wholesize.get(), p.length()));
         }
         if (utterances_subscore.get() == Integer.MAX_VALUE ||
             utterances_meatscore.get() == Integer.MAX_VALUE ||
@@ -734,6 +738,7 @@ public class SusiIntent implements Cloneable {
         }
         this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
         this.score = this.score * 100 + utterances_meatscore.get();
+        */
         this.score = this.score * 100 + utterances_wholesize.get();
 
         // (4) conversation plan from the answer purpose
@@ -758,8 +763,8 @@ public class SusiIntent implements Cloneable {
 
         this.log = 
                 "language=" + language_subscore +
-                ", utterance=" + utterances_subscore.get() +
-                ", meatscore=" + utterances_meatscore.get() +
+                //", utterance=" + utterances_subscore.get() +
+                //", meatscore=" + utterances_meatscore.get() +
                 ", wholesize=" + utterances_wholesize.get() +
                 ", dialog=" + dialogType_subscore.get() +
                 ", inference=" + inference_subscore.get() +

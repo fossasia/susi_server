@@ -127,6 +127,7 @@ public class SusiTutorialTest {
     }
 
     private static void test(String q, String e, ClientIdentity i) {
+        System.out.println("** testing q = " + q + ", e = " + e);
         try {
             String a = susiAnswer(q, i);
             boolean r = a.equals(e);

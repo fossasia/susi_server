@@ -427,6 +427,7 @@ public class SusiMind {
         ideas.forEach(idea -> {
             SusiIntent intent = idea.getIntent();
             Score score = intent.getScore(query, userLanguage);
+            assert score != null : "query = " + query;
             if (score != null) {
                 long s = score.score;
                 long orderkey = Long.MAX_VALUE - s * 1000L + count.incrementAndGet(); // reverse the ordering: first element has then highest score

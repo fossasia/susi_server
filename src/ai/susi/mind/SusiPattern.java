@@ -41,6 +41,7 @@ public class SusiPattern {
     private final Object pattern;
 
     public SusiPattern(String expression, boolean compileToPattern) throws PatternSyntaxException {
+        //compileToPattern = true; // for debugging
         if (compileToPattern) try {
             this.pattern = Pattern.compile(expression);
         } catch (PatternSyntaxException e) {
@@ -74,7 +75,7 @@ public class SusiPattern {
         public boolean matches() {
             return this.matcher instanceof Matcher ?
                     new TimeoutMatcher((Matcher) this.matcher).matches() :
-                    ((String) SusiPattern.this.pattern).equals((String) this.matcher);
+                    ((String) SusiPattern.this.pattern).replaceAll("\\\\", "").equals((String) this.matcher);
         }
 
         public String group(int g) {
@@ -87,6 +88,10 @@ public class SusiPattern {
             return this.matcher instanceof Matcher ?
                     ((Matcher) this.matcher).groupCount() :
                     0;
+        }
+
+        public String toString() {
+            return this.matcher.toString();
         }
     }
 
@@ -102,5 +107,17 @@ public class SusiPattern {
 
     public String toString() {
         return this.pattern();
+    }
+
+    public static void main(String[] args) {
+        SusiPattern p = new SusiPattern("\\[token\\]", true);
+        System.out.println("pattern: " + p.toString());
+        SusiMatcher m = p.matcher("[token]");
+        System.out.println(m.matches() ? "match" : "no match");
+
+        p = new SusiPattern("\\[token\\]", false);
+        System.out.println("pattern: " + p.toString());
+        m = p.matcher("[token]");
+        System.out.println(m.matches() ? "match" : "no match");
     }
 }
