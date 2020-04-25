@@ -71,10 +71,10 @@ Sure, you should buy a $2$!
 
 # EXAMPLE 6: storing variables
 # Any phrase can be assigned to variables, also phrases that are created from other variables.
-# In this case the variable $2$ is stored into _beerbrand.
+# In this case the variable $2$ is stored into _teatype.
 
-I * like * beer
-You then should have one $2$>_beerbrand!
+I * like * tea
+You then should have one $2$>_teatype tea!
 
 # Note that the variable starts with a leading '\_'.
 # That has a special meaning: variables without a leading '\_' are only valid while SUSI.AI is thinking about
@@ -83,11 +83,11 @@ You then should have one $2$>_beerbrand!
 
 # You can now use that variable in another rule:
 
-* beer * best?
-I bet you like $_beerbrand$ beer!
+* tea * best?
+I bet you like $_teatype$ tea!
 
 # Note that the `*` wildcards in the query are not used at all. They are just there
-# to make it easy that this rule matches. It will i.e. match on "What beer brand is the best?"
+# to make it easy that this rule matches. It will i.e. match on "What tea type is the best?"
 
 
 

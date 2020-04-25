@@ -30,7 +30,7 @@ test piechart action
 "total": 7500,
 "unit": "Liter",
 "data": [
-  {"drink": "beer", "volume": 5500},
+  {"drink": "tea", "volume": 5500},
   {"drink": "soda", "volume": 300},
   {"drink": "wine", "volume": 200},
   {"drink": "coffee", "volume": 1000},

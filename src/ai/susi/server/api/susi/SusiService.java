@@ -194,8 +194,8 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 data = json.optJSONObject("data");
             }
             assert data != null; // because we created the pad on the fly!
-            String text = data == null ? "" : data.getString("text");
-            if (text.startsWith("Welcome to Etherpad!")) {
+            String text = data == null ? "" : data.getString("text").trim();
+            if (text.length() == 0 || text.startsWith("Welcome to Etherpad!")) {
                 // fill the pad with a default skill, a set of examples
                 // read the examples
                 try {
