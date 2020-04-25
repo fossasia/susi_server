@@ -346,7 +346,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             minds.add(DAO.susi);
         }
 
-        // answer with built-in intents
+        // answer using the mind-stack
         SusiCognition cognition = new SusiCognition(q, post.getClientHost(), timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
             DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug /*storeToCache*/);

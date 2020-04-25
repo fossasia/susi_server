@@ -181,43 +181,43 @@ public class SusiInference {
             return queued;
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
-            String remember = matcher.group(1), matching = matcher.group(2);
-            return see(flow, flow.unify("%1% AS " + remember, false, 0), flow.unify(matching, false, 0), Pattern.compile("(.*)"));
+            String remember = flow.unify(matcher.group(1), false, Integer.MAX_VALUE), matching = flow.unify(matcher.group(2), false, Integer.MAX_VALUE);
+            return see(flow, "%1% AS " + remember, matching, Pattern.compile("(.*)"));
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*?)\\h+?MATCHING\\h+?(.*)\\h*?"), (flow, matcher) -> {
-            String remember = matcher.group(1), matching = matcher.group(2), pattern = matcher.group(3);
-            return see(flow, flow.unify(remember, false, 0), flow.unify(matching, false, 0), Pattern.compile(flow.unify(pattern, false, 0)));
+            String remember = flow.unify(matcher.group(1), false, Integer.MAX_VALUE), matching = flow.unify(matcher.group(2), false, Integer.MAX_VALUE), pattern = flow.unify(matcher.group(3), false, Integer.MAX_VALUE);
+            return see(flow, remember, matching, Pattern.compile(pattern));
         });
         memoryProcedures.put(Pattern.compile("CLEAR\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String clear = matcher.group(1);
-            return see(flow, "%1% AS " + flow.unify(clear, false, 0), "", Pattern.compile("(.*)"));
+            return see(flow, "%1% AS " + flow.unify(clear, false, Integer.MAX_VALUE), "", Pattern.compile("(.*)"));
         });
         memoryProcedures.put(Pattern.compile("IF\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
-            String expect = matcher.group(1);
-            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, false, 0), Pattern.compile("(.+)"));
-            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
-            return t;
+            String expect = flow.unify(matcher.group(1), false, Integer.MAX_VALUE);
+            if (expect == null || expect.length() == 0) return new SusiThought(); // empty thought -> fail
+            return new SusiThought().addObservation("EXPECTED", matcher.group(1));
         });
         memoryProcedures.put(Pattern.compile("IF\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
-            String expect = matcher.group(1), matching = matcher.group(2);
-            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, false, 0), Pattern.compile(flow.unify(matching, false, 0)));
+            String expect = matcher.group(1), matching = flow.unify(matcher.group(2), false, Integer.MAX_VALUE);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, false, Integer.MAX_VALUE), Pattern.compile(matching));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
             return t;
         });
         memoryProcedures.put(Pattern.compile("NOT\\h*"), (flow, matcher) -> {
-            SusiThought t = see(flow, "%1% AS EXPECTED", "", Pattern.compile("(.*)"));
+            //SusiThought t = see(flow, "%1% AS EXPECTED", "", Pattern.compile("(.*)"));
+            // This is a NOT of nothing. This represents therefore a success. Thus we return a non-empty thought.
             return new SusiThought().addObservation("REJECTED", "");
         });
         memoryProcedures.put(Pattern.compile("NOT\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
-            String reject = matcher.group(1);
-            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, false, 0), Pattern.compile("(.*)"));
-            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED", reject);
+            String reject = flow.unify(matcher.group(1), false, Integer.MAX_VALUE);
+            if (reject == null || reject.length() == 0) return new SusiThought().addObservation("REJECTED", matcher.group(1));
             return new SusiThought(); // empty thought -> fail
         });
         memoryProcedures.put(Pattern.compile("NOT\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
-            String reject = matcher.group(1), matching = matcher.group(2);
-            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, false, 0), Pattern.compile(flow.unify(matching, false, 0)));
-            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matching + ")", reject);
+            // This is a not of an assignment. This must fail if the assigned value is non-empty 
+            String reject = matcher.group(1), matching = flow.unify(matcher.group(2), false, Integer.MAX_VALUE);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, false, Integer.MAX_VALUE), Pattern.compile(matching));
+            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matcher.group(2) + ")", matcher.group(1));
             return new SusiThought(); // empty thought -> fail
         });
         javascriptProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
@@ -249,7 +249,7 @@ public class SusiInference {
             }
         });
         prologProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
-            String term = matcher.group(1);
+            String term = flow.unify(matcher.group(1), false, Integer.MAX_VALUE);
             try {
                 Prolog engine = new Prolog();
                 try {
@@ -297,7 +297,7 @@ public class SusiInference {
         // example: see $1$ as idea from ""
         SusiThought nextThought = new SusiThought();
         try {
-            Matcher m = pattern.matcher(flow.unify(expr, false, 0));
+            Matcher m = pattern.matcher(flow.unify(expr, false, Integer.MAX_VALUE));
             int gc = -1;
             if (new TimeoutMatcher(m).matches()) {
                 SusiTransfer transfer = new SusiTransfer(transferExpr);
@@ -428,24 +428,20 @@ public class SusiInference {
                 }
                 return json;
             } else {
-                try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression, false, Integer.MAX_VALUE));} catch (Exception e) {}
+                try {return ConsoleService.dbAccess.deduce(flow, expression);} catch (Exception e) {}
             }
         }
         if (type == SusiInference.Type.flow) {
-            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
-            try {return flowProcedures.deduce(flow, expression);} catch (Exception e) {}
+            try {return flowProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
         }
         if (type == SusiInference.Type.memory) {
-            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
-            try {return memoryProcedures.deduce(flow, expression);} catch (Exception e) {}
+            try {return memoryProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
         }
         if (type == SusiInference.Type.javascript) {
-            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
-            try {return javascriptProcedures.deduce(flow, expression);} catch (Exception e) {}
+            try {return javascriptProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
         }
         if (type == SusiInference.Type.prolog) {
-            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
-            try {return prologProcedures.deduce(flow, expression);} catch (Exception e) {}
+            try {return prologProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();

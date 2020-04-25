@@ -477,7 +477,8 @@ public class SusiMind {
         SusiThought thought = null;
         int mindcount = 0;
         while (thought == null && mindcount < mindLayers.length) {
-            thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
+            SusiMind mindlayer = mindLayers[mindcount++];
+            thought = mindlayer.react(query, userLanguage, identity, debug, observation, mindLayers);
         }
         return thought;
     }

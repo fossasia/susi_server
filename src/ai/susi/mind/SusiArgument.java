@@ -285,7 +285,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // assignment must be done in advance of reflections
                 // because the reflection may use the assigned variables.
                 visibleAssignmentSuccess = false;
-                visibleAssignment: while (new TimeoutMatcher(m = SusiAction.visible_assignment.matcher(expression)).matches()) {
+                TimeoutMatcher tm = new TimeoutMatcher(m = SusiAction.visible_assignment.matcher(expression));
+                visibleAssignment: while (tm.find()) {
                     String observation = m.group(1);
                     if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue visibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
                     String variable = m.group(2);
@@ -296,7 +297,8 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 }
 
                 invisibleAssignmentSuccess = false;
-                invisibleAssignment: while (new TimeoutMatcher(m = SusiAction.blind_assignment.matcher(expression)).matches()) {
+                tm = new TimeoutMatcher(m = SusiAction.blind_assignment.matcher(expression));
+                invisibleAssignment: while (tm.find()) {
                     String observation = m.group(1);
                     if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue invisibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
                     String variable = m.group(2);
