@@ -1,12 +1,15 @@
 # SUSI.AI Skill Language Tutorial
 # This text is a placeholder for your own skills
-# that you can host at the etherpad at http://localhost:9001
 
 # Quick Intro:
 # - SUSI skills are just plain text files, like this one.
 # - comment lines start with '#'
 # - each utterance + answer pair are simply two lines, first one for the utterance, second for the answer
 # This notion is called the "Susi Language of Thought" ("LoT")
+# 
+# - Skills can be hosted as an etherpad page
+# - The Susi Smart Speaker (hostname "susi") hosts an etherpad at http://susi.local:9001
+# - By default the skill at http://susi.local:9001/p/susi is always loaded
 
 
 ###
@@ -25,7 +28,7 @@ SUSI is a hack
 # EXAMPLE 1: Random Answers
 # Susi answers with one of the words in the answer line.
 
-What is your favorite dish
+What is your favorite food
 Potatoes|Vegetables|Fish
 
 
@@ -33,18 +36,20 @@ Potatoes|Vegetables|Fish
 # EXAMPLE 2: Query Alternatives
 # Susi answers on any of the phrases in the question line
 
-Bonjour|Buenos días|Ciao
-Hello
+tea|tea earl grey|tea earl grey hot|earl grey|earl grey hot|tea hot
+I am not yet connected to your replicator.
 
 
 
 # EXAMPLE 3: Patterns in Queries
 # Query patterns can be declared using the `*` wildcard character.
 # A `*` matches any sentence token, but not a substring. That means a `*` replaces a word or a list of words.
+# The answer line can be broken up with backslash characters to make a multi-line answer.
 
 May I * you?
-Yes you may.
-
+Yes!|No!|Maybe?|\
+The voices in my head are telling me to say no.|\
+I don't want to leave my comfort zone.
 
 
 # EXAMPLE 4: Using Query-Patterns in Answers
@@ -163,5 +168,76 @@ tweet about *
 eol
 
 # Explanation:
-# - The JSON result contains a list which is denoted by the path $.statuses
-# - The object in the result list has an attribute named 'text', that is returned in the answer line as $text$
+#  * The JSON result contains a list which is denoted by the path $.statuses
+#  * The object in the result list has an attribute named 'text', that is returned in the answer line as $text$
+
+
+
+# EXAMPLE 12: Steering of Shelly Switch IoT Devices
+# This uses API calls to non-cloud web services in your intranet
+# as demonstrated and explained in detail in the video at
+# https://www.youtube.com/watch?v=oxgQkQz_94M
+# You need specific hardware for this, like
+#   * https://shelly.cloud/shelly1-open-source/
+
+
+switch on light|switch on the light
+!console:ok
+{
+  "url":"http://192.168.1.52/relay/0?turn=on",
+  "path":"$"
+}
+eol
+
+switch off light|switch off the light
+!console:ok
+{
+  "url":"http://192.168.1.52/relay/0?turn=off",
+  "path":"$"
+}
+eol
+
+what is the power consumption|what is the power consumption of light|what is the power consumption of the light|power consumption|power consumption of light|power consumption of the light
+!console:$power$ watt
+{
+  "url":"http://192.168.1.52/status",
+  "path":"$.meters"
+}
+eol
+
+
+
+# EXAMPLE 13: Steering of NodeMCU / ESP 8266 IoT Devices
+# This uses API calls to non-cloud web services in your intranet
+# as demonstrated and explained in detail in the video at
+# https://www.youtube.com/watch?v=oxgQkQz_94M
+# You need specific hardware for this, like
+#   * https://www.nodemcu.com
+#   * https://www.espressif.com/en/products/socs/esp8266ex/overview
+# Source code for NodeMCU / ESP 8266 is located in
+# conf/etherpad_dream_lot_tutorial/nodemcu.ino
+
+
+switch on led
+!console:ok
+{
+  "url":"http://192.168.1.51/d4=1",
+  "path":"$.a0"
+}
+eol
+
+switch off led
+!console:ok
+{
+  "url":"http://192.168.1.51/d4=0",
+  "path":"$.a0"
+}
+eol
+
+input | analog input | input value
+!console:$!$
+{
+  "url":"http://192.168.1.51",
+  "path":"$.a0"
+}
+eol

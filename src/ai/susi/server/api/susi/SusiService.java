@@ -199,7 +199,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // fill the pad with a default skill, a set of examples
                 // read the examples
                 try {
-                    File example_file = new File(new File(DAO.conf_dir, "example_skills"), "susi_lot_tutorial.txt");
+                    File example_file = new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt");
                     FileInputStream fis = new FileInputStream(example_file);
                     byte[] example = new byte[(int) example_file.length()];
                     fis.read(example);
