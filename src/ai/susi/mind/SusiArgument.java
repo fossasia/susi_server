@@ -464,14 +464,12 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         // the 'applyAction' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
-        answer.put("actions", appliedActions);  // this overwrites the result of the mindmeld
-        List<String> skillpaths = new ArrayList<>();
-        this.skills.forEach((skill, line) -> skillpaths.add(skill.getPath()));
-        answer.put("skills", skillpaths);
-        JSONObject persona = new JSONObject();
-        SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
-        if (skill != null) persona.put("skill", skill.toJSON());
-        answer.put("persona", persona);
+        answer.overwriteAppliedActions(appliedActions); // this overwrites the result of the mindmeld
+        this.skills.forEach((skill, line) -> answer.addSkill(skill.getPath()));
+        if (debug) {
+            SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
+            if (skill != null) answer.addPersona(skill);
+        }
         return answer;
     }
 

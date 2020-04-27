@@ -147,8 +147,8 @@ public class SusiCognition {
 
         // store answer and actions into json
         if (dispute != null) {
-            List<SusiThought> thoughts = new ArrayList<>();
-            thoughts.add(dispute);
+            List<JSONObject> thoughts = new ArrayList<>();
+            thoughts.add(dispute.toJSON());
             this.json.put("answers", new JSONArray(thoughts));
         }
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));

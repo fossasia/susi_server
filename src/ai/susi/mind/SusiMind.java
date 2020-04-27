@@ -496,7 +496,7 @@ public class SusiMind {
         // get the history a list of thoughts
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument(identity, userLanguage);
-        if (observation != null && observation.length() > 0) observation_argument.think(observation);
+        if (observation != null && !observation.isFailed()) observation_argument.think(observation);
         List<SusiCognition> cognitions = this.memories == null ? new ArrayList<>() : this.memories.getCognitions(identity.getClient(), true);
         long t1 = System.currentTimeMillis();
         // latest cognition is first in list
@@ -540,7 +540,7 @@ public class SusiMind {
                 continue ideatest;
             }
         }
-        if (answer != null) answer.put("trace", testedIdeaQueryPatterns);
+        if (answer != null && debug) answer.addTrace(testedIdeaQueryPatterns);
         long t7 = System.currentTimeMillis();
         //DAO.log("+++ react run time: " + (t1 - t0) + " milliseconds - getCognitions");
         //DAO.log("+++ react run time: " + (t2 - t1) + " milliseconds - think");

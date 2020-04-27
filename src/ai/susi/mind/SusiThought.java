@@ -42,33 +42,34 @@ import ai.susi.tools.TimeoutMatcher;
  * modeled as a table which may be created using the retrieval of information from elsewhere
  * of the current argument.
  */
-public class SusiThought extends JSONObject {
-    
+public class SusiThought {
+
     private final String metadata_name, data_name;
     private int times;
+    private JSONObject rem;
 
     /**
      * create an empty thought, to be filled with single data entities.
      */
     public SusiThought() {
-        super(true);
+        this.rem = new JSONObject(true);
         this.metadata_name = "metadata";
         this.data_name = "data";
         this.times = 0;
     }
-    
+
     /**
      * create a clone of a json object as a SusiThought object
      * @param json the 'other' thought, probably an exported and re-imported thought
      */
     public SusiThought(JSONObject json) {
         this();
-        if (json.has(this.metadata_name)) this.put(this.metadata_name, json.getJSONObject(this.metadata_name));
+        if (json.has(this.metadata_name)) this.rem.put(this.metadata_name, json.getJSONObject(this.metadata_name));
         if (json.has(this.data_name)) this.setData(json.getJSONArray(this.data_name));
-        if (json.has("actions")) this.put("actions", json.getJSONArray("actions"));
-        if (json.has("skills")) this.put("skills", json.getJSONArray("skills"));
+        if (json.has("actions")) this.rem.put("actions", json.getJSONArray("actions"));
+        if (json.has("skills")) this.rem.put("skills", json.getJSONArray("skills"));
     }
-    
+
     /**
      * Create an initial thought using the matcher on an expression.
      * Such an expression is like the input from a text source which contains keywords
@@ -88,13 +89,15 @@ public class SusiThought extends JSONObject {
         }
         this.setData(new JSONArray().put(row));
     }
-    
+
+    /*
     @Deprecated
     public SusiThought(String metadata_name, String data_name) {
         super(true);
         this.metadata_name = metadata_name;
         this.data_name = data_name;
     }
+    */
 
     public boolean equals(Object o) {
         if (!(o instanceof SusiThought)) return false;
@@ -141,7 +144,7 @@ public class SusiThought extends JSONObject {
     }
 
     public boolean isFailed() {
-        return getData().length() == 0 && getActions(true).size() == 0;
+        return this.rem.length() == 0 || getData().length() == 0 && getActions(true).size() == 0;
     }
 
     public boolean hasEmptyObservation(String key) {
@@ -208,9 +211,9 @@ public class SusiThought extends JSONObject {
      */
     private JSONObject getMetadata() {
         JSONObject md;
-        if (this.has(metadata_name)) md = this.getJSONObject(metadata_name); else {
+        if (this.rem.has(metadata_name)) md = this.rem.getJSONObject(metadata_name); else {
             md = new JSONObject();
-            this.put(metadata_name, md);
+            this.rem.put(metadata_name, md);
         }
         if (!md.has("count")) md.put("count", getData().length());
         return md;
@@ -223,7 +226,7 @@ public class SusiThought extends JSONObject {
      * @return the thought
      */
     public SusiThought setData(JSONArray table) {
-        this.put(data_name, table);
+        this.rem.put(data_name, table);
         JSONObject md = getMetadata();
         md.put("count", getData().length());
         return this;
@@ -234,9 +237,9 @@ public class SusiThought extends JSONObject {
      * @return a table of information pieces as a set of rows which all have the same column names.
      */
     public JSONArray getData() {
-        if (this.has(data_name)) return this.getJSONArray(data_name);
+        if (this.rem.has(data_name)) return this.rem.getJSONArray(data_name);
         JSONArray a = new JSONArray();
-        this.put(data_name, a);
+        this.rem.put(data_name, a);
         return a;
     }
     
@@ -359,7 +362,7 @@ public class SusiThought extends JSONObject {
         }
         return null;
     }
-    
+
     /**
      * Every information may have a set of (re-)actions assigned.
      * Those (re-)actions are methods to do something with the thought.
@@ -378,8 +381,22 @@ public class SusiThought extends JSONObject {
         return this;
     }
 
+    /**
+     * Write a list of applied Actions to the actions array.
+     * This differs from the normal actions concept in that way, that adding actions
+     * otherwise means "un-applied actions". Here we ad "applied actions"
+     * TODO: do not use appliedActions concept at all to be able to remove this mess
+     * @param appliedActions
+     * @return
+     */
+    @Deprecated
+    public SusiThought overwriteAppliedActions(JSONArray appliedActions) {
+        this.rem.put("actions", appliedActions);
+        return this;
+    }
+
     public SusiThought removeActions() {
-        if (this.has("actions")) this.remove("actions");
+        if (this.rem.has("actions")) this.rem.remove("actions");
         return this;
     }
     /**
@@ -398,18 +415,42 @@ public class SusiThought extends JSONObject {
         });
         return actions;
     }
-    
+
     private JSONArray getActionsJSON() {
         JSONArray actions;
-        if (!this.has("actions")) {
+        if (!this.rem.has("actions")) {
             actions = new JSONArray();
-            this.put("actions", actions);
+            this.rem.put("actions", actions);
         } else {
-            actions = this.getJSONArray("actions");
+            actions = this.rem.getJSONArray("actions");
         }
         return actions;
     }
+
+    /**
+     * describes within the JSON response how the skill that gave the answer looked like
+     * @param skill
+     * @return
+     */
+    public SusiThought addPersona(SusiSkill skill) {
+        JSONObject persona = new JSONObject();
+        if (skill != null) persona.put("skill", skill.toJSON());
+        this.rem.put("persona", persona);
+        return this;
+    }
+
+    public SusiThought addTrace(JSONArray testedIdeaQueryPatterns) {
+        this.rem.put("trace", testedIdeaQueryPatterns);
+        return this;
+    }
     
+    public SusiThought addSkill(String skillpath) {
+        if (!this.rem.has("skills")) this.rem.put("skills", new JSONArray());
+        JSONArray skills = this.rem.getJSONArray("skills");
+        skills.put(skillpath);
+        return this;
+    }
+
     public List<String> getSkills() {
         List<String> skills = new ArrayList<>();
         getSkillsJSON().forEach(skill -> {if (skill instanceof String) skills.add((String) skill);});
@@ -418,18 +459,18 @@ public class SusiThought extends JSONObject {
 
     private JSONArray getSkillsJSON() {
         JSONArray skills;
-        if (!this.has("skills")) {
+        if (!this.rem.has("skills")) {
             skills = new JSONArray();
-            this.put("skills", skills);
+            this.rem.put("skills", skills);
         } else {
-            skills = this.getJSONArray("skills");
+            skills = this.rem.getJSONArray("skills");
         }
         return skills;
     }
     
     public String getLogPath() {
-        if (!this.has("skills")) return null;
-        JSONArray skills = this.getJSONArray("skills");
+        if (!this.rem.has("skills")) return null;
+        JSONArray skills = this.rem.getJSONArray("skills");
         if (skills.length() == 0) return null;
         Object p = skills.get(0);
         return p instanceof String ? getLogPath((String) p) : null;
@@ -494,24 +535,25 @@ public class SusiThought extends JSONObject {
     }
 
     public JSONObject toJSON() {
-        return this;
+        return this.rem;
     }
 
     public String toString() {
-        return super.toString(0);
+        return this.rem.toString(0);
     }
 
     public int hashCode() {
+        // TODO: this is very expensive. find a better option to create hash codes. Also: check comparing with equals()
         return this.getData().toString().hashCode();
     }
 
     // below now debugging methods:
 
     public boolean hasUniqueActions() {
-        return hasUniqueActions(this);
+        return hasUniqueActions(this.rem);
     }
 
-    public static boolean hasUniqueActions(JSONObject json) {
+    private static boolean hasUniqueActions(JSONObject json) {
         JSONArray a = json.optJSONArray("actions");
         if (a != null && a.length() > 1) {
             Set<String> exp = new HashSet<>();
@@ -528,9 +570,15 @@ public class SusiThought extends JSONObject {
     }
 
     public void uniqueActions() {
-        uniqueActions(this);
+        uniqueActions(this.rem);
     }
 
+    /**
+     * Bad Hack - remove this as soon as possible.
+     * This was made due to the situation that double actions occur and the cause was not detected - so far.
+     * As soon as the cuase is found, this method must disappear.
+     * @param json
+     */
     public static void uniqueActions(JSONObject json) {
         JSONArray a = json.optJSONArray("actions");
         if (a != null && a.length() > 1) {

@@ -817,7 +817,7 @@ public class SusiIntent implements Cloneable {
                 DAO.log("Susi is thinking about: " + implication.toString());
                 // make sure that we are not stuck:
                 // in case that we are stuck (== no progress was made) we consider the next alternative matcher
-                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in intent
+                if (implication.isFailed() || flow.mindstate().equals(implication)) continue alternatives; // TODO: do this only if specific marker is in intent
 
                 // think
                 flow.think(implication);
