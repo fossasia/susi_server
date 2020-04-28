@@ -209,8 +209,6 @@ public class SusiUtterance {
         }
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
         p = -1;
-        while ((p = s.indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);
-        while ((p = s.indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
         return s;
     }
 
