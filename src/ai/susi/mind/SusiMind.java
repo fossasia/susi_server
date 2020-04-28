@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.json.JSONTokener;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiIntent.Score;
+import ai.susi.mind.SusiLinguistics.Token;
 import ai.susi.mind.SusiPattern.SusiMatcher;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
@@ -405,8 +407,9 @@ public class SusiMind {
         //System.out.println("** INTENTTRIGGER: " + this.intenttrigger.keySet().toString());
 
         // tokenize query to have hint for idea collection
-        final List<SusiIdea> ideas = new ArrayList<>();
-        SusiLinguistics.tokenizeSentence(userLanguage, query).forEach(token -> {
+        final Set<SusiIdea> ideas = new HashSet<>();
+        List<Token> tokenlist = SusiLinguistics.tokenizeSentence(userLanguage, query);
+        tokenlist.forEach(token -> {
             Set<SusiIntent> intent_for_category = this.intenttrigger.get(token.categorized);
             Set<SusiIntent> intent_for_original = token.original.equals(token.categorized) ? null : this.intenttrigger.get(token.original);
             Set<SusiIntent> r = ConcurrentHashMap.newKeySet();
@@ -438,13 +441,14 @@ public class SusiMind {
         });
 
         // make a sorted list of all ideas
-        ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
+        final List<SusiIdea> sortedIdeas = new ArrayList<>(scored.size());
+        scored.values().forEach(r -> sortedIdeas.addAll(r));
 
         //for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
 
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
-        for (SusiIdea idea: ideas) {
+        for (SusiIdea idea: sortedIdeas) {
             SusiIntent intent = idea.getIntent();
             Collection<SusiMatcher> matchers = intent.matcher(query);
             if (matchers.isEmpty()) continue;
@@ -535,6 +539,7 @@ public class SusiMind {
                  // a valid idea
                 break;
             } catch (ReactionException e) {
+                // this happens when the reaction process tries to resolve a reflection and gets a SABTA response
                 testedIdeaQueryPatterns.put(new JSONObject().put(idea.getIntent().getUtterancesSample(), e.getMessage()));
                 // a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
                 continue ideatest;

@@ -341,14 +341,29 @@ public class SusiIntent implements Cloneable {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
 
+    @Override
     public int hashCode() {
         if (this.hashCode != 0) return this.hashCode;
         StringBuilder sb = new StringBuilder();
         sb.append(this.skillid == null ? "" : this.skillid.getPath());
-        sb.append(this.actions.toString());
         sb.append(this.utterances.toString());
+        sb.append(this.inferences.toString());
+        sb.append(this.actions.toString());
         this.hashCode = sb.toString().hashCode();
         return this.hashCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SusiIntent)) return false;
+        SusiIntent si = (SusiIntent) o;
+        if (this.skillid == null && si.skillid != null) return false;
+        if (this.skillid != null && si.skillid == null) return false;
+        if (this.skillid != null && si.skillid != null && !this.skillid.equals(si.skillid)) return false;
+        if (!this.utterances.toString().equals(si.utterances.toString())) return false;
+        if (!this.inferences.toString().equals(si.inferences.toString())) return false;
+        if (!this.actions.toString().equals(si.actions.toString())) return false;
+        return true;
     }
 
     public String toString() {

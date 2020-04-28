@@ -36,7 +36,7 @@ public class SusiIdea {
     private SusiIntent intent;
     private SusiLinguistics.Token token;
     private Collection<SusiMatcher> matchers;
-    
+
     /**
      * create an idea based on a intent
      * @param intent the intent that matched
@@ -51,7 +51,7 @@ public class SusiIdea {
     public SusiIntent getIntent() {
         return this.intent;
     }
-    
+
     /**
      * Add an token to the idea. The token is usually a work (i.e. a normalized single word)
      * that matched with the intent keys.
@@ -62,11 +62,11 @@ public class SusiIdea {
         this.token = token;
         return this;
     }
-    
+
     public boolean hasToken() {
         return this.token != null;
     }
-    
+
     /**
      * get the tokens for the idea
      * @return the keyword which matched with the intent keys
@@ -74,26 +74,40 @@ public class SusiIdea {
     public SusiLinguistics.Token getToken() {
         return this.token;
     }
-    
+
     public SusiIdea setMatchers(Collection<SusiMatcher> matchers) {
         this.matchers = matchers;
         return this;
     }
-    
+
     public SusiIdea addMatcher(SusiMatcher matcher) {
         if (this.matchers == null) this.matchers = new ArrayList<>();
         this.matchers.add(matcher);
         return this;
     }
-    
+
     public boolean hasMatcher() {
         return this.matchers != null && this.matchers.size() > 0;
     }
-    
+
     public Collection<SusiMatcher> getMatchers() {
         return this.matchers;
     }
-    
+
+    @Override
+    public int hashCode() {
+        // we compare ideas only by the intent
+        return this.intent.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // we compare ideas only by the intent
+        if (!(o instanceof SusiIdea)) return false;
+        SusiIdea si = (SusiIdea) o;
+        return this.intent.equals(si.intent);
+    }
+
     public String toString() {
         return this.intent.toString();
     }
