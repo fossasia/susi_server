@@ -24,6 +24,7 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
 import ai.susi.server.Authorization;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import io.swagger.annotations.*;
 import org.json.JSONObject;
 
@@ -32,7 +33,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
 import java.sql.Timestamp;
 
 
@@ -89,22 +89,16 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call).requireOrThrow();
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
         String user_bookmark = call.get("bookmark", null);
         Integer skill_bookmark;
 
         JSONObject result = new JSONObject();
-        assert skill != null;
-        if (!skill.exists()) {
-            throw new APIException(404, "Skill does not exist.");
-        }
 
         if (user_bookmark == null) {
             throw new APIException(422, "Bookmark not provided.");
@@ -138,7 +132,7 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
                             if (languageName.has(skill_name) && skill_bookmark == 0) {
                                 languageName.remove(skill_name);
                                 // 2nd parameter here indicates reduction in bookmark_count
-                                updateSkillRatingJSON(call, 0);
+                                updateSkillRatingJSON(skillQuery, 0);
                                 bookmarkUpdated = true;
                             }
                         }
@@ -153,7 +147,7 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
                 bookmarkObject.put("timestamp", timestamp.toString());
                 languageName.put(skill_name, bookmarkObject);
                 // 2nd parameter here indicates increase in bookmark_count
-                updateSkillRatingJSON(call, 1);
+                updateSkillRatingJSON(skillQuery, 1);
             }
 
             groupName.put(language_name, languageName);
@@ -177,11 +171,11 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
 
     // Update skill_rating object to the skillRatingJSON and updates the bookmark
     // update_type=0 for reduction and update_type=1 for increase
-    public void updateSkillRatingJSON(Query call, Integer update_type) {
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
+    private void updateSkillRatingJSON(SkillQuery skillQuery, Integer update_type) {
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JsonTray skillRating = DAO.skillRating;
         JSONObject modelName = new JSONObject();

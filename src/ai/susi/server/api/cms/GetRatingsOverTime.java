@@ -23,11 +23,11 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 
 /**
@@ -56,24 +56,17 @@ public class GetRatingsOverTime extends AbstractAPIHandler implements APIHandler
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call).requireOrThrow();
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);
-        if (!skill.exists()) {
-            result.put("message", "Skill does not exist");
-            return new ServiceResponse(result);
-
-        }
         JsonTray ratingsOverTime = DAO.ratingsOverTime;
         if (ratingsOverTime.has(model_name)) {
             JSONObject modelName = ratingsOverTime.getJSONObject(model_name);

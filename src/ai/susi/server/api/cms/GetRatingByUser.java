@@ -4,6 +4,8 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -36,10 +38,12 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "All");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
+        SkillQuery skillQuery = SkillQueryParser.Builder.getInstance().group("All").build().parse(call);
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         if (!authorization.getIdentity().isAnonymous()) {
         	String idvalue = authorization.getIdentity().getName(); // Get id from the access_token

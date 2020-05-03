@@ -3,12 +3,12 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FilenameFilter;
 
 /**
  * Created by dravit on 10/6/17.
@@ -43,7 +43,7 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
+        File model = IO.resolvePath(DAO.model_watch_dir.toPath(), model_name).toFile();
 
         String[] groups = model.list((file, s) -> new File(file, s).isDirectory());
         JSONObject result = new JSONObject();

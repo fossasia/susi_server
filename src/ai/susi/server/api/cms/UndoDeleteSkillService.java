@@ -23,6 +23,8 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,14 +58,12 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.deleted_skill_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQueryParser.Builder.getInstance()
+                .modelPath(DAO.deleted_skill_dir.toPath())
+                .build()
+                .parse(call);
+        String skill_name = skillQuery.getSkill();
+        File skill = skillQuery.getSkillFile();
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         String path = skill.getPath();
