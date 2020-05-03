@@ -181,16 +181,11 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
                 is = url.openStream();
                 break;
             case "server":
-                imageFile = new File(DAO.data_dir + File.separator + "avatar_uploads" + File.separator + file);
-                if (!imageFile.exists()) {
-                    file = "default.jpg";
-                    imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
-                }
+                imageFile = GetImageServlet.getAvatar(file);
                 is = new BufferedInputStream(new FileInputStream(imageFile));
                 break;
             default:
-                file = "default.jpg";
-                imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
+                imageFile = GetImageServlet.getDefaultImage();
                 is = new BufferedInputStream(new FileInputStream(imageFile));
                 break;
         }

@@ -73,7 +73,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
             File file = new File(DAO.model_watch_dir.getPath()+path);
             file.getParentFile().mkdirs();
             if(skill.renameTo(file)){
-                Boolean changed =  new File(DAO.model_watch_dir.getPath()+path).setLastModified(System.currentTimeMillis());
+                Boolean changed = file.setLastModified(System.currentTimeMillis());
                 System.out.print(changed);
                 System.out.println("Skill moved successfully!");
             }else{

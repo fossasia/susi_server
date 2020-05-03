@@ -20,17 +20,16 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.server.*;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import ai.susi.server.Query;
-import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.aaa.GetAvatarServlet;
 import ai.susi.tools.IO;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 
 /*
@@ -49,8 +48,17 @@ import java.nio.file.Paths;
 
     private static final long serialVersionUID = 628253297031919192L;
 
-    static File getDefaultImage() {
+    public static File getDefaultImage() {
         return Paths.get(DAO.html_dir.getPath(), "images", "default.jpg").toFile();
+    }
+
+    public static File getAvatar(String file) {
+        File imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "avatar_uploads"), file).toFile();
+        if (!imageFile.exists()) {
+            return getDefaultImage();
+        }
+
+        return imageFile;
     }
 
     @Override
@@ -89,10 +97,7 @@ import java.nio.file.Paths;
             file = image_path.substring(image_path.indexOf("/")+1);
             String showAvatar = post.get("avatar","false");
             if (showAvatar.equals("true")) {
-                imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "avatar_uploads"), file).toFile();
-                if (!imageFile.exists()) {
-                    imageFile = getDefaultImage();
-                }
+                imageFile = getAvatar(file);
             } else {
                 imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "image_uploads"), image_path).toFile();
             }

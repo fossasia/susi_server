@@ -19,6 +19,25 @@
 
 package ai.susi;
 
+import ai.susi.json.JsonFile;
+import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.mind.SusiMemory;
+import ai.susi.mind.SusiMind;
+import ai.susi.mind.SusiSkill;
+import ai.susi.server.*;
+import ai.susi.tools.DateParser;
+import ai.susi.tools.IO;
+import ai.susi.tools.OS;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -33,45 +52,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
-import ai.susi.json.JsonFile;
-import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiAction.SusiActionException;
-import ai.susi.mind.SusiMemory;
-import ai.susi.mind.SusiMind;
-import ai.susi.mind.SusiSkill;
-import ai.susi.server.APIException;
-import ai.susi.server.AccessTracker;
-import ai.susi.server.Accounting;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Settings;
-import ai.susi.tools.DateParser;
-import ai.susi.tools.IO;
-import ai.susi.tools.OS;
-
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import java.util.*;
 
 /**
  * The Data Access Object for the message project.
@@ -487,8 +468,8 @@ public class DAO {
     public static File getAssetFile(String screen_name, String id_str, String file) {
         String letter0 = ("" + screen_name.charAt(0)).toLowerCase();
         String letter1 = ("" + screen_name.charAt(1)).toLowerCase();
-        File storage_path = new File(new File(new File(assets, letter0), letter1), screen_name);
-        return new File(storage_path, id_str + "_" + file); // all assets for one user in one file
+        Path storage_path = IO.resolvePath(assets.toPath(), letter0, letter1, screen_name);
+        return IO.resolvePath(storage_path, id_str + "_" + file).toFile(); // all assets for one user in one file
     }
 
     /**
@@ -1240,7 +1221,7 @@ public class DAO {
         if(list !=null && list.length!=0){
             for (String n: list) {
                 if (n.equals(fn) || n.toLowerCase().equals(fn)) {
-                    return new File(languagepath, n);
+                    return IO.resolvePath(languagepath.toPath(), n).toFile();
                 }
             }
         }
@@ -1250,13 +1231,13 @@ public class DAO {
         if (list != null && list.length != 0){
             for (String n: list) {
                 if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
-                File f = new File(languagepath, n);
-                try {
+                File f = IO.resolvePath(languagepath.toPath(), n).toFile();
+                try(FileReader fileReader = new FileReader(f)) {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
-                    SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(f)), skillid, false);
+                    SusiSkill skill = new SusiSkill(new BufferedReader(fileReader), skillid, false);
                     String sn = skill.getSkillName();
                     if (sn != null && (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name))) {
-                        return new File(languagepath, n);
+                        return f;
                     }
                 } catch (IOException | JSONException | SusiActionException e) {
                     continue;
@@ -1265,7 +1246,7 @@ public class DAO {
         }
 
         // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
-        return null_if_not_found ? null : new File(languagepath, fn);
+        return null_if_not_found ? null : IO.resolvePath(languagepath.toPath(), fn).toFile();
     }
 
     /**
@@ -1279,12 +1260,12 @@ public class DAO {
         String[] groups = model.list();
         for (String group: groups) {
             if (group.startsWith(".")) continue;
-            File gf = new File(model, group);
+            File gf = IO.resolvePath(model.toPath(), group).toFile();
             if (!gf.isDirectory()) continue;
             String[] languages = gf.list();
             for (String language: languages) {
                 if (language.startsWith(".")) continue;
-                File l = new File(gf, language);
+                File l = IO.resolvePath(gf.toPath(), language).toFile();
                 if (!l.isDirectory()) continue;
                 File skill = getSkillFileInLanguage(l, skill_name, true);
                 if (skill != null) return skill;

@@ -14,6 +14,7 @@ import ai.susi.server.UserRole;
 
 import ai.susi.server.api.cms.CreateSkillService;
 import ai.susi.server.api.cms.UploadImageService;
+import ai.susi.tools.IO;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -89,24 +91,24 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     // check if access_token is valid
                 if (authentication.getIdentity() != null) {
 
-                    String imagePath = DAO.data_dir  + File.separator + "avatar_uploads";
+                    Path imagePath = Paths.get(DAO.data_dir.getPath(), "avatar_uploads");
                     // Reading content for image
                     Image image = ImageIO.read(imagePartContent);
                     BufferedImage bi = UploadImageService.toBufferedImage(image);
                     BufferedImage bi_thumbnail = UploadImageService.toBufferedImage(CreateSkillService.createResizedCopy(image,40,40,true));
                     // Checks if images directory exists or not. If not then create one
-                    if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
+                    if (!Files.exists(imagePath)) imagePath.toFile().mkdirs();
 
                     String image_name = userId + ".jpg";
                     String image_name_thumbnail = userId + "_thumbnail.jpg";
-                    File p = new File(imagePath + File.separator + image_name);
-                    File p_thumbnail = new File(imagePath + File.separator + image_name_thumbnail);
+                    File p = IO.resolvePath(imagePath, image_name).toFile();
+                    File p_thumbnail = IO.resolvePath(imagePath, image_name_thumbnail).toFile();
                     if (p.exists()) {
                       p.delete();
                       p_thumbnail.delete();
                     }
-                    ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
-                    ImageIO.write(bi_thumbnail, "jpg", new File(imagePath + File.separator + image_name_thumbnail));
+                    ImageIO.write(bi, "jpg", p);
+                    ImageIO.write(bi_thumbnail, "jpg", p_thumbnail);
                     result.put("accepted", true);
                     result.put("image_path", image_name);
                     result.put("image_thumbnail_path", image_name_thumbnail);
