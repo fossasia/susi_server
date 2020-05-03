@@ -22,11 +22,13 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -58,10 +60,10 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
+        Path model = IO.resolvePath(DAO.model_watch_dir.toPath(), model_name);
         String group_name = call.get("group", null);
         if (group_name == null) {
-            File group = new File(model, "Knowledge");
+            File group = IO.resolvePath(model, "Knowledge").toFile();
             JSONObject json = new JSONObject(true);
             json.put("accepted", false);
             String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
@@ -77,10 +79,10 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
                 JSONObject json = new JSONObject(true);
                 json.put("accepted", false);
                 ArrayList<String> languages = new ArrayList<>();
-                        String[] group_names = model.list((current, name) -> new File(current, name).isDirectory());
+                        String[] group_names = model.toFile().list((current, name) -> new File(current, name).isDirectory());
                 assert group_names != null;
                 for (String temp_group_name : group_names) {
-                    File group = new File(model, temp_group_name);
+                    File group = IO.resolvePath(model, temp_group_name).toFile();
                         group.list((file, s) -> {
                             try {
                                 Boolean accepted = Objects.requireNonNull(new File(file, s).list()).length > 1;
@@ -103,7 +105,7 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
                 return new ServiceResponse(json);
             }
             else {
-                File group = new File(model, group_name);
+                File group = IO.resolvePath(model, group_name).toFile();
                 JSONObject json = new JSONObject(true);
                 json.put("accepted", false);
                 String[] languages = group.list((file, s) -> {

@@ -23,6 +23,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -58,19 +59,19 @@ public class UpdateSupportedLanguages extends AbstractAPIHandler implements APIH
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call);
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
+        File skill = skillQuery.getSkillFile();
 
-        String new_language_name = call.get("new_language", null);
-        File new_language = new File(group, new_language_name);
-        String new_skill_name = call.get("new_skill", null);
-        File new_skill = DAO.getSkillFileInLanguage(new_language, new_skill_name, false);
+        SkillQuery newSkillQuery = skillQuery
+                .language(call.get("new_language", null))
+                .skill(call.get("new_skill", null));
+        String new_language_name = newSkillQuery.getLanguage();
+        String new_skill_name = newSkillQuery.getSkill();
+        File new_skill = newSkillQuery.getSkillFile();
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);

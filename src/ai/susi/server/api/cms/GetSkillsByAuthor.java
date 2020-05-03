@@ -5,20 +5,20 @@ import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
 import ai.susi.tools.TimeoutMatcher;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -82,23 +82,23 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
 
             JSONObject result = new JSONObject();
 
-            String model_name = call.get("model", "general");
-            File model = new File(DAO.model_watch_dir, model_name);
-            String group_name = call.get("group", "All");
-            String language_name = call.get("language", "en");
+            SkillQuery skillQuery = SkillQueryParser.Builder.getInstance().group("All").build().parse(call);
+            String model_name = skillQuery.getModel();
+            String group_name = skillQuery.getGroup();
+            String language_name = skillQuery.getLanguage();
             JSONArray authorSkills = new JSONArray();
             JSONObject json = new JSONObject();
 
             // Returns all the Skills made by the author
             if (group_name.equals("All")) {
-                File allGroup = new File(String.valueOf(model));
+                File allGroup = skillQuery.getModelPath().toFile();
                 ArrayList<String> folderList = new ArrayList<String>();
                 listFoldersForFolder(allGroup, folderList);
                 json.put("accepted", false);
 
                 for (String temp_group_name : folderList){
-                    File group = new File(model, temp_group_name);
-                    File language = new File(group, language_name);
+                    Path group = IO.resolvePath(skillQuery.getModelPath(), temp_group_name);
+                    File language = IO.resolvePath(group, language_name).toFile();
                     ArrayList<String> fileList = new ArrayList<String>();
                     listFilesForFolder(language, fileList);
 
@@ -116,8 +116,8 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
 
             // Returns all the Skills made by the author belonging to a particular group
             else {
-                File group = new File(model, group_name);
-                File language = new File(group, language_name);
+                Path group = IO.resolvePath(skillQuery.getModelPath(), group_name);
+                File language = IO.resolvePath(group, language_name).toFile();
                 json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);

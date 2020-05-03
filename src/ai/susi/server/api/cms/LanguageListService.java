@@ -1,13 +1,15 @@
 package ai.susi.server.api.cms;
 
-import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -37,18 +39,16 @@ public class LanguageListService extends AbstractAPIHandler implements APIHandle
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String skill_name = call.get("skill", "wikipedia");
+        SkillQuery skillQuery = SkillQuery.getParser("wikipedia").parse(call);
+        String skill_name = skillQuery.getSkill();
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
 
-        String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
+        Path group = skillQuery.getGroupPath();
+        String[] languages = group.toFile().list((current, name) -> new File(current, name).isDirectory());
         ArrayList<String> languageList = new ArrayList<>();
         for(String languageName: languages) {
-            File language = new File(group, languageName);
+            File language = IO.resolvePath(group, languageName).toFile();
             File[] listOfSkills = language.listFiles();
             for(File skill: listOfSkills) {
                 if(skill.getName().equals(skill_name + ".txt")) { // given skill found in the language, add language to language list and continue searching
