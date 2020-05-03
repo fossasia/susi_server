@@ -378,7 +378,9 @@ public class DAO {
         susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
         File susi_generic_skills = new File(data_dir, "generic_skills");
         if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
-        SusiMind.Layer susi_generic_skills_media_discovery = new SusiMind.Layer("Media Discovery", new File(susi_generic_skills, "media_discovery"), false);
+        File media_discovery_dir = new File(susi_generic_skills, "media_discovery");
+        if (!media_discovery_dir.exists()) media_discovery_dir.mkdirs();
+        SusiMind.Layer susi_generic_skills_media_discovery = new SusiMind.Layer("Media Discovery", media_discovery_dir, false);
         if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
 
         // wake up susi

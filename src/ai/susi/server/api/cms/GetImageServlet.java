@@ -25,11 +25,14 @@ import java.io.IOException;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.aaa.GetAvatarServlet;
+import ai.susi.tools.IO;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.nio.file.Paths;
+
 /*
  This Servlet gives a API Endpoint to return image
  * Updated by @akshatnitd on 15/8/18.
@@ -46,6 +49,10 @@ import java.io.*;
 
     private static final long serialVersionUID = 628253297031919192L;
 
+    static File getDefaultImage() {
+        return Paths.get(DAO.html_dir.getPath(), "images", "default.jpg").toFile();
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -53,15 +60,15 @@ import java.io.*;
         File imageFile = null;
         String file = "";
 
-        if (!post.get("group", "").equals("") && !post.get("language", "").equals("") && !post.get("image", "").equals("")) {
-            String group = post.get("group","");
-            String language = post.get("language","");
-            String image = post.get("image","");
+        String group = post.get("group","").trim();
+        String language = post.get("language","").trim();
+        String image = post.get("image","").trim();
+        if (!group.isEmpty() && !language.isEmpty() && !image.isEmpty()) {
             file = image;
             // for public skill
-            if (!post.get("model", "").equals("")) {
-                String model = post.get("model","");
-                imageFile = new File(DAO.model_watch_dir  + File.separator + model + File.separator + group + File.separator + language + File.separator + image);
+            String model = post.get("model", "").trim();
+            if (!model.isEmpty()) {
+                imageFile = IO.resolvePath(DAO.model_watch_dir.toPath(), model, group, language, image).toFile();
             }
             // for private skill
             if (!post.get("access_token", "").equals("")) {
@@ -73,7 +80,7 @@ import java.io.*;
                     ClientIdentity identity = authentication.getIdentity();
                     userId = identity.getUuid();
                 }
-                imageFile = new File(DAO.private_skill_watch_dir  + File.separator + userId + File.separator + group + File.separator + language + File.separator + image);
+                imageFile = IO.resolvePath(DAO.private_skill_watch_dir.toPath(), userId, group, language, image).toFile();
             }
         }
         else if (!post.get("image", "").equals("")) {
@@ -81,34 +88,30 @@ import java.io.*;
             String image_path = post.get("image","");
             file = image_path.substring(image_path.indexOf("/")+1);
             String showAvatar = post.get("avatar","false");
-            if(showAvatar.equals("true")) {
-                imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
+            if (showAvatar.equals("true")) {
+                imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "avatar_uploads"), file).toFile();
                 if (!imageFile.exists()) {
-                    imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
+                    imageFile = getDefaultImage();
                 }
             } else {
-                imageFile = new File(DAO.data_dir  + File.separator + "image_uploads" + File.separator + image_path);
+                imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "image_uploads"), image_path).toFile();
             }
         }
 
         else if(!post.get("sliderImage", "").equals("")) {
             //For slider image
             String image_path = post.get("sliderImage", "");
-            imageFile = new File(DAO.data_dir + File.separator + "slider_uploads" + File.separator + image_path);
+            imageFile = IO.resolvePath(Paths.get(DAO.data_dir.getPath(), "slider_uploads"), image_path).toFile();
         }
 
         if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
-            imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
+            imageFile = getDefaultImage();
         }
 
         ByteArrayOutputStream data = new ByteArrayOutputStream();
         try {
-            byte[] b = new byte[2048];
-            InputStream is = new BufferedInputStream(new FileInputStream(imageFile));
-            int c;
-            while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
+            data = IO.readFile(imageFile);
         } catch (IOException e) {
-            data.reset();
             e.printStackTrace();
         }
 

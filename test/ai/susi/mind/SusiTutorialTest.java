@@ -7,11 +7,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
+import ai.susi.utils.TestHelpers;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -20,8 +18,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ai.susi.DAO;
-import ai.susi.SusiServer;
-import ai.susi.mind.SusiCognition;
 import ai.susi.server.ClientIdentity;
 
 public class SusiTutorialTest {
@@ -78,12 +74,10 @@ public class SusiTutorialTest {
         // System.out.println(testFile); // helper to generate a test dream "testdream"
         try {
             System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
-            Path data = FileSystems.getDefault().getPath("data");
-            Map<String, String> config = SusiServer.readConfig(data);
 
             // initialize all data
             try{
-                DAO.init(config, data, false);
+                TestHelpers.initDao();
                 BufferedReader br = getTestReader();
                 SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
                 SusiSkill skill = new SusiSkill(br, skillid, true);

@@ -81,6 +81,7 @@ dependencies {
   compile group: 'commons-io', name: 'commons-io', version: '2.6'
   compile group: 'com.joestelmach', name: 'natty', version: '0.13'
   compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.+'
+  testCompile "org.mockito:mockito-core:2.+"
 }
 
 task stage(dependsOn: ['assemble', 'clean'])

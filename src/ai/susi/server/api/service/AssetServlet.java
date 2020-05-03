@@ -23,6 +23,7 @@ import ai.susi.DAO;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.aaa.GetAvatarServlet;
+import ai.susi.tools.IO;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -51,13 +52,7 @@ public class AssetServlet extends HttpServlet {
         File assetFile = DAO.getAssetFile(screen_name, id_str, file);
         if (!assetFile.exists()) {response.sendError(503, "asset does not exist"); return;}
         
-        ByteArrayOutputStream data = new ByteArrayOutputStream();
-        byte[] b = new byte[2048];
-        InputStream is = new BufferedInputStream(new FileInputStream(assetFile));
-        int c;
-        try {
-            while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
-        } catch (IOException e) {}
+        ByteArrayOutputStream data = IO.readFile(assetFile);
 
         GetAvatarServlet.setMimeType(request, response, post, file);
 
