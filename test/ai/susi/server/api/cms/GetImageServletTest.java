@@ -46,19 +46,19 @@ public class GetImageServletTest {
         assertFalse("Servlet should not access data external to the base directory. Data: " + content, content.contains(data));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IO.IllegalPathAccessException.class)
     public void shouldNotAccessExtraDataForImageParam() throws IOException {
         StubServletOutputStream stream = testImageAccess("image", "../settings/private.settings.json");
         assertNotContains(stream.getContent(), "private_key");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IO.IllegalPathAccessException.class)
     public void shouldNotAccessExtraDataForSliderImageParam() throws IOException {
         StubServletOutputStream stream = testImageAccess("sliderImage", "../settings/private.settings.json");
         assertNotContains(stream.getContent(), "private_key");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IO.IllegalPathAccessException.class)
     public void shouldNotAccessExtraDataForAvatarImageParam() throws IOException {
         StubServletOutputStream stream = testImageAccess(
                 "image", "../../settings/private.settings.json",
@@ -67,7 +67,7 @@ public class GetImageServletTest {
         assertNotContains(stream.getContent(), "private_key");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IO.IllegalPathAccessException.class)
     public void shouldNotAccessExtraDataForModelImage() throws IOException {
         testImageAccess(
                 "image", "../../settings/private.settings.json",

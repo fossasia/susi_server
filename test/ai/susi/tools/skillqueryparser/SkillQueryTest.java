@@ -24,7 +24,7 @@ public class SkillQueryTest {
     }
 
     private SkillQuery getSkillQuery(Path modelDirectory) {
-        return new SkillQuery("general", "Knowledge", "en", null, modelDirectory, null);
+        return new SkillQuery("general", "Knowledge", "en", null, modelDirectory);
     }
 
     private SkillQuery getSkillQuery() {

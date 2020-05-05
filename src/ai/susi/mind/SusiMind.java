@@ -27,8 +27,8 @@ import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
 import ai.susi.tools.DateParser;
-import ai.susi.tools.IO;
 import ai.susi.tools.OnlineCaution;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -611,15 +611,15 @@ public class SusiMind {
     }
 
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
-        return getSkillMetadata(model, group, language, skillname, 7, DAO.model_watch_dir);
+        return getSkillMetadata(model, group, language, skillname, duration, DAO.model_watch_dir);
     }
 
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration,
             File parentDirectory) {
         JSONObject skillMetadata = new JSONObject(true).put("model", model).put("group", group).put("language",
                 language);
-        File languagepath = IO.resolvePath(parentDirectory.toPath(), model, group, language).toFile();
-        File skillpath = DAO.getSkillFileInLanguage(languagepath, skillname, false);
+        // TODO: Should throw if file not found?
+        File skillpath = new SkillQuery(model, group, language, skillname, parentDirectory.toPath()).getSkillFile();
         DateFormat dateFormatType = DateParser.iso8601Format;
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right
                                                                 // name

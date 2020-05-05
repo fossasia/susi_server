@@ -1,5 +1,6 @@
 package ai.susi;
 
+import ai.susi.tools.IO;
 import ai.susi.tools.ThrowingConsumer;
 import ai.susi.utils.TestHelpers;
 import org.apache.commons.io.FileUtils;
@@ -112,6 +113,11 @@ public class DAOFileAccessTest {
             assertEquals(skillPath, DAO.getSkillFileInLanguage(languagePath.toFile(), "sam_smith", true).toPath());
             assertEquals(zephyrSkillPath, DAO.getSkillFileInLanguage(languagePath.toFile(), "zEpHyR", true).toPath());
         });
+    }
+
+    @Test(expected = IO.IllegalPathAccessException.class)
+    public void shouldThrowExceptionOnDirectoryTraversal() {
+        DAO.susi.getSkillMetadata("..", "..", "..", "private.settings.json");
     }
 
 }

@@ -131,7 +131,7 @@ public class SkillQueryParser {
         String language = call.get(languageKey, defaultLanguage);
         String skill = call.get(skillKey, defaultSkill);
 
-        return new SkillQuery(model, group, language, skill, modelPath, null);
+        return new SkillQuery(model, group, language, skill, modelPath);
     }
 
     private String getOrDefault(HttpServletRequest req, String key, String defaultValue) {
@@ -149,7 +149,7 @@ public class SkillQueryParser {
         String language = getOrDefault(req, languageKey, defaultLanguage);
         String skill = getOrDefault(req, skillKey, defaultSkill);
 
-        return new SkillQuery(model, group, language, skill, modelPath, null);
+        return new SkillQuery(model, group, language, skill, modelPath);
     }
 
 }

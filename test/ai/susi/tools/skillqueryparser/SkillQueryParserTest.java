@@ -1,6 +1,7 @@
 package ai.susi.tools.skillqueryparser;
 
 import ai.susi.server.Query;
+import ai.susi.tools.IO;
 import ai.susi.utils.TestHelpers;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -141,6 +142,17 @@ public class SkillQueryParserTest {
             assertNull(skillQuery.getGroup());
             assertNull(skillQuery.getSkill());
         });
+    }
+
+    @Test(expected = IO.IllegalPathAccessException.class)
+    public void testDirectoryTraversalException() {
+        HttpServletRequest request = TestHelpers.getMockRequestWithParams(
+                "model", "..",
+                "group", "..",
+                "language", "..",
+                "skill", "private.settings.json");
+
+        SkillQuery.getParser().parse(request).getSkillFile();
     }
 
 }

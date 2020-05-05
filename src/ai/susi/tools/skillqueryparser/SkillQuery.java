@@ -45,6 +45,15 @@ public class SkillQuery {
         }
     }
 
+    public SkillQuery(@Nonnull String model, @Nonnull String group, @Nonnull String language, @Nullable String skill,
+                      @Nullable Path modelDirectory) {
+        this(model, group, language, skill, modelDirectory, null);
+    }
+
+    public SkillQuery(@Nonnull String model, @Nonnull String group, @Nonnull String language, @Nullable String skill) {
+        this(model, group, language, skill, null);
+    }
+
     /**
      * Create a new copy of the SkillQuery for private skills
      *
@@ -150,11 +159,13 @@ public class SkillQuery {
         return Objects.equals(model, that.model) &&
                 Objects.equals(group, that.group) &&
                 Objects.equals(language, that.language) &&
-                Objects.equals(skill, that.skill);
+                Objects.equals(skill, that.skill) &&
+                Objects.equals(modelDirectory, that.modelDirectory) &&
+                Objects.equals(privateSkillUserId, that.privateSkillUserId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(model, group, language, skill);
+        return Objects.hash(model, group, language, skill, modelDirectory, privateSkillUserId);
     }
 }

@@ -1,9 +1,8 @@
 package ai.susi.tools;
 
-import javax.annotation.Nonnull;
-
 import ai.susi.DAO;
 
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,6 +106,12 @@ public final class IO {
 		return null;
 	}
 
+	public static class IllegalPathAccessException extends IllegalArgumentException {
+	    IllegalPathAccessException() {
+	        super("User path escapes the base path");
+        }
+    }
+
 	/**
 	 * Resolves an untrusted user-specified path against the API's base directory.
 	 * Paths that try to escape the base directory are rejected.
@@ -133,7 +138,7 @@ public final class IO {
 		// Make sure the resulting path is still within the required directory.
 		// (In the example above, "/foo/bar/attack" is not.)
 		if (!resolvedPath.startsWith(baseDirPath)) {
-			throw new IllegalArgumentException("User path escapes the base path");
+			throw new IllegalPathAccessException();
 		}
 
 		return resolvedPath;
