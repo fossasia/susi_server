@@ -1211,7 +1211,6 @@ public class DAO {
      * @throws SusiActionException 
      */
     public static File getSkillFileInLanguage(File languagepath, String skill_name, boolean null_if_not_found) {
-
         String fn = skill_name + ".txt";
         String[] list = languagepath.list();
         
@@ -1220,7 +1219,7 @@ public class DAO {
         // first try: the skill name may be same or similar to the skill file name
         if(list !=null && list.length!=0){
             for (String n: list) {
-                if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                if (n.equalsIgnoreCase(fn)) {
                     return IO.resolvePath(languagepath.toPath(), n).toFile();
                 }
             }
@@ -1236,7 +1235,7 @@ public class DAO {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
                     SusiSkill skill = new SusiSkill(new BufferedReader(fileReader), skillid, false);
                     String sn = skill.getSkillName();
-                    if (sn != null && (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name))) {
+                    if (sn != null && (sn.equalsIgnoreCase(skill_name) || sn.replace(' ', '_').equalsIgnoreCase(skill_name))) {
                         return f;
                     }
                 } catch (IOException | JSONException | SusiActionException e) {
