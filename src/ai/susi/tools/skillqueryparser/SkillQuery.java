@@ -56,11 +56,11 @@ public class SkillQuery {
         return new SkillQuery(model, group, language, skill, DAO.private_skill_watch_dir.toPath(), userId);
     }
 
-    public SkillQuery language(String newLanguage) {
+    public SkillQuery language(@Nonnull String newLanguage) {
         return new SkillQuery(model, group, newLanguage, skill, modelDirectory, privateSkillUserId);
     }
 
-    public SkillQuery skill(String newSkill) {
+    public SkillQuery skill(@Nonnull String newSkill) {
         return new SkillQuery(model, group, language, newSkill, modelDirectory, privateSkillUserId);
     }
 
@@ -79,11 +79,8 @@ public class SkillQuery {
     }
 
     public File getSkillFile() {
-        return getSkillFile(false);
-    }
-
-    public File getSkillFile(boolean nullIfNotFound) {
-        return DAO.getSkillFileInLanguage(getLanguagePath().toFile(), skill, nullIfNotFound);
+        Objects.requireNonNull(skill);
+        return DAO.getSkillFileInLanguage(getLanguagePath().toFile(), skill, false);
     }
 
     public Path getLanguagePath() {

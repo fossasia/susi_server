@@ -19,13 +19,12 @@
 
 package ai.susi.mind;
 
+import ai.susi.tools.TimeoutMatcher;
+import org.json.JSONObject;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import org.json.JSONObject;
-
-import ai.susi.tools.TimeoutMatcher;
 
 /**
  * Thinking starts with a matching mechanism which tells the
@@ -124,9 +123,9 @@ public class SusiUtterance {
         expression = expression.replace('_', '*').replace('#', '^');
 
         // fix expression: patches for wrong utterances and syntax mis-uses.
-        if (expression.indexOf(".*") >= 0 ||
+        if (!expression.isEmpty() && (expression.contains(".*") ||
             (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
-            (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) {
+            (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')'))) {
             // this is a regular expression, let it be as it is.
         } else {
             // this is not a regular expression, therefore we can remove superfluous dots
@@ -193,6 +192,9 @@ public class SusiUtterance {
      * This must be applied to every utterance AND to every query. Applying the same normalization ensures that
      * queries match for a certain variation of different ways to express.
      * This includes i.e. uppercase/lowecase spelling.
+     *
+     * TODO: Simplify function and add tests. Has various redundancies and bugs. Can be simplified heavily
+     *
      * @param s
      * @return a canonical form of utterances and queries
      */
@@ -201,14 +203,12 @@ public class SusiUtterance {
         Matcher m;
         while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
-        if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
-        int p = -1;
-        while ((p = "?!:.".indexOf(s.charAt(s.length() - 1))) >= 0 && (s.length() == 1 || s.charAt(s.length() - 2) != '\\')) {
+        if (s.isEmpty()) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
+        while (!s.isEmpty() && "?!:.".indexOf(s.charAt(s.length() - 1)) >= 0 && (s.length() == 1 || s.charAt(s.length() - 2) != '\\')) {
             // cut out punctuation marks only at the end if it is not a part of a regular expression
             s = s.substring(0, s.length() - 1).trim();
         }
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
-        p = -1;
         return s;
     }
 

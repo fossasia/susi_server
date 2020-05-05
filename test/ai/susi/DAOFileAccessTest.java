@@ -1,6 +1,5 @@
 package ai.susi;
 
-import ai.susi.mind.SusiAction;
 import ai.susi.tools.ThrowingConsumer;
 import ai.susi.utils.TestHelpers;
 import org.apache.commons.io.FileUtils;
@@ -24,7 +23,7 @@ public class DAOFileAccessTest {
         DAO.model_watch_dir.mkdirs();
     }
 
-    private void testInModelPath(ThrowingConsumer<Path, Exception> consumer) throws IOException {
+    public static void testInModelPath(ThrowingConsumer<Path, Exception> consumer) throws IOException {
         Path modelPath = Files.createTempDirectory(DAO.model_watch_dir.toPath(), "general");
         try {
             consumer.accept(modelPath);
@@ -36,7 +35,7 @@ public class DAOFileAccessTest {
     }
 
     @Test
-    public void shouldFindSkillFileInModel() throws IOException, SusiAction.SusiActionException {
+    public void shouldFindSkillFileInModel() throws IOException {
         testInModelPath(modelPath -> {
             // Create some groups, languages and skills
             Stream.of("Communication", "AI", "Knowledge", "Jokes", "Music")
@@ -87,7 +86,7 @@ public class DAOFileAccessTest {
         });
     }
 
-    private Path writeSkillFile(Path languagePath, String skillName, String exension) throws IOException {
+    private static Path writeSkillFile(Path languagePath, String skillName, String exension) throws IOException {
         // Adding extra characters so that file is not found just by name matching
         // and file parser finder is put to test
         Path skillPath = languagePath.resolve(skillName + "extra." + exension);
@@ -98,7 +97,7 @@ public class DAOFileAccessTest {
         return skillPath;
     }
 
-    private Path writeSkillFile(Path languagePath, String skillName) throws IOException {
+    public static Path writeSkillFile(Path languagePath, String skillName) throws IOException {
         return writeSkillFile(languagePath, skillName, "txt");
     }
 
