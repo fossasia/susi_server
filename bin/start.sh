@@ -18,9 +18,6 @@ SS_LOG_TO_STDOUT=${SS_LOG_TO_STDOUT:-0}
 
 while getopts ":Idno" opt; do
     case $opt in
-        I)
-            SKIP_INSTALL_CHECK=1
-            ;;
         d)
             SKIP_WAITING=1
             ;;
@@ -32,46 +29,12 @@ while getopts ":Idno" opt; do
             ;;
         \?)
             echo "Usage: $0 [options...]"
-            echo -e " -I\tIgnore installation config"
             echo -e " -d\tSkip waiting for SUSI"
             echo -e " -n\tDo not Daemonize"
             exit 1
             ;;
     esac
 done
-
-# installation
-if [ ! -f $INSTALLATIONCONFIG ] && [[ $SKIP_INSTALL_CHECK -eq 0 ]]; then
-    echo "SUSI detected that you did not yet run the installation wizard."
-    echo "It lets you setup an administrator account and a number of settings, but is not mandatory."
-    echo "You can manually start it by running bin/installation.sh"
-
-:<<'OPTIONAL'
-    while [ true ]; do
-        echo "Would you like to start the installation now? (y)es, (n)o, (r)emind me next time"
-        read -n 1 -s -t 20 input
-        if  [ $? = 0 ]; then
-            if [ "$input" = "y" ]; then
-                bin/installation.sh
-                if [ $? -ne 0 ]; then
-                    exit 1
-                fi
-                break
-            elif [ "$input" = "n" ]; then
-                echo "Installation wizard skipped."
-                echo 'skipped' > $INSTALLATIONCONFIG
-                break
-            elif [ "$input" = "r" ]; then
-                break
-            fi
-        else
-            echo "Timeout, skipping installation wizard."
-            echo 'skipped' > $INSTALLATIONCONFIG
-            break
-        fi
-    done
-OPTIONAL
-fi
 
 
 # If DO_NOT_DAEMONIZE is declared, use the log4j config that outputs
@@ -118,7 +81,7 @@ fi
 
 if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
-	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
+	LOCALHOST=$(grep -iw 'host.url' conf/config.properties | sed 's/^[^=]*=//');
 	echo "susi server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 	rm -f $STARTUPFILE
 	exit 0
