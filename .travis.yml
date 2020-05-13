@@ -56,3 +56,8 @@ matrix:
           script: bash scripts/deploy_hcloud.sh
           on:
             all_branches: true
+
+branches:
+  only:
+    - master
+    - development
