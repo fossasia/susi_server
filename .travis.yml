@@ -27,10 +27,10 @@ matrix:
       script:
         - gradle assemble
         - gradle clean
+        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
       install: true
       # If build successful, deploy to GC using kubernetes
       after_success:
-        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
         - travis_wait 30 bash kubernetes/travis/deploy.sh
         - travis_wait 30 bash kubernetes/travis/deploy-master.sh
         - bash .utility/push-javadoc-to-gh-pages.sh
