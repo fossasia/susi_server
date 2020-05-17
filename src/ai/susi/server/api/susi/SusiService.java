@@ -35,7 +35,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
-import ai.susi.tools.HttpClient;
+import ai.susi.tools.EtherpadClient;
 import ai.susi.tools.IO;
 import ai.susi.tools.OnlineCaution;
 
@@ -43,22 +43,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ai.susi.json.JsonTray;
-import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 // http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0d!example:x%0d!expect:y%0dyee
@@ -84,6 +80,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
         String q = post.get("q", "").trim();
         DAO.log("CHAT susi is asked: " + q);
+        try {
+            new EtherpadClient().appendChatMessage("susi", q, "user_" + user.getIdentity().getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         JSONObject json = serviceImpl(post, response, user, permissions, q);
         return new ServiceResponse(json);
     }
@@ -166,64 +167,13 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // This cannot be activated, its always reading a dream named "susi"
         // We consider two location options for the etherpad,
         // either ~/SUSI.AI/etherpad-lite or data/etherpad-lite
-        String local_etherpad_apikey = null;
-        File local_etherpad_apikey_file = new File(new File(new File(System.getProperty("user.home"), "SUSI.AI"), "etherpad-lite"), "APIKEY.txt");
-        if (!local_etherpad_apikey_file.exists()) local_etherpad_apikey_file = new File(new File(DAO.data_dir, "etherpad-lite"), "APIKEY.txt");
-        if (local_etherpad_apikey_file.exists()) {
-            // read the pad for the dream
-            try {
-                FileInputStream fis = new FileInputStream(local_etherpad_apikey_file);
-                byte[] data = new byte[(int) local_etherpad_apikey_file.length()];
-                fis.read(data);
-                fis.close();
-                local_etherpad_apikey = new String(data, "UTF-8");
-            } catch (IOException e) {
-            }
-        }
-        if (local_etherpad_apikey != null) try {
-            String padurl = "http://localhost:9001/api/1/getText?apikey=" + local_etherpad_apikey + "&padID=$query$";
-            Map<String, String> request_header = new HashMap<>();
-            request_header.put("Accept","application/json");
-            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
-            JSONObject json = new JSONObject(serviceResponse);
-            JSONObject data = json.optJSONObject("data");
-            if (data == null) {
-                // pad does not exist, so we create it!
-                String createurl = "http://localhost:9001/api/1/createPad?apikey=" + local_etherpad_apikey + "&padID=susi";
-                HttpClient.loadGet(createurl, request_header);
-                serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
-                json = new JSONObject(serviceResponse);
-                data = json.optJSONObject("data");
-            }
-            assert data != null; // because we created the pad on the fly!
-            String text = data == null ? "" : data.getString("text").trim();
-            if (text.length() == 0 || text.startsWith("Welcome to Etherpad!")) {
-                // fill the pad with a default skill, a set of examples
-                // read the examples
-                try {
-                    File example_file = new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt");
-                    FileInputStream fis = new FileInputStream(example_file);
-                    byte[] example = new byte[(int) example_file.length()];
-                    fis.read(example);
-                    fis.close();
-                    String writeurl = "http://localhost:9001/api/1/setText";
-                    Map<String, byte[]> p = new HashMap<>();
-                    p.put("apikey", local_etherpad_apikey.getBytes());
-                    p.put("padID", "susi".getBytes());
-                    p.put("text", example);
-                    HttpClient.loadPost(writeurl, p);
-                    serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, "susi")));
-                    json = new JSONObject(serviceResponse);
-                    data = json.optJSONObject("data");
-                    text = data == null ? "" : data.getString("text");
-                } catch (IOException e) {
-                }
-            }
-            if (!text.startsWith("disabled")) {
+        try {
+            String content = new EtherpadClient().setTextIfEmpty("susi", new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt"));
+            if (EtherpadClient.padContainsSkill(content)) {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
-                SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
+                SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
                 dreamMind.learn(skill, skillid, true);
                 SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
                 dreamMind.setActiveSkill(activeskill);
@@ -236,15 +186,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // global etherpad dreaming, reading from http://dream.susi.ai
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
-            String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
-            String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
-            String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
-            Map<String, String> request_header = new HashMap<>();
-            request_header.put("Accept","application/json");
-            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadDataWithQuery(padurl, request_header, dream)));
-            JSONObject json = new JSONObject(serviceResponse);
-            JSONObject data = json.optJSONObject("data");
-            String text = data == null ? "" : data.getString("text");
+            String text = new EtherpadClient().getText(dream);
             // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
             text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
             text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
