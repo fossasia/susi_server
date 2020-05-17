@@ -17,7 +17,6 @@
 venv/*
 
 dist
-bin/
 dist/loklak.jar
 /build/
 /.gradle/
