@@ -82,6 +82,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
         String q = post.get("q", "").trim();
+        DAO.log("CHAT susi is asked: " + q);
         JSONObject json = serviceImpl(post, response, user, permissions, q);
         return new ServiceResponse(json);
     }
