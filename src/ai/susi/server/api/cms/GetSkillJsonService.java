@@ -22,6 +22,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -79,23 +80,16 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
                 userId = identity.getUuid();
             }
         }
+
+        SkillQuery skillQuery = SkillQuery.getParser("wikipedia").parse(call);
+
         // if client sends private=1 then it is a private skill
         String privateSkill = call.get("private", null);
-        File private_skill_dir = null;
         if(privateSkill != null){
-            private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+            skillQuery = skillQuery.forPrivate(userId);
         }
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        if(privateSkill != null){
-            model = private_skill_dir;
-        }
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", "wikipedia");
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+
+        File skill = skillQuery.getSkillFile();
 
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));

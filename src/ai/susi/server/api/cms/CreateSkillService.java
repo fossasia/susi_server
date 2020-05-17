@@ -9,17 +9,11 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import org.json.JSONObject;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.UserRole;
+import ai.susi.server.*;
 import ai.susi.tools.DateParser;
+import ai.susi.tools.IO;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -27,20 +21,12 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -99,40 +85,24 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         }
                     }
                     if (userId != null) {
+                        SkillQuery skillQuery = SkillQuery.getParser().parse(req);
+                        String model_name = skillQuery.getModel();
+                        String group_name = skillQuery.getGroup();
+                        String language_name = skillQuery.getLanguage();
+                        String skill_name = skillQuery.getSkill();
+
                     // if client sends private=1 then it is a private skill
-                    File private_skill_dir = null;
                     String privateSkill = req.getParameter("private");
                     if(privateSkill != null){
-                        private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+                        skillQuery = skillQuery.forPrivate(userId);
                     }
                     InputStream imagePartContent = imagePart.getInputStream();
 
-                    String model_name = req.getParameter("model");
-                    if (model_name == null) {
-                        model_name = "general";
-                    }
-                    File model = new File(DAO.model_watch_dir, model_name);
-                    if(privateSkill != null){
-                        model = private_skill_dir;
-                    }
-                    String group_name = req.getParameter("group");
-                    if (group_name == null) {
-                        group_name = "Knowledge";
-                    }
-                    File group = new File(model, group_name);
-                    String language_name = req.getParameter("language");
-                    if (language_name == null) {
-                        language_name = "en";
-                    }
-                    File language = new File(group, language_name);
-                    String skill_name = req.getParameter("skill");
-                    File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+                    File skill = skillQuery.getSkillFile();
 
                     String image_name = req.getParameter("image_name");
 
-
-
-                    String imagePath = language.getPath() + File.separator + "images";
+                    Path imagePath = IO.resolvePath(skillQuery.getLanguagePath(), "images");
                     if (image_name == null) {
                         // Checking for
                         json.put("accepted", false);
@@ -153,20 +123,14 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                             BufferedImage bi = createResizedCopy(image, 512, 512, true);
 
                             // Checks if images directory exists or not. If not then create one
-                            if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
-                            File p = new File(imagePath + File.separator + image_name);
+                            if (!Files.exists(imagePath)) imagePath.toFile().mkdirs();
+                            File p = IO.resolvePath(imagePath, image_name).toFile();
                             if (p.exists()) p.delete();
-                            ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
+                            ImageIO.write(bi, "jpg", p);
 
                             // Writing Skills Data in File
                             try (FileWriter Skillfile = new FileWriter(skill)) {
                                 Skillfile.write(content);
-                                String path = null;
-                                if(privateSkill != null){
-                                    path = skill.getPath().replace(private_skill_dir.toString(), "users");
-                                } else {
-                                    path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
-                                }
                                 // Set the creationTime in the metadata
                                 updateSkillInfo(model_name, group_name, language_name, skill_name);
                             } catch (IOException e) {

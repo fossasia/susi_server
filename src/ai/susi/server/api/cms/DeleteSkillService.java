@@ -4,6 +4,7 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +47,14 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
-        String model_name = call.get("model", "general");
+
+        SkillQuery skillQuery = SkillQuery.getParser("whois").parse(call);
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
+
         String access_token = call.get("access_token", null);
         String privateSkill = call.get("private", null);
         String uuid = call.get("uuid", null);
@@ -67,9 +75,6 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             if (privateSkill == null) {
                 // if deleting a public skill, the person should be admin or superadmin
                 if (!(userRole.getName().equals("admin") || userRole.getName().equals("superadmin"))) {
-                    String group_name = call.get("group", "Knowledge");
-                    String language_name = call.get("language", "en");
-                    String skill_name = call.get("skill", "whois");
                     JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name);
                     // the skill can be deleted if user is the author of the skill
                     if(!(skillMetadata.get("author_email").equals(idvalue))) {
@@ -84,18 +89,11 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         json.put("message", "Invalid access token");
         return new ServiceResponse(json);
         }
-        
-        File model = new File(DAO.model_watch_dir, model_name);
+
         if (privateSkill != null) {
-            model = new File(DAO.private_skill_watch_dir, userId);
+            skillQuery = skillQuery.forPrivate(userId);
         }
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", "whois");
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
-        
+        File skill = skillQuery.getSkillFile();
         
         if(!DAO.deleted_skill_dir.exists()){
             DAO.deleted_skill_dir.mkdirs();
@@ -112,7 +110,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             File file = new File(DAO.deleted_skill_dir.getPath()+path);
             file.getParentFile().mkdirs();
             if(skill.renameTo(file)){
-                Boolean changed =  new File(DAO.deleted_skill_dir.getPath()+path).setLastModified(System.currentTimeMillis());
+                Boolean changed =  file.setLastModified(System.currentTimeMillis());
                 System.out.print(changed);
                 System.out.println("Skill moved successfully!");
             }else{

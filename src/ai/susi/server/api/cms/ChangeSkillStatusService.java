@@ -22,8 +22,10 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import ai.susi.server.*;
 import ai.susi.server.Authorization;
+import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
 import io.swagger.annotations.*;
 import org.json.JSONObject;
 
@@ -90,10 +92,12 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "All");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
+        SkillQuery skillQuery = SkillQueryParser.Builder.getInstance().group("All").build().parse(call);
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
         String reviewed = call.get("reviewed", null);
         String editable = call.get("editable", null);
         String staffPick = call.get("staffPick", null);

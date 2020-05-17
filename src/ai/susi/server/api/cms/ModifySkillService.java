@@ -4,20 +4,12 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-
-import org.json.JSONObject;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Query;
-import ai.susi.server.RemoteAccess;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.UserRole;
+import ai.susi.server.*;
 import ai.susi.tools.DateParser;
+import ai.susi.tools.IO;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
+import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -25,21 +17,14 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.Date;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -120,61 +105,46 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         // CORS Header
         resp.setHeader("Access-Control-Allow-Origin", "*");
         if (call.getParameter("access_token") != null) {
+            SkillQuery oldSkillQuery = SkillQueryParser.Builder.getInstance()
+                    .modelKey("OldModel")
+                    .groupKey("OldGroup")
+                    .languageKey("OldLanguage")
+                    .skillKey("OldSkill")
+                    .skill("")
+                    .build()
+                    .parse(call);
+
             // if client sends private=1 then it is a private skill
-            File private_skill_dir = null;
             String privateSkill = call.getParameter("private");
             if(privateSkill != null){
-                private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+                oldSkillQuery = oldSkillQuery.forPrivate(userId);
             }
             // GET OLD VALUES HERE
-            String model_name = call.getParameter("OldModel");
-            if (model_name == null) {
-                model_name = "general";
-            }
-            File model = new File(DAO.model_watch_dir, model_name);
+            String model_name = oldSkillQuery.getModel();
+            String group_name = oldSkillQuery.getGroup();
+            String language_name = oldSkillQuery.getLanguage();
+            File skill = oldSkillQuery.getSkillFile();
+            String skill_name = skill.getName().replaceAll("\\.txt", "");
+
+            SkillQuery newSkillQuery = SkillQueryParser.Builder.getInstance()
+                    .modelKey("NewModel")
+                    .groupKey("NewGroup")
+                    .languageKey("NewLanguage")
+                    .skillKey("NewSkill")
+                    .skill(skill_name)
+                    .build()
+                    .parse(call);
+
             if(privateSkill != null){
-                    model = private_skill_dir;
+                newSkillQuery = newSkillQuery.forPrivate(userId);
             }
-            String group_name = call.getParameter("OldGroup");
-            if (group_name == null) {
-                group_name = "Knowledge";
-            }
-            File group = new File(model, group_name);
-            String language_name = call.getParameter("OldLanguage");
-            if (language_name == null) {
-                language_name = "en";
-            }
-            File language = new File(group, language_name);
-            String skill_name = call.getParameter("OldSkill");
-            if (skill_name == null) {
-                skill_name = "";
-            }
-            File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
-            skill_name = skill.getName().replaceAll("\\.txt", "");
+
             // GET MODIFIED VALUES HERE
-            String modified_model_name = call.getParameter("NewModel");
-            if (modified_model_name == null) {
-                modified_model_name = "general";
-            }
-            File modified_model = new File(DAO.model_watch_dir, modified_model_name);
-            if(privateSkill != null){
-                    modified_model = private_skill_dir;
-            }
-            String modified_group_name = call.getParameter("NewGroup");
-            if (modified_group_name == null) {
-                modified_group_name = "Knowledge";
-            }
-            File modified_group = new File(modified_model, modified_group_name);
-            String modified_language_name = call.getParameter("NewLanguage");
-            if (modified_language_name == null) {
-                modified_language_name = "en";
-            }
-            File modified_language = new File(modified_group, modified_language_name);
-            String modified_skill_name = call.getParameter("NewSkill");
-            if (modified_skill_name == null) {
-                modified_skill_name = skill_name;
-            }
-            File modified_skill = new File(modified_language, modified_skill_name + ".txt");
+            String modified_model_name = newSkillQuery.getModel();
+            String modified_group_name = newSkillQuery.getGroup();
+            String modified_language_name = newSkillQuery.getLanguage();
+            String modified_skill_name = newSkillQuery.getSkill();
+            File modified_skill = newSkillQuery.getSkillFile();
             // GET CHANGELOG MESSAGE HERE
             String commit_message = call.getParameter("changelog");
             if (commit_message == null) {
@@ -215,8 +185,9 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                             InputStream filecontent = file.getInputStream();
                             String new_image_name = call.getParameter("new_image_name");
                             String old_image_name = call.getParameter("old_image_name");
-                            Path new_path = Paths.get(language + File.separator + "images/" + new_image_name);
-                            Path old_path = Paths.get(language + File.separator + "images/" + old_image_name);
+                            Path images = IO.resolvePath(oldSkillQuery.getLanguagePath(), "images");
+                            Path new_path = IO.resolvePath(images, new_image_name);
+                            Path old_path = IO.resolvePath(images, old_image_name);
                             if (Files.exists(old_path)) {
                                 File old_image = old_path.toFile();
                                 old_image.delete();
@@ -228,10 +199,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                             Image image = ImageIO.read(filecontent);
                             BufferedImage bi = CreateSkillService.createResizedCopy(image, 512, 512, true);
                             // Checks if images directory exists or not. If not then create one
-                            if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
-                                new File(language.getPath() + File.separator + "images").mkdirs();
+                            if (!Files.exists(images)) {
+                                images.toFile().mkdirs();
                             }
-                            ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images/" + new_image_name));
+                            ImageIO.write(bi, "jpg", new_path.toFile());
                             json.put("message", "Skill updated");
                             json.put("accepted", true);
                         } else {
@@ -250,8 +221,9 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                     if (image_name_changed.equals("true") && image_changed.equals("false")) {
                         String new_image_name = call.getParameter("new_image_name");
                         String old_image_name = call.getParameter("old_image_name");
-                        Path new_path = Paths.get(language + File.separator + "images/" + new_image_name);
-                        Path old_path = Paths.get(language + File.separator + "images/" + old_image_name);
+                        Path images = IO.resolvePath(oldSkillQuery.getLanguagePath(), "images");
+                        Path new_path = IO.resolvePath(images, new_image_name);
+                        Path old_path = IO.resolvePath(images, old_image_name);
                         if (!Files.exists(old_path)) {
                             json.put("accepted", false);
                             json.put("message", "Image requested to rename is not present");
@@ -271,9 +243,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 else {
                     // if skill is moved to a new location then delete the previous skill and create a new skill at a new location.
                     String new_image_name = call.getParameter("new_image_name");
-                    Path new_path = Paths.get(modified_language + File.separator + "images/" + new_image_name);
-                    if (!Files.exists(Paths.get(modified_language.getPath() + File.separator + "images"))) {
-                        new File(modified_language.getPath() + File.separator + "images").mkdirs();
+                    Path images = IO.resolvePath(newSkillQuery.getLanguagePath(), "images");
+                    Path new_path = IO.resolvePath(images, new_image_name);
+                    if (!Files.exists(images)) {
+                        images.toFile().mkdirs();
                     }
                     // write new file here
                     if (!modified_skill.exists()) {
@@ -302,7 +275,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                             if (file != null) {
                                 InputStream filecontent = file.getInputStream();
                                 String old_image_name = call.getParameter("old_image_name");
-                                Path old_path = Paths.get(language + File.separator + "images/" + old_image_name);
+                                Path old_path = IO.resolvePath(oldSkillQuery.getLanguagePath(), "images", old_image_name);
                                 if (Files.exists(old_path)) {
                                     File old_image = old_path.toFile();
                                     old_image.delete();
@@ -311,10 +284,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                                     Image image = ImageIO.read(filecontent);
                                     BufferedImage bi = CreateSkillService.createResizedCopy(image, 512, 512, true);
                                     // Checks if images directory exists or not. If not then create one
-                                    if (!Files.exists(Paths.get(modified_language.getPath() + File.separator + "images"))) {
-                                        new File(modified_language.getPath() + File.separator + "images").mkdirs();
+                                    if (!Files.exists(images)) {
+                                        images.toFile().mkdirs();
                                     }
-                                    ImageIO.write(bi, "jpg", new File(modified_language.getPath() + File.separator + "images/" + new_image_name));
+                                    ImageIO.write(bi, "jpg", new_path.toFile());
                                     json.put("message", "Skill updated");
                                     json.put("accepted", true);
                                 } else {
@@ -326,7 +299,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                         // else just move the image from old path to new path
                         else {
                             String old_image_name = call.getParameter("old_image_name");
-                            Path old_path = Paths.get(language + File.separator + "images/" + old_image_name);
+                            Path old_path = IO.resolvePath(oldSkillQuery.getLanguagePath(), "images", old_image_name);
                             if (!Files.exists(new_path)) {
                                 old_path.toFile().renameTo(new_path.toFile());
                                 json.put("message", "Skill updated");
@@ -342,7 +315,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
                         if (image_name_changed.equals("true") && image_changed.equals("false")) {
                             String old_image_name = call.getParameter("old_image_name");
-                            Path old_path = Paths.get(modified_language + File.separator + "images/" + old_image_name);
+                            Path old_path = IO.resolvePath(oldSkillQuery.getLanguagePath(), "images", old_image_name);
                             if (!Files.exists(new_path)) {
                                 old_path.toFile().renameTo(new_path.toFile());
                                 json.put("message", "Skill updated");

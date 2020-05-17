@@ -23,11 +23,11 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 
 /**
@@ -56,19 +56,14 @@ public class RemoveFeedbackService extends AbstractAPIHandler implements APIHand
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call).requireOrThrow();
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JSONObject result = new JSONObject();
-        if (!skill.exists()) {
-            throw new APIException(422, "Skill does not exist.");
-        }
 
         if (!authorization.getIdentity().isAnonymous()) {
         	String idvalue = authorization.getIdentity().getName(); // Get id from the access_token
@@ -96,7 +91,7 @@ public class RemoveFeedbackService extends AbstractAPIHandler implements APIHand
                                 if ((authorization.getIdentity().isEmail() && feedbackObject.get("email").equals(idvalue)) ||
                                     (authorization.getIdentity().isUuid() && feedbackObject.get("uuid").equals(idvalue))) {
                                     skillName.remove(i);
-                                    updateSkillRatingJSON(call);
+                                    updateSkillRatingJSON(skillQuery);
                                     feedbackUpdated = true;
                                     break;
                                 }
@@ -124,11 +119,11 @@ public class RemoveFeedbackService extends AbstractAPIHandler implements APIHand
     }
 
     // Reduce feedback_count from  skill_rating object to the skillRatingJSON
-    public void updateSkillRatingJSON(Query call) {
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
+    private void updateSkillRatingJSON(SkillQuery skillQuery) {
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JsonTray skillRating = DAO.skillRating;
         JSONObject modelName = new JSONObject();

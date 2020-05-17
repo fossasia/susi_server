@@ -36,6 +36,7 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.HttpClient;
+import ai.susi.tools.IO;
 import ai.susi.tools.OnlineCaution;
 
 import org.json.JSONArray;
@@ -286,9 +287,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
               skillfile = DAO.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
             } else {
               // read the private skill
-              File private_skill_dir = new File(DAO.private_skill_watch_dir, userId);
-              File group_file = new File(private_skill_dir, group_name);
-              File language_file = new File(group_file, language);
+              File language_file = IO.resolvePath(DAO.private_skill_watch_dir.toPath(), userId, group_name, language).toFile();
               skillfile = DAO.getSkillFileInLanguage(language_file, skill_name, false);
               // extracting configuration settings of this private skill
               JsonTray chatbot = DAO.chatbot;

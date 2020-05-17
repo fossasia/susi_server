@@ -19,6 +19,20 @@
 
 package ai.susi.mind;
 
+import ai.susi.DAO;
+import ai.susi.mind.SusiIntent.Score;
+import ai.susi.mind.SusiLinguistics.Token;
+import ai.susi.mind.SusiPattern.SusiMatcher;
+import ai.susi.server.ClientIdentity;
+import ai.susi.server.api.susi.ConsoleService;
+import ai.susi.tools.AIML2Susi;
+import ai.susi.tools.DateParser;
+import ai.susi.tools.OnlineCaution;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -29,31 +43,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import ai.susi.DAO;
-import ai.susi.mind.SusiIntent.Score;
-import ai.susi.mind.SusiLinguistics.Token;
-import ai.susi.mind.SusiPattern.SusiMatcher;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.api.susi.ConsoleService;
-import ai.susi.tools.AIML2Susi;
-import ai.susi.tools.DateParser;
-import ai.susi.tools.OnlineCaution;
 
 /**
  * The mind learns skills and uses creativity to map intents with user utterances
@@ -619,17 +611,15 @@ public class SusiMind {
     }
 
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
-        return getSkillMetadata(model, group, language, skillname, 7, DAO.model_watch_dir);
+        return getSkillMetadata(model, group, language, skillname, duration, DAO.model_watch_dir);
     }
 
     public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration,
             File parentDirectory) {
         JSONObject skillMetadata = new JSONObject(true).put("model", model).put("group", group).put("language",
                 language);
-        File modelpath = new File(parentDirectory, model);
-        File grouppath = new File(modelpath, group);
-        File languagepath = new File(grouppath, language);
-        File skillpath = DAO.getSkillFileInLanguage(languagepath, skillname, false);
+        // TODO: Should throw if file not found?
+        File skillpath = new SkillQuery(model, group, language, skillname, parentDirectory.toPath()).getSkillFile();
         DateFormat dateFormatType = DateParser.iso8601Format;
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right
                                                                 // name

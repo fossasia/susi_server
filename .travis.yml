@@ -27,10 +27,11 @@ matrix:
       script:
         - gradle assemble
         - gradle clean
+        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
       install: true
       # If build successful, deploy to GC using kubernetes
       after_success:
-        - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
+        - 'bash <(curl -s https://codecov.io/bash)'
         - travis_wait 30 bash kubernetes/travis/deploy.sh
         - travis_wait 30 bash kubernetes/travis/deploy-master.sh
         - bash .utility/push-javadoc-to-gh-pages.sh
@@ -44,14 +45,6 @@ matrix:
           on:
             branch: development
 
-    # Codecov
-    - language: generic
-      before_script: pip install --user codecov
-      install: true
-      script:
-        - bash <(curl -s https://codecov.io/bash)
-        - codecov
-
     - language: generic
       dist: trusty
       sudo: false
@@ -63,3 +56,8 @@ matrix:
           script: bash scripts/deploy_hcloud.sh
           on:
             all_branches: true
+
+branches:
+  only:
+    - master
+    - development

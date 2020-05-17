@@ -31,11 +31,11 @@ import ai.susi.server.UserRole;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 /**
  * Servlet to disable a skill in cms
@@ -64,23 +64,15 @@ public class DisableSkillService extends AbstractAPIHandler implements APIHandle
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = new File(language, skill_name + ".txt");
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call).requireOrThrow();
 
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);
-        if (!skill.exists()) {
-            result.put("message", "skill does not exist");
-            return new ServiceResponse(result);
-
-        }
         if (authorization.getIdentity() == null) {
             throw new APIException(400, "Cannot disable the skill, ensure you are logged in");
         } else {

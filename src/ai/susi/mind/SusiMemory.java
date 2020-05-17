@@ -19,27 +19,20 @@
 
 package ai.susi.mind;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonTray;
+import ai.susi.tools.IO;
+import ai.susi.tools.MapTools;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
-
-import ai.susi.DAO;
-import ai.susi.json.JsonTray;
-import ai.susi.tools.MapTools;
-
-import org.apache.commons.io.FileUtils;
 
 /**
  * Susis log is a kind of reflection about the conversation in the past
@@ -354,9 +347,9 @@ public class SusiMemory {
         }
         JsonTray jt = intentsets.get(name);
         if (jt == null && chatlog != null) {
-            File rpath = new File(chatlog, client);
-            rpath.mkdirs();
-            jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
+            Path rpath = Paths.get(chatlog.getPath(), client);
+            rpath.toFile().mkdirs();
+            jt = new JsonTray(IO.resolvePath(rpath, name + ".json").toFile(), null, 1000);
             intentsets.put(name,  jt);
         }
         return jt;

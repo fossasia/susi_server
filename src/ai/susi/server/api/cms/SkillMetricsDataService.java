@@ -20,19 +20,16 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.UserRole;
-
+import ai.susi.server.*;
+import ai.susi.tools.IO;
+import ai.susi.tools.skillqueryparser.SkillQuery;
+import ai.susi.tools.skillqueryparser.SkillQueryParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,10 +63,11 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
                                        final JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "All");
-        String language_list = call.get("language", "en");
+        SkillQuery skillQuery = SkillQueryParser.Builder.getInstance().group("All").build().parse(call);
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_list = skillQuery.getLanguage();
+
         int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
         JSONArray staffPicks = new JSONArray();
@@ -100,15 +98,15 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
-            File allGroup = new File(String.valueOf(model));
+            File allGroup = skillQuery.getModelPath().toFile();
             ArrayList<String> folderList = new ArrayList<String>();
             listFoldersForFolder(allGroup, folderList);
             json.put("accepted", false);
 
             for (String temp_group_name : folderList){
-                File group = new File(model, temp_group_name);
+                Path group = IO.resolvePath(skillQuery.getModelPath(), temp_group_name);
                 for (String language_name : language_names) {
-                    File language = new File(group, language_name);
+                    File language = IO.resolvePath(group, language_name).toFile();
                     ArrayList<String> fileList = new ArrayList<String>();
                     listFilesForFolder(language, fileList);
 
@@ -132,9 +130,9 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
         // Returns susi skills list of a particular group
         else {
-            File group = new File(model, group_name);
+            Path group = IO.resolvePath(skillQuery.getModelPath(), group_name);
             for (String language_name : language_names) {
-                File language = new File(group, language_name);
+                File language = IO.resolvePath(group, language_name).toFile();
                 json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);

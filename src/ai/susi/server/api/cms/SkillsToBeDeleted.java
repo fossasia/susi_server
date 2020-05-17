@@ -57,7 +57,6 @@ public class SkillsToBeDeleted extends AbstractAPIHandler implements APIHandler 
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
-        File model = new File(DAO.deleted_skill_dir, model_name);
         JSONObject json = new JSONObject();
 
         Collection files = FileUtils.listFiles(

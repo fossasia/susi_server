@@ -3,6 +3,7 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
 import org.json.JSONObject;
 
 import javax.servlet.ServletContext;
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by dravit on 10/6/17.
@@ -41,17 +44,16 @@ public class DownloadDataSettings extends AbstractAPIHandler implements APIHandl
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
-        File settings = new File(DAO.data_dir.getPath()+"/settings");
-        String filePath = settings.getPath();
+        Path settings = Paths.get(DAO.data_dir.getPath(), "settings");
         String fileName = post.get("file","accounting");
-        filePath += "/"+fileName+".json";
+        Path filePath = IO.resolvePath(settings, fileName + ".json");
         System.out.println(filePath);
         int length   = 0;
-        File file = new File(filePath);
+        File file = filePath.toFile();
         try{
             ServletOutputStream outStream = response.getOutputStream();
             ServletContext context  = getServletConfig().getServletContext();
-            String mimetype = context.getMimeType(filePath);
+            String mimetype = context.getMimeType(filePath.toString());
 
             if (mimetype == null) {
                 mimetype = "application/octet-stream";

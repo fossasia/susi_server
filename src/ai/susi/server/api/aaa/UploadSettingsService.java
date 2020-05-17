@@ -22,14 +22,16 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.IO;
+
 import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Created by dravit on 28/6/17.
@@ -63,23 +65,18 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
         result.put("accepted", false);
         result.put("message", "Error: Unable to Upload file");
 
-        String path = DAO.data_dir+"/settings/";
-        File settings = new File(path);
+        Path path = IO.resolvePath(DAO.data_dir.toPath(), "settings");
 
-        String fileName = null;
         //Get all the parts from request and write it to the file on server
         try {
             HttpServletRequest request = post.getRequest();
             for (Part part : request.getParts()) {
-                fileName = getFileName(part);
-                part.write( path + File.separator + fileName);
+                String fileName = getFileName(part);
+                part.write(IO.resolvePath(path, fileName).toString());
                 request.setAttribute("message", fileName + " File uploaded successfully!");
             }
             result.put("accepted", true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            result.put("accepted", false);
-        } catch (ServletException e) {
+        } catch (IOException | ServletException e) {
             e.printStackTrace();
             result.put("accepted", false);
         }

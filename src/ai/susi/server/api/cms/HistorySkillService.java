@@ -23,6 +23,7 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
@@ -73,14 +74,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", "wikipedia");
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        File skill = SkillQuery.getParser("wikipedia").parse(call).getSkillFile();
         JSONArray commitsArray;
         commitsArray = new JSONArray();
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");

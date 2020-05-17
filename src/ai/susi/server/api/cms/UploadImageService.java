@@ -2,16 +2,8 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.UserRole;
-
+import ai.susi.server.*;
+import ai.susi.tools.IO;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -20,14 +12,13 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -81,7 +72,7 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
                 // check if access_token is valid
                 if (authentication.getIdentity() != null) {
 
-                    String imagePath = DAO.data_dir + File.separator + "image_uploads" + File.separator + userId;
+                    Path imagePath = Paths.get(DAO.data_dir.getPath(), "image_uploads", userId);
                     if (image_name == null) {
                         // Checking for
                         json.put("accepted", false);
@@ -93,13 +84,13 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
                         Image image = ImageIO.read(imagePartContent);
                         BufferedImage bi = this.toBufferedImage(image);
                         // Checks if images directory exists or not. If not then create one
-                        if (!Files.exists(Paths.get(imagePath)))
-                            new File(imagePath).mkdirs();
+                        if (!Files.exists(imagePath))
+                            imagePath.toFile().mkdirs();
                         String new_image_name = System.currentTimeMillis() + "_" + image_name;
-                        File p = new File(imagePath + File.separator + new_image_name);
+                        File p = IO.resolvePath(imagePath, new_image_name).toFile();
                         if (p.exists())
                             p.delete();
-                        ImageIO.write(bi, "jpg", new File(imagePath + File.separator + new_image_name));
+                        ImageIO.write(bi, "jpg", p);
                         json.put("accepted", true);
                         json.put("image_path", userId + "/" + new_image_name);
                     }

@@ -23,11 +23,11 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.tools.skillqueryparser.SkillQuery;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.sql.Timestamp;
 
 
@@ -60,22 +60,17 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String skill_name = call.get("skill", null);
-        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
+        SkillQuery skillQuery = SkillQuery.getParser().parse(call).requireOrThrow();
+
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
+
         String user_rating = call.get("stars", null);
         Integer skill_stars;
 
         JSONObject result = new JSONObject();
-        if (!skill.exists()) {
-            throw new APIException(422, "Skill does not exist.");
-        }
-
         if (user_rating == null) {
             throw new APIException(422, "Rating not provided.");
         }
@@ -119,7 +114,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                                     alreadyByUser = true;
 
                                     // Update the skillRating.json file that contains overview of the ratings.
-                                    resultStars = updateSkillRatingsJSON(call, previousRating);
+                                    resultStars = updateSkillRatingsJSON(skillQuery, user_rating, previousRating);
                                     break;
                                 }
                             }
@@ -135,10 +130,10 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                 ratingObject.put("stars", skill_stars);
                 ratingObject.put("timestamp", timestamp.toString());
                 skillName.put(ratingObject);
-                resultStars = addToSkillRatingJSON(call);
+                resultStars = addToSkillRatingJSON(skillQuery, user_rating);
             }
 
-            updateRatingsOverTime(call);
+            updateRatingsOverTime(skillQuery, skill_stars);
 
             languageName.put(skill_name, skillName);
             groupName.put(language_name, languageName);
@@ -153,12 +148,11 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         }
     }
 
-    private void updateRatingsOverTime(Query call) {
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
-        int skill_stars = Integer.parseInt(call.get("stars", null));
+    private void updateRatingsOverTime(SkillQuery skillQuery, int skill_stars) {
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JsonTray ratingsOverTime = DAO.ratingsOverTime;
         JSONObject modelName = new JSONObject();
@@ -257,13 +251,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
     }
 
 
-    public JSONObject updateSkillRatingsJSON(Query call, Integer previousRating) {
+    private JSONObject updateSkillRatingsJSON(SkillQuery skillQuery, String skill_stars, Integer previousRating) {
 
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
-        String skill_stars = call.get("stars", null);
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JsonTray skillRating = DAO.skillRating;
         JSONObject modelName = new JSONObject();
@@ -329,12 +322,11 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
     }
 
 
-    public JSONObject addToSkillRatingJSON(Query call) {
-        String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
-        String language_name = call.get("language", "en");
-        String skill_name = call.get("skill", null);
-        String skill_stars = call.get("stars", null);
+    private JSONObject addToSkillRatingJSON(SkillQuery skillQuery, String skill_stars) {
+        String model_name = skillQuery.getModel();
+        String group_name = skillQuery.getGroup();
+        String language_name = skillQuery.getLanguage();
+        String skill_name = skillQuery.getSkill();
 
         JsonTray skillRating = DAO.skillRating;
         JSONObject modelName = new JSONObject();
