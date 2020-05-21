@@ -19,7 +19,10 @@
 
 package ai.susi.server.api.susi;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiCognition;
+import ai.susi.mind.SusiFace;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -28,9 +31,11 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -101,27 +106,22 @@ public class BulkAnswerService extends AbstractAPIHandler implements APIHandler 
                 sb.append(s).append(System.lineSeparator());
                 continue lineloop;
             }
-            JSONObject json = SusiService.serviceImpl(post, response, user, permissions, s);
-            if (!json.has("answers")) continue lineloop;
-            JSONArray answers = json.getJSONArray("answers");
-            if (answers.isEmpty()) continue lineloop;
-            JSONObject answer = answers.getJSONObject(0);
-            if (!answer.has("actions")) continue lineloop;
-            JSONArray actions = answer.getJSONArray("actions");
-            for (int i = 0; i < actions.length(); i++) {
-                JSONObject action = actions.getJSONObject(i);
-                if (action.has("type") && action.has("expression") && "answer".equals(action.getString("type"))) {
+
+            SusiFace face = new SusiFace(s).setPost(post).setAuthorization(user).setDebug(false);
+            try {
+                SusiCognition cognition = face.call();
+                LinkedHashMap<String, List<String>> answers = cognition.getAnswers();
+
+                for (Map.Entry<String, List<String>> answer: answers.entrySet()) {
                     sb.append(s).append(System.lineSeparator());
-                    sb.append("### ANSWER: ").append(action.getString("expression")).append(System.lineSeparator());
-                    if (answer.has("skills")) {
-                        JSONArray skills = answer.getJSONArray("skills");
-                        for (int j = 0; j < skills.length(); j++) {
-                            sb.append("### SOURCE: ").append(skills.getString(j)).append(System.lineSeparator());
-                        }
+                    sb.append("### ANSWER: ").append(answer.getKey()).append(System.lineSeparator());
+                    for (String skill: answer.getValue()) {
+                        sb.append("### SOURCE: ").append(skill).append(System.lineSeparator());
                     }
                     sb.append(System.lineSeparator());
-                    continue lineloop;
                 }
+            } catch (Exception e) {
+                DAO.log(e.getMessage());
             }
         }
         return new ServiceResponse(sb.toString());

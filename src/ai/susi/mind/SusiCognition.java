@@ -28,9 +28,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiAction.RenderType;
+
 import com.google.common.base.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,6 +72,7 @@ public class SusiCognition {
      * on the higher levels and computing memory functions on the lower levels.
      * 
      * @param query the main observation that may change while all other context observations may be constant
+     * @param clientHost the host name calling for a cognition; used for observation logging
      * @param timezoneOffset context observation, an offset to GMT as number of minutes
      * @param latitude context observation
      * @param longitude context observation
@@ -157,6 +161,23 @@ public class SusiCognition {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
 
+        // clean up
+        // for non-debugging/production use cases: make the answer short!
+        if (!debug) {
+            JSONArray a = json.optJSONArray("answers");
+            if (a != null) for (int i = 0; i < a.length(); i++) {
+                JSONObject j = a.getJSONObject(0);
+
+                // remove data object to prevent confusion of the first-time devs
+                // the data object is just for debugging, not as information to create a front-end!
+                //j.remove("data");
+                //j.remove("metadata");
+                j.remove("trace");
+
+                // now the very bad multi-answer patch TODO: fix this! remove this!
+                SusiThought.uniqueActions(j);
+            }
+        }
     }
 
     public void updateDeviceWiseUsageData(String skillPath, String deviceType) {
@@ -345,7 +366,7 @@ public class SusiCognition {
      * The answer of an cognition contains a list of the mind-melted arguments as one thought
      * @return a list of answer thoughts
      */
-    public List<SusiThought> getAnswers() {
+    public List<SusiThought> getAnswerThoughts() {
         List<SusiThought> answers = new ArrayList<>();
         if (this.json.has("answers")) {
             JSONArray a = this.json.getJSONArray("answers");
@@ -353,14 +374,34 @@ public class SusiCognition {
         }
         return answers;
     }
-    
+
+    /**
+     * get the raw answer lines out of the actions of the cognition
+     * @return a map from all answer lines to the list of skills that generated the answer
+     */
+    public LinkedHashMap<String, List<String>> getAnswers() {
+        LinkedHashMap<String, List<String>> as = new LinkedHashMap<>();
+        List<SusiThought> thoughts = getAnswerThoughts();
+        for (SusiThought thought: thoughts) {
+            List<SusiAction> actions = thought.getActions(true);
+            for (SusiAction action: actions) {
+                if (action.getRenderType() == RenderType.answer) {
+                    List<String> phrases = action.getPhrases();
+                    List<String> skills = thought.getSkills();
+                    for (String phrase: phrases) as.put(phrase, skills);
+                }
+            }
+        }
+        return as;
+    }
+
     /**
      * the expression of a cognition is the actual string that comes out as response to
      * actions of the user
      * @return a response string
      */
     public String getExpression(final boolean ignoreWarnings) {
-        List<SusiThought> answers = getAnswers();
+        List<SusiThought> answers = getAnswerThoughts();
         if (answers == null || answers.size() == 0) return "";
         SusiThought t = answers.get(0);
         List<SusiAction> actions = t.getActions(ignoreWarnings);

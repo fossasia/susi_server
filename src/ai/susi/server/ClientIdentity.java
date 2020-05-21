@@ -29,12 +29,13 @@ import ai.susi.tools.Digest;
  */
 public class ClientIdentity extends Client {
     
-    public final static ClientIdentity ANONYMOUS = new ClientIdentity("host:localhost");
+    public final static ClientIdentity ANONYMOUS = new ClientIdentity("host" + Client.SEPARATOR + "localhost");
     
     public enum Type {
         uuid(true),  // non-anonymous identity, computed from the (first) email address as md5
         email(true), // non-anonymous identity
-        host(false); // anonymous identity users which do not authentify; they are identified by their host name
+        host(false), // anonymous identity users which do not authentify; they are identified by their host name
+        nick(true); // non-anonymous identity using the nickname in a chat
         private final boolean persistent;
         Type(final boolean persistent) {
             this.persistent = persistent;

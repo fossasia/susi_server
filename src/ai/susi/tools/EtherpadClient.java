@@ -24,9 +24,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -34,7 +37,8 @@ import ai.susi.DAO;
 
 public class EtherpadClient {
 
-    String etherpadApikey, etherpadUrlstub;
+    private String etherpadApikey, etherpadUrlstub;
+    private boolean isPrivate;
 
     public EtherpadClient() throws IOException {
         // get API key from local etherpad; first find the etherpad installation
@@ -44,6 +48,7 @@ public class EtherpadClient {
             // get API key from configured etherpad
             this.etherpadApikey = DAO.getConfig("etherpad.apikey", "");
             this.etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
+            this.isPrivate = this.etherpadUrlstub.startsWith("http://localhost");
         } else {
             // read the key file
             FileInputStream fis = new FileInputStream(local_etherpad_apikey_file);
@@ -52,8 +57,16 @@ public class EtherpadClient {
             fis.close();
             this.etherpadApikey = new String(data, "UTF-8");
             this.etherpadUrlstub = "http://localhost:9001";
+            this.isPrivate = true;
         }
+    }
 
+    /**
+     * check if this etherpad is private. A etherpad is private if it is running at localhost
+     * @return true if the etherpad is running at localhost
+     */
+    public boolean isPrivate() {
+        return this.isPrivate;
     }
 
     /**
@@ -86,8 +99,8 @@ public class EtherpadClient {
         try {
             text = getText(padID);
         } catch (Exception e) {}
-        if (padIsEmpty(text)) text = createPad(padID);
-        if (padIsEmptyOrDefault(text)) {
+        if (padDoesNotExist(text)) text = createPad(padID);
+        if (padDoesNotExistOrIsEmptyOrDefault(text)) {
             // fill the pad with a default skill, a set of examples
             // read the examples file
             String content = new String(readFile(contentFile), StandardCharsets.UTF_8);
@@ -135,6 +148,10 @@ public class EtherpadClient {
         HttpClient.loadPost(writeurl, p);
     }
 
+
+    // Access to the chat system
+
+
     private String createAuthorIfNotExistsFor(String name) throws IOException {
         String authorMapper = Integer.toString(Math.abs(name.hashCode()));
         String writeurl = this.etherpadUrlstub + "/api/1.2.13/createAuthorIfNotExistsFor";
@@ -150,6 +167,13 @@ public class EtherpadClient {
         return authorID;
     }
 
+    /**
+     * append a chat message
+     * @param padID the name of the pad
+     * @param text message text
+     * @param name name of the user that does the chat message
+     * @throws IOException
+     */
     public void appendChatMessage(String padID, String text, String name) throws IOException {
         String authorID = createAuthorIfNotExistsFor(name);
         String writeurl = this.etherpadUrlstub + "/api/1.2.13/appendChatMessage";
@@ -162,12 +186,87 @@ public class EtherpadClient {
     }
 
     /**
+     * returns the chatHead (last number of the last chat-message) of the pad
+     * @param padID
+     * @return
+     * @throws IOException
+     */
+    public int getChatHead(String padID) throws IOException {
+        Map<String, String> request_header = new HashMap<>();
+        request_header.put("Accept","application/json");
+        String createurl = this.etherpadUrlstub + "/api/1.2.13/getChatHead?apikey=" + this.etherpadApikey + "&padID=" + padID;
+        JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
+        JSONObject json = new JSONObject(serviceResponse);
+        JSONObject data = json.optJSONObject("data");
+        if (data == null || !data.has("chatHead"));
+        int chatHead = data.getInt("chatHead");
+        return chatHead;
+    }
+
+    public List<Message> getChatHistory(String padID, int start, int end) throws IOException {
+        Map<String, String> request_header = new HashMap<>();
+        request_header.put("Accept","application/json");
+        String createurl = this.etherpadUrlstub + "/api/1.2.13/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID + "&start=0" + start + "&end=" + end; // probably bug in etherpad parsing the url: 0 required in front of start, the number is otherwise truncated
+        JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
+        JSONObject json = new JSONObject(serviceResponse);
+        JSONObject data = json.optJSONObject("data");
+        if (data == null || !data.has("messages")) throw new IOException("no messages in chat history");
+        JSONArray messages = data.getJSONArray("messages");
+        /* i.e.
+         * {"code":0,"message":"ok","data":{"messages":[
+         *   {"text":"foo","userId":"a.foo","time":1359199533759,"userName":"test"},
+         *   {"text":"bar","userId":"a.foo","time":1359199534622,"userName":"test"}
+         * ]}}
+         */
+        List<Message> m = new ArrayList<>();
+        for (int i = 0; i < messages.length(); i++) m.add(new Message(messages.getJSONObject(i)));
+        return m;
+    }
+
+    public List<Message> getChatHistory(String padID, int count) throws IOException {
+        int head = getChatHead(padID);
+        int start = Math.max(0, head - count); // irritating start number, probably error in etherpad. This line is right.
+        return getChatHistory(padID, start, head);
+    }
+
+    public static class Message {
+        public final String text, userId, userName;
+        public long time;
+        public Message(JSONObject message) {
+            this.text = message.optString("text");
+            this.userName = message.optString("userName"); // null is possible if user has no name
+            this.userId = message.optString("userId"); // even if the user name is null, the userId is set
+            this.time = message.optLong("time");
+        }
+        public JSONObject toJSON() {
+            JSONObject j = new JSONObject(true);
+            j.put("text", text);
+            j.put("userId", userId);
+            j.put("userName", userName);
+            j.put("time", time);
+            return j;
+        }
+        public String toString() {
+            return this.toJSON().toString(2);
+        }
+    }
+
+    /**
+     * check if pad does not exist
+     * @param content
+     * @return
+     */
+    public static boolean padDoesNotExist(String content) {
+        return content == null;
+    }
+
+    /**
      * check if a pad is empty
      * @param content
      * @return
      */
-    public static boolean padIsEmpty(String content) {
-        return content == null || content.trim().length() == 0;
+    public static boolean padDoesNotExistOrIsEmpty(String content) {
+        return padDoesNotExist(content) || content.trim().length() == 0;
     }
 
     /**
@@ -175,8 +274,8 @@ public class EtherpadClient {
      * @param content
      * @return
      */
-    public static boolean padIsEmptyOrDefault(String content) {
-        return padIsEmpty(content) || content.startsWith("Welcome to Etherpad!");
+    public static boolean padDoesNotExistOrIsEmptyOrDefault(String content) {
+        return padDoesNotExistOrIsEmpty(content) || content.startsWith("Welcome to Etherpad!");
     }
 
     /**
@@ -185,7 +284,7 @@ public class EtherpadClient {
      * @return
      */
     public static boolean padContainsSkill(String content) {
-        return !padIsEmptyOrDefault(content) && !content.startsWith("disabled");
+        return !padDoesNotExistOrIsEmptyOrDefault(content) && !content.startsWith("disabled");
     }
 
     /**

@@ -36,7 +36,7 @@ public class SusiTutorialTest {
             // cognitions must be stored together with answers because they may influence further cognitions
             DAO.susi_memory.addCognition(identity.getClient(), cognition, true);
             // get the answer
-            List<SusiThought> answers = cognition.getAnswers();
+            List<SusiThought> answers = cognition.getAnswerThoughts();
             assert answers.size() > 0 : "no answer for q = " + q;
             assertTrue("no answer for q = " + q, answers.size() > 0);
             SusiThought thought = answers.iterator().next();

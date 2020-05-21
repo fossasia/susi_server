@@ -28,8 +28,8 @@ import org.json.JSONObject;
  */
 public class Client {
 
-    private final static char SEPARATOR = ':';
-    
+    public final static char SEPARATOR = ':';
+
     private String id;
     private int separatorPos;
 

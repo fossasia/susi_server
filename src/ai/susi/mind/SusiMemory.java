@@ -88,7 +88,7 @@ public class SusiMemory {
             try {
                 getCognitions(identity, false).forEach(cognition -> {
                     // copy the cognition into the log for the skill
-                    List<SusiThought> thoughts = cognition.getAnswers();
+                    List<SusiThought> thoughts = cognition.getAnswerThoughts();
                     if (!thoughts.isEmpty()) {
                         SusiThought thought = thoughts.get(0);
                         String logpath = thought.getLogPath();
@@ -289,9 +289,9 @@ public class SusiMemory {
         identity.add(cognition);
         
         // add to skill memories
-        List<SusiThought> thoughts = cognition.getAnswers();
+        List<SusiThought> thoughts = cognition.getAnswerThoughts();
         if (thoughts.size() > 0) {
-	        SusiThought thought = cognition.getAnswers().get(0);
+	        SusiThought thought = cognition.getAnswerThoughts().get(0);
 	        String logpath = thought.getLogPath();
 	        if (logpath != null) {
 	            File skillogfile = new File(this.skilllog, logpath);
