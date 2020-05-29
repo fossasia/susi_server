@@ -112,6 +112,7 @@ public class Caretaker extends Thread {
             // there can be only "@susi" lines remaining. We remove now those from users in the answered list
             for (String userName: answeredUserNames) {
                 String userid = user2userid.get(userName);
+                if (userid == null && userName.equals("unnamed")) userid = user2userid.get("");
                 if (userid == null) continue; // can be caused by a "@namex" where namex is not a user
                 i = messages.iterator();
                 while (i.hasNext()) {
