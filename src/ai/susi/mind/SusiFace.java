@@ -186,7 +186,7 @@ public class SusiFace implements Callable<SusiCognition> {
         // either ~/SUSI.AI/etherpad-lite or data/etherpad-lite
         EtherpadClient etherpad = new EtherpadClient();
         if (etherpad.isPrivate()) try {
-            String content = etherpad.setTextIfEmpty("susi", new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt"));
+            String content = ensure_susi_pad_exist(etherpad);
             if (EtherpadClient.padContainsSkill(content)) {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
@@ -313,4 +313,18 @@ public class SusiFace implements Callable<SusiCognition> {
         return cognition;
     }
 
+    /**
+     * if called, the pad "susi" is read and it is made sure that it containes the default pad if it did
+     * not exist before
+     * @param etherpad
+     * @return the pad content of pad "susi"
+     * @throws IOException
+     */
+    public static String ensure_susi_pad_exist(EtherpadClient etherpad) throws IOException {
+        if (etherpad.isPrivate()) {
+            String content = etherpad.setTextIfEmpty("susi", new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt"));
+            return content;
+        }
+        return null;
+    }
 }

@@ -127,7 +127,6 @@ public class EtherpadClient {
         JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
         JSONObject json = new JSONObject(serviceResponse);
         JSONObject data = json.optJSONObject("data");
-        assert data != null; // because we created the pad!
         String text = data == null ? "" : data.getString("text").trim();
         return text;
     }
