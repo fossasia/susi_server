@@ -1,8 +1,15 @@
 # SUSI.AI Skill Language Tutorial
 # This text is a placeholder for your own skills
 
-# Quick Intro:
-# - SUSI skills are just plain text files, like this one.
+###
+### MUST READ:
+### You can chat with Susi using the etherpad-attached chat (see box in the lower right window corner)
+### A message to Susi MUST start with "@susi " (<at>susi<space>), like "@susi hi"
+###
+
+
+# Quick Intro to Susi Skill Language:
+# - SUSI skills are just plain text files, or texts in etherpads.
 # - comment lines start with '#'
 # - each utterance + answer pair are simply two lines, first one for the utterance, second for the answer
 # This notion is called the "Susi Language of Thought" ("LoT")
@@ -12,10 +19,10 @@
 # - By default the skill at http://susi.local:9001/p/susi is always loaded
 
 
-###
-### IF YOU WANT TO KNOW HOW TO CALL AN API FROM SUSI, CHECK EXAMPLE 11
-###
 
+### START OF SUSI TUTORIAL BELOW:
+### IF YOU WANT TO KNOW HOW TO CALL AN API FROM SUSI, CHECK EXAMPLE 11
+    
 
 # EXAMPLE 0: Fixed Query-Answer Phrase Collections
 # The first line is the question, the second line is the answer.
