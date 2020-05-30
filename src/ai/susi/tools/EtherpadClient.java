@@ -144,7 +144,10 @@ public class EtherpadClient {
         p.put("apikey", this.etherpadApikey.getBytes(StandardCharsets.UTF_8));
         p.put("padID", padID.getBytes(StandardCharsets.UTF_8));
         p.put("text", text.getBytes(StandardCharsets.UTF_8));
-        HttpClient.loadPost(writeurl, p);
+        JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadPost(writeurl, p)));
+        JSONObject json = new JSONObject(serviceResponse);
+        String message = json.optString("message");
+        assert "ok".equals(message);
     }
 
 
@@ -153,13 +156,15 @@ public class EtherpadClient {
 
     private String createAuthorIfNotExistsFor(String name) throws IOException {
         String authorMapper = Integer.toString(Math.abs(name.hashCode()));
-        String writeurl = this.etherpadUrlstub + "/api/1.2.13/createAuthorIfNotExistsFor";
+        String writeurl = this.etherpadUrlstub + "/api/1.2.7/createAuthorIfNotExistsFor";
         Map<String, byte[]> p = new HashMap<>();
         p.put("apikey", this.etherpadApikey.getBytes(StandardCharsets.UTF_8));
         p.put("authorMapper", authorMapper.getBytes(StandardCharsets.UTF_8));
         p.put("name", name.getBytes(StandardCharsets.UTF_8));
         JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadPost(writeurl, p)));
         JSONObject json = new JSONObject(serviceResponse);
+        String message = json.optString("message");
+        assert "ok".equals(message);
         JSONObject data = json.optJSONObject("data");
         assert data != null; // because we created the pad!
         String authorID = data == null ? "" : data.getString("authorID").trim();
@@ -175,56 +180,70 @@ public class EtherpadClient {
      */
     public void appendChatMessage(String padID, String text, String name) throws IOException {
         String authorID = createAuthorIfNotExistsFor(name);
-        String writeurl = this.etherpadUrlstub + "/api/1.2.13/appendChatMessage";
+        String writeurl = this.etherpadUrlstub + "/api/1.2.12/appendChatMessage";
         Map<String, byte[]> p = new HashMap<>();
         p.put("apikey", this.etherpadApikey.getBytes(StandardCharsets.UTF_8));
         p.put("padID", padID.getBytes(StandardCharsets.UTF_8));
         p.put("text", text.getBytes(StandardCharsets.UTF_8));
         p.put("authorID", authorID.getBytes(StandardCharsets.UTF_8));
-        HttpClient.loadPost(writeurl, p);
+        JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadPost(writeurl, p)));
+        JSONObject json = new JSONObject(serviceResponse);
+        String message = json.optString("message");
+        assert "ok".equals(message);
     }
 
     /**
      * returns the chatHead (last number of the last chat-message) of the pad
-     * @param padID
-     * @return
+     * @param padID the name of the pad, i.e. "susi"
+     * @return -1 if pad does not exist or has no chat entry, 0 or greater for one or more entries.
      * @throws IOException
      */
     public int getChatHead(String padID) throws IOException {
         Map<String, String> request_header = new HashMap<>();
         request_header.put("Accept","application/json");
-        String createurl = this.etherpadUrlstub + "/api/1.2.13/getChatHead?apikey=" + this.etherpadApikey + "&padID=" + padID;
+        String createurl = this.etherpadUrlstub + "/api/1.2.7/getChatHead?apikey=" + this.etherpadApikey + "&padID=" + padID;
         JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
         JSONObject json = new JSONObject(serviceResponse);
+        // in case that
+        // - the pad has no chat entry:     json = {"code":0,"message":"ok","data":{"chatHead":-1}}
+        // - the pad exists, has one entry: json = {"code":0,"message":"ok","data":{"chatHead":0}}
         JSONObject data = json.optJSONObject("data");
-        if (data == null || !data.has("chatHead"));
-        int chatHead = data.getInt("chatHead");
+        int chatHead = (data == null || !data.has("chatHead")) ? -1 : data.getInt("chatHead");
         return chatHead;
     }
 
+    /**
+     * Get a history of chat entries
+     * @param padID the name of the pad
+     * @param start the first entry in the chat
+     * @param end the last entry in the chat history
+     * @return a list of chat entries
+     * @throws IOException
+     */
     public List<Message> getChatHistory(String padID, int start, int end) throws IOException {
+        List<Message> m = new ArrayList<>();
+        if (end < start) return m; // may happen if head = -1 (no messages exist)
         Map<String, String> request_header = new HashMap<>();
         request_header.put("Accept","application/json");
-        String createurl = this.etherpadUrlstub + "/api/1.2.13/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID + "&start=0" + start + "&end=" + end; // probably bug in etherpad parsing the url: 0 required in front of start, the number is otherwise truncated
+        String createurl = this.etherpadUrlstub + "/api/1.2.7/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID + "&start=" + start + "&end=" + end; // probably bug in etherpad parsing the url: 0 required in front of start, the number is otherwise truncated
         JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
         JSONObject json = new JSONObject(serviceResponse);
-        JSONObject data = json.optJSONObject("data");
-        if (data == null || !data.has("messages")) throw new IOException("no messages in chat history");
-        JSONArray messages = data.getJSONArray("messages");
-        /* i.e.
+        /* i.e. json = 
          * {"code":0,"message":"ok","data":{"messages":[
          *   {"text":"foo","userId":"a.foo","time":1359199533759,"userName":"test"},
          *   {"text":"bar","userId":"a.foo","time":1359199534622,"userName":"test"}
          * ]}}
          */
-        List<Message> m = new ArrayList<>();
+        JSONObject data = json.optJSONObject("data");
+        if (data == null || !data.has("messages")) throw new IOException("no messages in chat history");
+        JSONArray messages = data.getJSONArray("messages");
         for (int i = 0; i < messages.length(); i++) m.add(new Message(messages.getJSONObject(i)));
         return m;
     }
 
     public List<Message> getChatHistory(String padID, int count) throws IOException {
-        int head = getChatHead(padID);
-        int start = Math.max(0, head - count); // irritating start number, probably error in etherpad. This line is right.
+        int head = getChatHead(padID); // the number of the last chat entry; i.e. 0 in case there is only one entry.
+        int start = Math.max(0, head - count + 1); // head is inclusive: head - start = count - 1
         return getChatHistory(padID, start, head);
     }
 
