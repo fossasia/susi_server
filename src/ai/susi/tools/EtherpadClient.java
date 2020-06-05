@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +38,17 @@ import ai.susi.DAO;
 
 public class EtherpadClient {
 
+    private File etherpadHome, dirtyDB;
     private String etherpadApikey, etherpadUrlstub;
     private boolean isPrivate;
 
     public EtherpadClient() throws IOException {
         // get API key from local etherpad; first find the etherpad installation
-        File local_etherpad_apikey_file = new File(new File(new File(System.getProperty("user.home"), "SUSI.AI"), "etherpad-lite"), "APIKEY.txt");
-        if (!local_etherpad_apikey_file.exists()) local_etherpad_apikey_file = new File(new File(DAO.data_dir, "etherpad-lite"), "APIKEY.txt");
+
+        this.etherpadHome = new File(DAO.data_dir, "etherpad-lite");
+        this.dirtyDB = new File(new File(this.etherpadHome, "var"), "dirty.db");
+        dirtyDBHealthCheck();
+        File local_etherpad_apikey_file = new File(this.etherpadHome, "APIKEY.txt");
         if (!local_etherpad_apikey_file.exists()) {
             // get API key from configured etherpad
             this.etherpadApikey = DAO.getConfig("etherpad.apikey", "");
@@ -58,6 +63,20 @@ public class EtherpadClient {
             this.etherpadApikey = new String(data, "UTF-8");
             this.etherpadUrlstub = "http://localhost:9001";
             this.isPrivate = true;
+        }
+    }
+
+    public void dirtyDBHealthCheck() {
+        if (!this.dirtyDB.exists()) return;
+        try {
+            List<String> s = Files.readAllLines(this.dirtyDB.toPath());
+            String l;
+            if (s.size() == 0 || (l = s.get(s.size() - 1)).length() == 0 || l.charAt(0) == '{') return;
+            // start healing
+            while (s.size() > 0 && (l = s.get(s.size() - 1)).length() > 0 && l.charAt(0) != '{') s.remove(s.size() - 1);
+            Files.write(this.dirtyDB.toPath(), s);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -79,12 +98,26 @@ public class EtherpadClient {
         String padurl = this.etherpadUrlstub + "/api/1/getText?apikey=" + this.etherpadApikey + "&padID=" + padID;
         Map<String, String> request_header = new HashMap<>();
         request_header.put("Accept","application/json");
-        JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(padurl, request_header)));
-        JSONObject json = new JSONObject(serviceResponse);
-        JSONObject data = json.optJSONObject("data");
-        if (data == null) throw new IOException("bad data from pad: null");
-        String text = data.getString("text");
-        return text;
+        try {
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(padurl, request_header)));
+            JSONObject json = new JSONObject(serviceResponse);
+            JSONObject data = json.optJSONObject("data");
+            if (data == null) throw new IOException("bad data from pad: null");
+            String text = data.getString("text");
+            backup(padID, text);
+            return text;
+        } catch (IOException e) {
+            // try a restore
+            try {
+                String text = restore(padID);
+                // because this is new to the pad, store it there
+                if (text.length() > 0) try {setText(padID, text);} catch (IOException eee) {}
+                return text;
+            } catch (IOException ee) {
+                // now throw the original error
+                throw e;
+            }
+        }
     }
 
     /**
@@ -111,6 +144,25 @@ public class EtherpadClient {
             // read the content again
             text = getText(padID);
         }
+        return text;
+    }
+
+    public File backupFile(String padID) {
+        File p = this.dirtyDB.getParentFile();
+        File b = new File(p, "pad." + padID + ".txt");
+        return b;
+    }
+
+    private void backup(String padID, String content) {
+        if (content == null || content.length() == 0 || content.startsWith("Welcome to Etherpad")) return; // we do not back-up empty content
+        File b = backupFile(padID);
+        try {Files.write(b.toPath(), content.getBytes(StandardCharsets.UTF_8));} catch (IOException e) {}
+    }
+
+    private String restore(String padID) throws IOException {
+        File b = backupFile(padID);
+        if (!b.exists()) throw new IOException("pad " + padID + " has no backup");
+        String text = new String(Files.readAllBytes(b.toPath()), StandardCharsets.UTF_8);
         return text;
     }
 

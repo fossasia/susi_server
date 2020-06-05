@@ -77,6 +77,11 @@ public class Caretaker extends Thread {
         try {
             EtherpadClient etherpad = new EtherpadClient();
             if (!etherpad.isPrivate()) return; // we check only local etherpads
+
+            // initialize susi pad if it does not exist
+            try {SusiFace.ensure_susi_pad_exist(etherpad);} catch (IOException e) {}
+
+            // check the chat history
             List<EtherpadClient.Message> messages = etherpad.getChatHistory("susi", 10);
             if (messages.size() == 0) return;
             EtherpadClient.Message lastQuestion = messages.get(messages.size() - 1).text.startsWith("@susi ") ? messages.get(messages.size() - 1) : null;

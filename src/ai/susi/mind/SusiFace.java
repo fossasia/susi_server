@@ -322,7 +322,9 @@ public class SusiFace implements Callable<SusiCognition> {
      */
     public static String ensure_susi_pad_exist(EtherpadClient etherpad) throws IOException {
         if (etherpad.isPrivate()) {
-            String content = etherpad.setTextIfEmpty("susi", new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt"));
+            File f = etherpad.backupFile("susi");
+            if (!f.exists()) f = new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt");
+            String content = etherpad.setTextIfEmpty("susi", f);
             return content;
         }
         return null;

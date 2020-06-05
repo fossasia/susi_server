@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -51,7 +50,6 @@ import ai.susi.server.api.monitor.*;
 import ai.susi.server.api.service.*;
 import ai.susi.server.api.vis.*;
 import ai.susi.server.api.learning.*;
-import ai.susi.tools.EtherpadClient;
 import ai.susi.tools.Memory;
 import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
@@ -87,7 +85,6 @@ import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 
-import ai.susi.mind.SusiFace;
 import ai.susi.server.APIHandler;
 import ai.susi.server.FileHandler;
 import ai.susi.server.HttpsMode;
@@ -263,12 +260,9 @@ public class SusiServer {
 
         DAO.log("Start time before Server start: " + (System.currentTimeMillis() - starttime) + " milliseconds");
 
-        // initialize susi pad
-        try {SusiFace.ensure_susi_pad_exist(new EtherpadClient());} catch (IOException e) {}
-        
         // start the server
         SusiServer.server.start();
-        
+
         // start caretaker
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
@@ -442,7 +436,7 @@ public class SusiServer {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     private static void setServerHandler(File dataFile){
 
         // create security handler for http auth and http-to-https redirects
@@ -780,6 +774,7 @@ public class SusiServer {
             ss = new ServerSocket(port);
             ss.setReuseAddress(true);
             ss.setReceiveBufferSize(65536);
+            ss.close();
         } catch (IOException e) {
             // the socket is already occupied by another service
             throw new IOException("port " + port + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
