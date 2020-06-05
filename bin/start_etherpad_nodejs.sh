@@ -14,7 +14,7 @@ cd data
 
 # download the pad source
 if [ ! -f etherpad-lite.tar.gz ]; then
-    curl -L https://github.com/ether/etherpad-lite/archive/1.8.0.tar.gz --output etherpad-lite.tar.gz
+    curl -L https://github.com/ether/etherpad-lite/archive/1.8.4.tar.gz --output etherpad-lite.tar.gz
 fi
 
 # extract package
