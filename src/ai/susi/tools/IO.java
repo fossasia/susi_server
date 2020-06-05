@@ -25,6 +25,7 @@ public final class IO {
 		InputStream is = new BufferedInputStream(new FileInputStream(file));
 		int c;
 		while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
+		is.close();
 		return  data;
 	}
 
@@ -107,7 +108,8 @@ public final class IO {
 	}
 
 	public static class IllegalPathAccessException extends IllegalArgumentException {
-	    IllegalPathAccessException() {
+        private static final long serialVersionUID = 1L;
+        IllegalPathAccessException() {
 	        super("User path escapes the base path");
         }
     }
