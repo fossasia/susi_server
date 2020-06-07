@@ -46,6 +46,7 @@ rm -f $RELEASE_PATH/${LATEST_FILE}.tar.gz
 # make release file structure
 mkdir $RELEASE_PATH/$RELEASE_FILE
 mkdir $RELEASE_PATH/$RELEASE_FILE/release
+mkdir $RELEASE_PATH/$RELEASE_FILE/ssi
 mkdir $RELEASE_PATH/$RELEASE_FILE/bin
 mkdir $RELEASE_PATH/$RELEASE_FILE/build
 mkdir $RELEASE_PATH/$RELEASE_FILE/build/libs
@@ -54,6 +55,7 @@ mkdir $RELEASE_PATH/$RELEASE_FILE/system-integration
 # copy files
 cp -R conf $RELEASE_PATH/$RELEASE_FILE/
 cp -R html $RELEASE_PATH/$RELEASE_FILE/
+cp ssi/* $RELEASE_PATH/$RELEASE_FILE/ssi/
 cp bin/*.sh $RELEASE_PATH/$RELEASE_FILE/bin/
 cp $JARFILE $RELEASE_PATH/$RELEASE_FILE/$JARFILE
 cp -a system-integration/* $RELEASE_PATH/$RELEASE_FILE/system-integration/
