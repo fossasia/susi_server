@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
+
+# This is supposed to be called on a susi device.
+# It can be called remotely i.e. with
+# ssh pi@susi.local /home/pi/SUSI.AI/susi_server/bin/upgrade.sh
+
 cd `dirname $0`/..
 echo "Loading latest code changes from download.susi.ai"
 mkdir -p release
