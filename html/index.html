@@ -50,6 +50,7 @@
   <style type = "text/css">
     #dropbtn {
       color: white;
+      font-size: 18px;
       border: none;
       width: 17px;
       border-radius: 40px;
@@ -57,10 +58,15 @@
       background: none;
     }
 
-    #icons {
-      position: relative;
-      color: rgb(117, 117, 117);
+    .dropbtn:hover,
+    .dropbtn:focus {
+      background: none;
+    }
+
+    .dropdown {
       float: right;
+      position: relative;
+      display: inline-block;
     }
 
     .dropdown-content {
@@ -130,7 +136,6 @@
     
   </style>
   <link rel="stylesheet" href="/css/susi.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 
 <body style="position: relative; margin-top: 0; min-height: 100;">
@@ -150,7 +155,7 @@
           </div>
         </div>
         <ul class="nav navbar-nav navbar-right optionMenu">
-          <li><a><i class="material-icons" id="dropbtn" onclick="myFunction()">more_vert</i></a></li>
+          <li><a><span class="glyphicon glyphicon-option-vertical dropbtn" onclick="myFunction()" ></span> </a></li>
           <div id="navbar" class="dropdown-content">
             <ul></ul>
           </div>
@@ -159,10 +164,6 @@
       </div>
     </div>
   </nav>
-
-
-
-
 
   <a href="https://github.com/fossasia/susi_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="susi server source code on github"></a>
 

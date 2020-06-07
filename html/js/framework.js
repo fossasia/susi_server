@@ -47,20 +47,23 @@ angular.element(document).ready(function () {
         liItem = "<li class='active'>";
         count = count + 1;
       }
-      if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>person</i></a></aside></li>";
+      if(name == "Blog" || name == "Account") {
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
+      }
+      else if(name == "API"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-asterisk'></span></a></li>";
       }
       else if(name == "Chat"){
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>chat</i></a></aside></li>";
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-comment'></span></a></li>";
       }
       else if(name == "Skills"){
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>dashboard</i></a></aside></li>";
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-th-large'></span></a></li>";
       }
       else if(name == "About"){
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>info</i></a></aside></li>";
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-info-sign'></span></a></li>";
       }
       else if(name == "Login"){
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>account_circle</i></a></aside></li>";
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
       }
       else {
         liItem += "<a href='\/"+link+"'>"+name+"</a></li>";
