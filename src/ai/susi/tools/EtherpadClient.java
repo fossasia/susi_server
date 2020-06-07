@@ -71,13 +71,21 @@ public class EtherpadClient {
         try {
             List<String> s = Files.readAllLines(this.dirtyDB.toPath());
             String l;
-            if (s.size() == 0 || (l = s.get(s.size() - 1)).length() == 0 || l.charAt(0) == '{') return;
+            if (s.size() == 0 || (l = s.get(s.size() - 1)).length() == 0 || dirtyDBLineOK(l)) return;
             // start healing
-            while (s.size() > 0 && (l = s.get(s.size() - 1)).length() > 0 && l.charAt(0) != '{') s.remove(s.size() - 1);
+            while (s.size() > 0 && (l = s.get(s.size() - 1)).length() > 0 && !dirtyDBLineOK(l)) s.remove(s.size() - 1);
             Files.write(this.dirtyDB.toPath(), s);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    private boolean dirtyDBLineOK(String line) {
+        assert line != null && line.length() > 0;
+        if (line.charAt(0) != '{') return false;
+        if (line.charAt(line.length() - 1) != '}') return false;
+        // we could do a json parsing here to further prove that the line is ok, but maybe that is not necessary
+        return true;
     }
 
     /**
