@@ -421,7 +421,7 @@ public class SusiMind {
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
             SusiIntent intent = idea.getIntent();
-            Score score = intent.getScore(query, userLanguage);
+            Score score = intent.getScore(userLanguage);
             assert score != null : "query = " + query;
             if (score != null) {
                 long s = score.score;
@@ -451,7 +451,7 @@ public class SusiMind {
         }
 
         if (debug) for (SusiIdea idea: plausibleIdeas) {
-            Score score = idea.getIntent().getScore(query, userLanguage);
+            Score score = idea.getIntent().getScore(userLanguage);
             assert score != null;
             if (score == null) continue;
             DAO.log("creativity: skill=" + idea.getIntent().getSkillID());
@@ -516,7 +516,7 @@ public class SusiMind {
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
-            SusiArgument argument = idea.getIntent().consideration(query, recall, idea, debug, identity, userLanguage, minds);
+            SusiArgument argument = idea.getIntent().consideration(idea, recall, identity, userLanguage, minds);
             long t6 = System.currentTimeMillis();
             if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
 

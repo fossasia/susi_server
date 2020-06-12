@@ -654,9 +654,9 @@ public class SusiIntent implements Cloneable {
      * @param language this is the language the user is speaking
      * @return an intent score: the higher, the better; null if the expression cannot be matched
      */
-    public Score getScore(String expression, SusiLanguage language) {
+    public Score getScore(SusiLanguage language) {
         if (this.score != null) return score;
-        this.score = new Score(expression, language);
+        this.score = new Score(language);
         if (this.score.score == Integer.MIN_VALUE) this.score = null;
         return this.score;
     }
@@ -680,7 +680,7 @@ public class SusiIntent implements Cloneable {
         public long score;
         public String log;
 
-        public Score(String expression, SusiLanguage userLanguage) {
+        public Score(SusiLanguage userLanguage) {
         if (SusiIntent.this.score != null) return;
 
         /*
@@ -791,14 +791,24 @@ public class SusiIntent implements Cloneable {
     }
 
     /**
-     * If a intent is applied to an input stream, it must follow a specific process which is implemented
-     * in this consideration method. It is called a consideration in the context of an AI process which
-     * tries different procedures to get the optimum result, thus considering different intents.
-     * @param query the user input
-     * @param token the key from the user query which matched the intent tokens (also considering category matching)
+     * Several intents can be candidates for answer computation. Each of such an intent is expressed as
+     * an SusiIdea object. They are combined with a recall (data objects from past answer computations)
+     * and tested by construction of an answer as the result of a causality chain that is described in the
+     * idea. If the chain can be constructed by finding instances of variables, then this is a kind of
+     * proof that the answer is correct. That answer is returned in the SusiArgument object.
+     * @param idea the intent candidate
+     * @param recall the data objects from past computations
+     * @param identity the identity of the user
+     * @param userLanguage the language of the user
+     * @param minds the hierarchy of mind layers that may be used for reflection within the argument
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiIdea idea, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
+    public SusiArgument consideration(
+            SusiIdea idea,
+            SusiThought recall,
+            ClientIdentity identity,
+            SusiLanguage userLanguage,
+            SusiMind... minds) {
 
         SusiLinguistics.Token token = idea.getToken();
         HashSet<SusiThought> keynotes = new HashSet<>();
@@ -823,8 +833,9 @@ public class SusiIntent implements Cloneable {
 
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             // we start with the recall from previous interactions as new flow
-            final SusiArgument flow = new SusiArgument(identity, userLanguage, minds).think(recall);
-            flow.think(keynote);
+            final SusiArgument flow = new SusiArgument(identity, userLanguage, minds) // empty flow
+                    .think(recall)   // the past
+                    .think(keynote); // the now
 
             // lets apply the intents that belong to this specific consideration
             for (SusiInference inference: this.getInferences()) {
@@ -835,7 +846,7 @@ public class SusiIntent implements Cloneable {
                 if (implication.isFailed() || flow.mindstate().equals(implication)) continue alternatives; // TODO: do this only if specific marker is in intent
 
                 // think
-                flow.think(implication);
+                flow.think(implication); // the future
             }
 
             // add skill source

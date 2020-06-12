@@ -328,8 +328,11 @@ public class SusiInference {
      */
     public SusiThought applyProcedures(SusiArgument flow) {
         Type type = this.getType();
+        String expression = this.getExpression();
+        if (expression != null && expression.length() > 0) {
+            expression = flow.unify(expression, true, Integer.MAX_VALUE);
+        }
         if (type == SusiInference.Type.console) {
-            String expression = this.getExpression();
             // we have two ways to define a console rule:
             // with a "defintion" object which should have an "url" and "path" defined
             // with a "expression" object which has a susi db access string included
@@ -432,16 +435,16 @@ public class SusiInference {
             }
         }
         if (type == SusiInference.Type.flow) {
-            try {return flowProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
+            try {return flowProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.memory) {
-            try {return memoryProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
+            try {return memoryProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.javascript) {
-            try {return javascriptProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
+            try {return javascriptProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.prolog) {
-            try {return prologProcedures.deduce(flow, this.getExpression());} catch (Exception e) {}
+            try {return prologProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();
