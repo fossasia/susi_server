@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -187,7 +188,11 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         argument.recall.forEach(thought -> think(thought));
         return this;
     }
-
+    
+    public String unify(String statement) {
+        return unify(statement, false, Integer.MAX_VALUE);
+    }
+    
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
@@ -199,22 +204,36 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
     public String unify(String statement, boolean urlencode, int depth) {
         assert statement != null;
         if (statement == null) return null; // this should not happen
-        retry: while (true) {
-            explorepast: for (SusiThought t: this) {
-                // this uses our iterator which iterates in reverse order.
-                // That means, latest thought is first returned.
-                // It also means that we are exploring the past, most recent events first.
-                if (depth-- < 0) break;
-                String nextStatement = t.unifyOnce(statement, urlencode);
-                if (nextStatement.equals(statement)) continue explorepast;
-                statement = nextStatement;
-                if (!SusiThought.hasVariablePattern(statement)) return statement; // possible early success
-                continue retry;
+        LinkedHashSet<String> instances = new LinkedHashSet<>();
+        instances.add(statement);
+        // explore the past
+        explorepast: for (SusiThought t: this) {
+            // this uses our iterator which iterates in reverse order.
+            // That means, latest thought is first returned.
+            // It also means that we are exploring the past, most recent events first.
+            if (depth-- < 0) break explorepast;
+            // work through all already partly instantiated statements
+            LinkedHashSet<String> ix = new LinkedHashSet<>(); // next instances
+            for (String i: instances) {
+                //if (SusiThought.hasVariablePattern(i)) {
+                    String[] nextStatements = t.unify(i, Integer.MAX_VALUE, true, urlencode);
+                    for (String s: nextStatements) {
+                        if (!SusiThought.hasVariablePattern(s)) return s; // possible early success
+                        ix.add(s);
+                    }
+                //} else {
+                //    ix.add(i);
+                //}
             }
-            break retry;
+            instances = ix;
+            if (instances.size() == 0) return null;
         }
-        if (SusiThought.hasVariablePattern(statement)) return null; // failure!
-        return statement;
+        
+        // finally find one statement that is fully instantiated
+        for (String i: instances) {
+            if (!SusiThought.hasVariablePattern(i)) return i;
+        }
+        return null; // failure!
     }
 
     /**
@@ -226,6 +245,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
             private int p = recall.size(); 
             @Override public boolean hasNext() {return p > 0;}
             @Override public SusiThought next() {return recall.get(--p);}
+            // we are not overriding remove() which will cause a UnsupportedOperationException when called
         };
     }
 

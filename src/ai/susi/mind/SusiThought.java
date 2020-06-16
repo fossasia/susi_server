@@ -25,9 +25,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +35,6 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiPattern.SusiMatcher;
-import ai.susi.tools.TimeoutMatcher;
 
 /**
  * A thought is a piece of data that can be remembered. The structure or the thought can be
@@ -482,55 +481,101 @@ public class SusiThought {
         return skillName;
     }
     
-    private static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
     public static boolean hasVariablePattern(String statement) {
-        return new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find();
+        int p = statement.indexOf('$');
+        if (p < 0) return false;
+        int q = statement.indexOf('$', p + 1);
+        return q >= 0;
     }
     
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
-     * @param statement
-     * @return the instantiated statement with elements of the argument applied as much as possible. This may also return uninstantiated variable names if instantiation was not possible.
+     * @param statement the term to be matched in the thought
+     * @param max the maximum number of unifications
+     * @param allowUninstantiated if true, statements may be incompletely instantiated
+     * @return the instantiated statements, in case allowUninstantiated=true maybe partly uninstantiated
      */
-    public String unifyOnce(String statement, boolean urlencode) {
+    public String[] unify(String statement, int max, boolean allowUninstantiated, boolean urlencode) {
         assert statement != null;
-        if (statement.indexOf('$') < 0) return statement;
+        LinkedHashSet<String> instances = new LinkedHashSet<>();
+        if (statement.indexOf('$') < 0) return new String[]{statement}; // NOT empty!
         String threadOrigName = Thread.currentThread().getName();
-        Thread.currentThread().setName("unify: statement = " + statement); // makes debugging easier
+        Thread.currentThread().setName("unify: term = " + statement); // makes debugging easier
         JSONArray table = this.getData();
         if (table != null && table.length() > 0) {
+            int count = 0;
             for (int rownum = 0; rownum < table.length(); rownum++) {
                 JSONObject row = table.getJSONObject(rownum);
-                for (String key: row.keySet()) {
-                    int i;
-                    Object value = row.get(key);
-                    if (value instanceof JSONObject) {
-                        JSONObject subobj = (JSONObject) value;
-                        for (String subkey: subobj.keySet()) {
-                            while ((i = statement.indexOf("$" + key + "." + subkey + "$")) >= 0) {
-                                String substitution = subobj.get(subkey).toString();
-                                if (urlencode) try {
-                                    substitution = URLEncoder.encode(substitution, "UTF-8");
-                                } catch (UnsupportedEncodingException e) {}
-                                statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + subkey.length() + 3);
-                            }
-                        }
-                    } else {
-                        if ((i = statement.indexOf("$" + key + "$")) >= 0) {
-                            String substitution = value.toString();
-                            if (urlencode) try {
-                                substitution = URLEncoder.encode(substitution, "UTF-8");
-                            } catch (UnsupportedEncodingException e) {}
-                            statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + 2);
-                        }
-                    }
-                    if (statement.indexOf('$') < 0) break;
-                }
-                if (statement.indexOf('$') < 0) break;
+                String u = unifyRow(statement, row, urlencode);
+                // we first record all rows
+                instances.add(u);
+                if (u.indexOf('$') < 0) count++;
+                if (count >= max) break;
             }
+            
+            // now try to instantiate unresolved statements
+            LinkedHashSet<String> ix = new LinkedHashSet<>();
+            for (String i: instances) {
+                if (ix.size() >= max) break;
+                if (i.indexOf('$') < 0) {
+                    ix.add(i);
+                    continue;
+                }
+                String x = null;
+                rows: for (int rownum = 0; rownum < table.length(); rownum++) {
+                    JSONObject row = table.getJSONObject(rownum);
+                    i = unifyRow(i, row, urlencode);
+                    if (i.indexOf('$') < 0) {
+                        x = i;
+                        break rows;
+                    }
+                }
+                if (x != null) {
+                    ix.add(x);
+                } else if (allowUninstantiated) {
+                    ix.add(i);
+                }
+            }
+            instances = ix;
         }
         Thread.currentThread().setName(threadOrigName);
+        return instances.toArray(new String[instances.size()]);
+    }
+    
+    /**
+     * unification of a statement with a row can cause unresolved variables in the statement
+     * @param statement
+     * @param row
+     * @param urlencode
+     * @return an instantiated statement, possibly incomplete
+     */
+    private String unifyRow(String statement, JSONObject row, boolean urlencode) {
+        for (String key: row.keySet()) {
+            int i;
+            Object value = row.get(key);
+            if (value instanceof JSONObject) {
+                JSONObject subobj = (JSONObject) value;
+                for (String subkey: subobj.keySet()) {
+                    while ((i = statement.indexOf("$" + key + "." + subkey + "$")) >= 0) {
+                        String substitution = subobj.get(subkey).toString();
+                        if (urlencode) try {
+                            substitution = URLEncoder.encode(substitution, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {}
+                        statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + subkey.length() + 3);
+                    }
+                }
+            } else {
+                if ((i = statement.indexOf("$" + key + "$")) >= 0) {
+                    String substitution = value.toString();
+                    if (urlencode) try {
+                        substitution = URLEncoder.encode(substitution, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {}
+                    statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + 2);
+                }
+            }
+            if (statement.indexOf('$') < 0) return statement;
+        }
         return statement;
     }
 
@@ -595,7 +640,21 @@ public class SusiThought {
     }
 
     public static void main(String[] args) {
-        SusiThought t = new SusiThought().addObservation("a", "letter-a");
-        System.out.println(t.unifyOnce("the letter $a$", true));
+        SusiThought t0 = new SusiThought().addObservation("a", "1").addObservation("a", "2").addObservation("b", "7");
+        SusiThought t1 = new SusiThought().addObservation("a", "1").addObservation("b", "7").addObservation("a", "2");
+        System.out.println("t0: " + t0.toString());
+        System.out.println("t1: " + t1.toString());
+        String[] u = t0.unify("$a$, $b$", 10, true, true);
+        for (int i = 0; i < u.length; i++) {
+            System.out.println("t0 -> u" + i + " = " + u[i]);
+        }
+        u = t1.unify("$a$, $b$", 10, true, true);
+        for (int i = 0; i < u.length; i++) {
+            System.out.println("t1 -> u" + i + " = " + u[i]);
+        }
+        u = t1.unify("$a$, $b$, $c$", 10, true, true);
+        for (int i = 0; i < u.length; i++) {
+            System.out.println("tx -> u" + i + " = " + u[i]);
+        }
     }
 }
