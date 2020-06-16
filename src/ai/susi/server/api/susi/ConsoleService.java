@@ -83,7 +83,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             byte[] b = new byte[0];
             String bs = "";
             try {
-                String testquery = flow.unify(matcher.group(2), false, Integer.MAX_VALUE);
+                String testquery = flow.unify(matcher.group(2));
                 Map<String, String> request_header = new HashMap<>();
                 request_header.put("Accept","application/json");
                 b = loadDataWithQuery(serviceURL, request_header, testquery);

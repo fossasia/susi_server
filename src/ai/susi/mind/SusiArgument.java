@@ -294,7 +294,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
                 // this prepares reflection elements to be instantiated before the reflection is called
                 unificationSuccess = false;
                 if (expression.indexOf('$') >= 0) {
-                    String unification = this.unify(expression, false, Integer.MAX_VALUE);
+                    String unification = this.unify(expression);
                     if (unification == null) throw new ReactionException("expression '" + expression + "' cannot be unified with thoughts");
                     unificationSuccess = true;
                     expression = unification;
@@ -347,22 +347,22 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
             }
         }
         if (action.getRenderType() == RenderType.websearch && action.hasAttr("query")) {
-            action.setStringAttr("query", this.unify(action.getStringAttr("query"), false, Integer.MAX_VALUE));
+            action.setStringAttr("query", this.unify(action.getStringAttr("query")));
         }
         if (action.getRenderType() == RenderType.anchor && action.hasAttr("link") && action.hasAttr("text")) {
-            action.setStringAttr("link", this.unify(action.getStringAttr("link"), false, Integer.MAX_VALUE));
-            action.setStringAttr("text", this.unify(action.getStringAttr("text"), false, Integer.MAX_VALUE));
+            action.setStringAttr("link", this.unify(action.getStringAttr("link")));
+            action.setStringAttr("text", this.unify(action.getStringAttr("text")));
         }
         if (action.getRenderType() == RenderType.map && action.hasAttr("latitude") && action.hasAttr("longitude") && action.hasAttr("zoom")) {
-            action.setStringAttr("latitude", this.unify(action.getStringAttr("latitude"), false, Integer.MAX_VALUE));
-            action.setStringAttr("longitude", this.unify(action.getStringAttr("longitude"), false, Integer.MAX_VALUE));
-            action.setStringAttr("zoom", this.unify(action.getStringAttr("zoom"), false, Integer.MAX_VALUE));
+            action.setStringAttr("latitude", this.unify(action.getStringAttr("latitude")));
+            action.setStringAttr("longitude", this.unify(action.getStringAttr("longitude")));
+            action.setStringAttr("zoom", this.unify(action.getStringAttr("zoom")));
         }
         if ((action.getRenderType() == RenderType.video_play || action.getRenderType() == RenderType.audio_play) && action.hasAttr("identifier")) {
-            action.setStringAttr("identifier", this.unify(action.getStringAttr("identifier"), false, Integer.MAX_VALUE));
+            action.setStringAttr("identifier", this.unify(action.getStringAttr("identifier")));
         }
         if ((action.getRenderType() == RenderType.audio_volume) && action.hasAttr("volume")) {
-            String volume = this.unify(action.getStringAttr("volume"), false, Integer.MAX_VALUE);
+            String volume = this.unify(action.getStringAttr("volume"));
             int p = volume.indexOf(' ');
             if (p >= 0) volume = volume.substring(0, p).trim();
             int v = 50;
