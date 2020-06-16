@@ -20,7 +20,6 @@
 package ai.susi.mind;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -38,7 +37,6 @@ import ai.susi.DAO;
 import ai.susi.mind.SusiAction.RenderType;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiPattern.SusiMatcher;
-import ai.susi.server.ClientIdentity;
 
 /**
  * An intent in the Susi AI framework is a collection of utterances, inference processes and actions that are applied
@@ -635,14 +633,14 @@ public class SusiIntent implements Cloneable {
      * @param s the string which should match
      * @return a matcher on the intent utterances
      */
-    public Collection<SusiMatcher> matcher(String s) {
-        List<SusiMatcher> l = new ArrayList<>();
+    public LinkedHashSet<SusiMatcher> matcher(String s) {
+        LinkedHashSet<SusiMatcher> l = new LinkedHashSet<>();
         s = s.toLowerCase();
         for (SusiUtterance p: this.utterances) {
             SusiMatcher m = p.getPattern().matcher(s);
             if (m.matches()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
-                l.add(m); // TODO: exclude double-entries
+                l.add(m);
             }
         }
         return l;
@@ -788,74 +786,6 @@ public class SusiIntent implements Cloneable {
 
         //System.out.println("*** " + SusiIntent.this.utterances + ": " + this.log);
         }
-    }
-
-    /**
-     * Several intents can be candidates for answer computation. Each of such an intent is expressed as
-     * an SusiIdea object. They are combined with a recall (data objects from past answer computations)
-     * and tested by construction of an answer as the result of a causality chain that is described in the
-     * idea. If the chain can be constructed by finding instances of variables, then this is a kind of
-     * proof that the answer is correct. That answer is returned in the SusiArgument object.
-     * @param idea the intent candidate
-     * @param recall the data objects from past computations
-     * @param identity the identity of the user
-     * @param userLanguage the language of the user
-     * @param minds the hierarchy of mind layers that may be used for reflection within the argument
-     * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
-     */
-    public SusiArgument consideration(
-            SusiIdea idea,
-            SusiThought recall,
-            ClientIdentity identity,
-            SusiLanguage userLanguage,
-            SusiMind... minds) {
-
-        SusiLinguistics.Token token = idea.getToken();
-        HashSet<SusiThought> keynotes = new HashSet<>();
-
-        // that argument is filled with an idea which consist of the query where we extract the identified data entities
-        alternatives: for (SusiMatcher matcher: idea.getMatchers()) {
-
-            // initialize keynote (basic data for unification) for flow
-            SusiThought keynote = new SusiThought(matcher);
-            if (token != null) {
-                keynote.addObservation("token_original", token.original);
-                keynote.addObservation("token_canonical", token.canonical);
-                keynote.addObservation("token_categorized", token.categorized);
-            }
-
-            // we deduced thoughts from the inferences in the intents. The keynote also carries these actions
-            this.getActionsClone().forEach(action -> keynote.addAction(action));
-
-            // prevent double consideration of the same keynote
-            if (keynotes.contains(keynote)) continue alternatives;
-            keynotes.add(keynote);
-
-            DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
-            // we start with the recall from previous interactions as new flow
-            final SusiArgument flow = new SusiArgument(identity, userLanguage, minds) // empty flow
-                    .think(recall)   // the past
-                    .think(keynote); // the now
-
-            // lets apply the intents that belong to this specific consideration
-            for (SusiInference inference: this.getInferences()) {
-                SusiThought implication = inference.applyProcedures(flow);
-                DAO.log("Susi is thinking about: " + implication.toString());
-                // make sure that we are not stuck:
-                // in case that we are stuck (== no progress was made) we consider the next alternative matcher
-                if (implication.isFailed() || flow.mindstate().equals(implication)) continue alternatives; // TODO: do this only if specific marker is in intent
-
-                // think
-                flow.think(implication); // the future
-            }
-
-            // add skill source
-            flow.addSkill(this.skillid, utterances.iterator().next().getLine());
-
-            return flow;
-        }
-        // fail, no alternative was successful
-        return null;
     }
 
 }

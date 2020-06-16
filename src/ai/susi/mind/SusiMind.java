@@ -407,7 +407,7 @@ public class SusiMind {
             Set<SusiIntent> r = ConcurrentHashMap.newKeySet();
             if (intent_for_category != null) r.addAll(intent_for_category);
             if (intent_for_original != null) r.addAll(intent_for_original);
-            r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
+            r.forEach(intent -> ideas.add(new SusiIdea(intent)));
         });
 
         //for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
@@ -442,7 +442,7 @@ public class SusiMind {
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: sortedIdeas) {
             SusiIntent intent = idea.getIntent();
-            Collection<SusiMatcher> matchers = intent.matcher(query);
+            LinkedHashSet<SusiMatcher> matchers = intent.matcher(query);
             if (matchers.isEmpty()) continue;
             idea.setMatchers(matchers);
             // TODO: evaluate leading SEE flow commands right here as well
@@ -516,7 +516,7 @@ public class SusiMind {
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
-            SusiArgument argument = idea.getIntent().consideration(idea, recall, identity, userLanguage, minds);
+            SusiArgument argument = idea.consideration(recall, identity, userLanguage, minds);
             long t6 = System.currentTimeMillis();
             if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
 

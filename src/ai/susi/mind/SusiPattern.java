@@ -38,7 +38,7 @@ public class SusiPattern {
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
     private final static Pattern REVERSE_WILDCARD = Pattern.compile(Pattern.quote("(.*)"));
 
-    private final Object pattern;
+    private final Object pattern; // will contain either String or Pattern objects
 
     public SusiPattern(String expression, boolean compileToPattern) throws PatternSyntaxException {
         //compileToPattern = true; // for debugging
@@ -62,7 +62,7 @@ public class SusiPattern {
 
     public class SusiMatcher {
 
-        private Object matcher;
+        private Object matcher; // will contain either String or Matcher objects
 
         protected SusiMatcher(String s) {
             if (SusiPattern.this.pattern instanceof Pattern) {
@@ -93,6 +93,30 @@ public class SusiPattern {
         public String toString() {
             return this.matcher.toString();
         }
+
+        // implementation of hashCode and equals below to make it possible
+        // to store a SusiMatcher into hashtables
+
+        @Override
+        public int hashCode() {
+            if (this.matcher instanceof Matcher) {
+                return ((Matcher) this.matcher).toString().hashCode();
+            } else {
+                return ((String) this.matcher).hashCode();
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof SusiMatcher)) return false;
+            SusiMatcher m = (SusiMatcher) o;
+            if (this.matcher instanceof Matcher) {
+                if (!(m.matcher instanceof Matcher)) return false;
+                return ((Matcher) this.matcher).toString().equals(((Matcher) m.matcher).toString());
+            } else {
+                return ((String) this.matcher).equals((String) m.matcher);
+            }
+        }
     }
 
     public SusiMatcher matcher(String s) {
@@ -109,15 +133,38 @@ public class SusiPattern {
         return this.pattern();
     }
 
+    // implementation of hashCode and equals below to make it possible
+    // to store a SusiPattern into hashtables
+
+    @Override
+    public int hashCode() {
+        return this.pattern instanceof Pattern ?
+                ((Pattern) this.pattern).pattern().hashCode() :
+                ((String) this.pattern).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SusiPattern)) return false;
+        SusiPattern p = (SusiPattern) o;
+        if (this.pattern instanceof Pattern) {
+            if (!(p.pattern instanceof Pattern)) return false;
+            return ((Pattern) this.pattern).pattern().equals(((Pattern) p.pattern).pattern());
+        } else {
+            if (!(p.pattern instanceof String)) return false;
+            return ((String) this.pattern).equals(((String) p.pattern));
+        }
+    }
+
     public static void main(String[] args) {
         SusiPattern p = new SusiPattern("\\[token\\]", true);
-        System.out.println("pattern: " + p.toString());
+        System.out.println("pattern: " + p.toString() + ", hashCode: " + p.hashCode());
         SusiMatcher m = p.matcher("[token]");
-        System.out.println(m.matches() ? "match" : "no match");
+        System.out.println("m.hashCode: " + m.hashCode() + ", " + (m.matches() ? "match" : "no match"));
 
         p = new SusiPattern("\\[token\\]", false);
-        System.out.println("pattern: " + p.toString());
+        System.out.println("pattern: " + p.toString() + ", hashCode: " + p.hashCode());
         m = p.matcher("[token]");
-        System.out.println(m.matches() ? "match" : "no match");
+        System.out.println("m.hashCode: " + m.hashCode() + ", " + (m.matches() ? "match" : "no match"));
     }
 }
