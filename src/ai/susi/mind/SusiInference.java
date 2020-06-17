@@ -148,8 +148,8 @@ public class SusiInference {
         });
         flowProcedures.put(Pattern.compile("PLAN\\h+?([^:]*?)\\h*?:\\h*?([^:]*)\\h*?"), (flow, matcher) -> {
             // get attributes
-            String time = flow.unify(matcher.group(1), false, 0);
-            String reflection = flow.unify(matcher.group(2), false, 0);
+            String time = flow.unify(matcher.group(1));
+            String reflection = flow.unify(matcher.group(2));
             SusiThought mindstate = flow.mindmeld(true);
 
             // parse the time
@@ -330,7 +330,7 @@ public class SusiInference {
         Type type = this.getType();
         String expression = this.getExpression();
         if (expression != null && expression.length() > 0) {
-            expression = flow.unify(expression, true, Integer.MAX_VALUE);
+            expression = flow.unify(expression);
         }
         if (type == SusiInference.Type.console) {
             // we have two ways to define a console rule:
@@ -355,7 +355,7 @@ public class SusiInference {
 
                 // load more data using an url and a path
                 if (definition.has("url")) try {
-                    String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
+                    String url = flow.unify(definition.getString("url"));
                     try {while (url.indexOf('`') >= 0) {
                         SusiArgument.Reflection reflection = new SusiArgument.Reflection(url, flow, true);
                         url = reflection.expression;

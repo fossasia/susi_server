@@ -188,11 +188,7 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         argument.recall.forEach(thought -> think(thought));
         return this;
     }
-    
-    public String unify(String statement) {
-        return unify(statement, false, Integer.MAX_VALUE);
-    }
-    
+ 
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
@@ -201,19 +197,19 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
      * @param depth the maximum depth into the flow. depth == 0 means 'only the last thought'
      * @return the instantiated statement with elements of the argument applied
      */
-    public String unify(String statement, boolean urlencode, int depth) {
+    public String unify(String statement) {
         assert statement != null;
         if (statement == null) return null; // this should not happen
+        boolean urlencode = statement.startsWith("http://") || statement.startsWith("https://");
         LinkedHashSet<String> instances = new LinkedHashSet<>();
         instances.add(statement);
         // explore the past
-        explorepast: for (SusiThought t: this) {
+        for (SusiThought t: this) {
             // this uses our iterator which iterates in reverse order.
             // That means, latest thought is first returned.
             // It also means that we are exploring the past, most recent events first.
-            if (depth-- < 0) break explorepast;
-            // work through all already partly instantiated statements
             LinkedHashSet<String> ix = new LinkedHashSet<>(); // next instances
+            // work through all already partly instantiated statements
             for (String i: instances) {
                 //if (SusiThought.hasVariablePattern(i)) {
                     String[] nextStatements = t.unify(i, Integer.MAX_VALUE, true, urlencode);
@@ -529,10 +525,10 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
 
     public static void main(String[] args) {
         SusiArgument a = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("a", "letter-a"));
-        System.out.println(a.unify("the letter $a$", true, Integer.MAX_VALUE));
+        System.out.println(a.unify("the letter $a$"));
         SusiArgument b = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
-        System.out.println(b.unify("the letter $a$", true, Integer.MAX_VALUE));
+        System.out.println(b.unify("the letter $a$"));
         SusiArgument c = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
-        System.out.println(c.unify("the letter c", true, Integer.MAX_VALUE));
+        System.out.println(c.unify("the letter c"));
     }
 }
