@@ -94,7 +94,7 @@ public class SusiIdea {
             // we start with the recall from previous interactions as new flow
             final SusiArgument flow = new SusiArgument(identity, userLanguage, minds) // empty flow
                     .think(recall)   // the past
-                    .think(keynote); // the now
+                    .think(keynote); // the idea, including actions (also: the "now")
 
             // lets apply the intents that belong to this specific consideration
             for (SusiInference inference: this.intent.getInferences()) {

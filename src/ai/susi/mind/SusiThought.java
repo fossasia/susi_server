@@ -498,14 +498,15 @@ public class SusiThought {
      */
     public String[] unify(String statement, int max, boolean allowUninstantiated, boolean urlencode) {
         assert statement != null;
-        LinkedHashSet<String> instances = new LinkedHashSet<>();
         if (statement.indexOf('$') < 0) return new String[]{statement}; // NOT empty!
         String threadOrigName = Thread.currentThread().getName();
         Thread.currentThread().setName("unify: term = " + statement); // makes debugging easier
         JSONArray table = this.getData();
+        LinkedHashSet<String> instances = new LinkedHashSet<>();
+        if (allowUninstantiated) instances.add(statement); // prevent that we don't have any statement in case uninstantiated results are allowed
         if (table != null && table.length() > 0) {
             int count = 0;
-            for (int rownum = 0; rownum < table.length(); rownum++) {
+            if (table != null && table.length() > 0) for (int rownum = 0; rownum < table.length(); rownum++) {
                 JSONObject row = table.getJSONObject(rownum);
                 String u = unifyRow(statement, row, urlencode);
                 // we first record all rows
@@ -513,7 +514,7 @@ public class SusiThought {
                 if (u.indexOf('$') < 0) count++;
                 if (count >= max) break;
             }
-            
+
             // now try to instantiate unresolved statements
             LinkedHashSet<String> ix = new LinkedHashSet<>();
             for (String i: instances) {
@@ -523,7 +524,7 @@ public class SusiThought {
                     continue;
                 }
                 String x = null;
-                rows: for (int rownum = 0; rownum < table.length(); rownum++) {
+                if (table != null && table.length() > 0) rows: for (int rownum = 0; rownum < table.length(); rownum++) {
                     JSONObject row = table.getJSONObject(rownum);
                     i = unifyRow(i, row, urlencode);
                     if (i.indexOf('$') < 0) {
@@ -644,6 +645,10 @@ public class SusiThought {
         SusiThought t1 = new SusiThought().addObservation("a", "1").addObservation("b", "7").addObservation("a", "2");
         System.out.println("t0: " + t0.toString());
         System.out.println("t1: " + t1.toString());
+        String[] x = new SusiThought().unify("$x$", 10, true, true);
+        for (int i = 0; i < x.length; i++) {
+            System.out.println("t0 -> x" + i + " = " + x[i]);
+        }
         String[] u = t0.unify("$a$, $b$", 10, true, true);
         for (int i = 0; i < u.length; i++) {
             System.out.println("t0 -> u" + i + " = " + u[i]);
