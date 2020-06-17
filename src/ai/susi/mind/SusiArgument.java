@@ -188,48 +188,56 @@ public class SusiArgument implements Iterable<SusiThought>, Cloneable {
         argument.recall.forEach(thought -> think(thought));
         return this;
     }
+
+    /**
+     * Unification applies a piece of memory within the current argument to a statement
+     * which creates an instantiated statement
+     * @param statement
+     * @return the instantiated statement with elements of the argument applied or null if the unification failed
+     */
+    public String unify(String statement) {
+        LinkedHashSet<String> s = unify(statement, 1);
+        if (s.size() == 0) return null;
+        return s.iterator().next();
+    }
  
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
-     * TODO: this should support backtracking, thus producing optional several unifications and turning this into a choice point
      * @param statement
-     * @param depth the maximum depth into the flow. depth == 0 means 'only the last thought'
+     * @param max the maximum number of instantiations
      * @return the instantiated statement with elements of the argument applied
      */
-    public String unify(String statement) {
+    public LinkedHashSet<String> unify(String statement, int max) {
         assert statement != null;
         if (statement == null) return null; // this should not happen
         boolean urlencode = statement.startsWith("http://") || statement.startsWith("https://");
-        LinkedHashSet<String> instances = new LinkedHashSet<>();
-        instances.add(statement);
+        
+        // initialize collection
+        LinkedHashSet<String> s_com = new LinkedHashSet<>(); // completely instantiated
+        LinkedHashSet<String> s_inc = new LinkedHashSet<>(); // partly instantiated
+        if (SusiThought.hasVariablePattern(statement)) s_inc.add(statement); else s_com.add(statement);
+        
         // explore the past
-        for (SusiThought t: this) {
+        pastsearch: for (SusiThought t: this) {
+            if (s_inc.size() == 0) break pastsearch;
             // this uses our iterator which iterates in reverse order.
             // That means, latest thought is first returned.
             // It also means that we are exploring the past, most recent events first.
             LinkedHashSet<String> ix = new LinkedHashSet<>(); // next instances
             // work through all already partly instantiated statements
-            for (String i: instances) {
-                //if (SusiThought.hasVariablePattern(i)) {
-                    String[] nextStatements = t.unify(i, Integer.MAX_VALUE, true, urlencode);
-                    for (String s: nextStatements) {
-                        if (!SusiThought.hasVariablePattern(s)) return s; // possible early success
-                        ix.add(s);
-                    }
-                //} else {
-                //    ix.add(i);
-                //}
+            for (String i: s_inc) {
+                String[] nextStatements = t.unify(i, Integer.MAX_VALUE, true, urlencode);
+                for (String s: nextStatements) {
+                    if (SusiThought.hasVariablePattern(s)) ix.add(s); else s_com.add(s);
+                    if (s_com.size() >= max) break pastsearch;
+                }
             }
-            instances = ix;
-            if (instances.size() == 0) return null;
+            s_inc = ix;
         }
         
-        // finally find one statement that is fully instantiated
-        for (String i: instances) {
-            if (!SusiThought.hasVariablePattern(i)) return i;
-        }
-        return null; // failure!
+        // arrived here we ignore all s_inc and return just the complete statements
+        return s_com;
     }
 
     /**
