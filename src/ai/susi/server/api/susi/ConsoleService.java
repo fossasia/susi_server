@@ -42,9 +42,11 @@ import org.json.JSONTokener;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -219,34 +221,54 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         });
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtubesearch +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
-            Pattern videoPattern = Pattern.compile("\"/watch\\?v=.*? aria-describedby");
-            Pattern keyPattern = Pattern.compile("\"/watch\\?v=(.*?)\"");
-            Pattern titlePattern = Pattern.compile("title=\"(.*?)\"");
+            Pattern[][] testSet = new Pattern[][]{
+                new Pattern[] {
+                        Pattern.compile("\"/watch\\?v=.*? aria-describedby"), // whole subsection
+                        Pattern.compile("\"/watch\\?v=(.*?)\""),              // keyPattern
+                        Pattern.compile("title=\"(.*?)\"")                    // titlePattern
+                },
+                new Pattern[] {
+                        Pattern.compile("\"videoRenderer\".*?,\"accessibility\"\\:\\{\"accessibilityData\""), // whole subsection
+                        Pattern.compile("\"videoId\"\\:\"(.*?)\""),           // keyPattern
+                        Pattern.compile("\"text\"\\:\"(.*?)\"")               // titlePattern
+                }
+            };
             try {
                 String query = matcher.group(2);
                 String serviceURL = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8");
+                //System.out.println("URL = " + serviceURL);
                 String s = new String(HttpClient.loadGet(serviceURL), "UTF-8");
+                //System.out.println("s.length=" + s.length());
                 JSONArray a = new JSONArray();
                 //System.out.println(s);
-                Matcher m = videoPattern.matcher(s);
-                while (m.find()) {
-                    String fragment = m.group(0);
-                    Matcher keyMatcher = keyPattern.matcher(fragment);
-                    JSONObject j = null;
-                    if (keyMatcher.find()) {
-                        String key = keyMatcher.group(1);
-                        if (key.indexOf('&') < 0) {
-                            Matcher titleMatcher = titlePattern.matcher(fragment);
-                            if (titleMatcher.find()) {
-                                String title = titleMatcher.group(1);
-                                j = new JSONObject(true);
-                                j.put("title", title);
-                                j.put("youtube", key);
+                formats: for (Pattern[] triple: testSet) {
+                    Pattern videoPattern = triple[0];
+                    Pattern keyPattern = triple[1];
+                    Pattern titlePattern = triple[2];
+                    Matcher m = videoPattern.matcher(s);
+                    while (m.find()) {
+                        String fragment = m.group(0);
+                        //System.out.println(fragment);
+                        Matcher keyMatcher = keyPattern.matcher(fragment);
+                        JSONObject j = null;
+                        if (keyMatcher.find()) {
+                            String key = keyMatcher.group(1);
+                            if (key.indexOf('&') < 0) {
+                                Matcher titleMatcher = titlePattern.matcher(fragment);
+                                if (titleMatcher.find()) {
+                                    String title = titleMatcher.group(1);
+                                    j = new JSONObject(true);
+                                    j.put("title", title);
+                                    j.put("youtube", key);
+                                }
                             }
                         }
+                        if (j != null) a.put(j);
                     }
-                    if (j != null) a.put(j);
+                    if (a.length() > 0) break formats;
                 }
+
+                //System.out.println("found=" + a.length());
                 json.setQuery(query);
                 json.setData(a);
             } catch (Throwable e) {
@@ -284,6 +306,10 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         });
     }
 
+    public static JSONObject query(String query) {
+        return dbAccess.inspire(query).toJSON();
+    }
+
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
@@ -291,7 +317,16 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         String q = post.get("q", "");
         //int timezoneOffset = post.get("timezoneOffset", 0);
         DAO.observe(); // get a database update
-        return new ServiceResponse(dbAccess.inspire(q).toJSON());
+        return new ServiceResponse(query(q));
+    }
+
+    public static JSONObject youtube(String query) {
+        return query("SELECT plaintext FROM youtubesearch WHERE query='" + query + "';");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(youtube("shakira"));
+        System.exit(0);
     }
 
 }
