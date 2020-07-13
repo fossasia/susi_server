@@ -3,6 +3,7 @@ Name=Stop the SUSI Server
 GenericName=Stop the SUSI Server
 Comment=Stop the brain of the SUSI Personal Assistant system
 Exec=@SUSIDIR@/bin/susi-server-stop
+Icon=susi-ai
 StartupNotify=false
 Terminal=false
 Type=Application
