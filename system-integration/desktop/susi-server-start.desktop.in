@@ -2,7 +2,7 @@
 Name=SUSI Server
 GenericName=SUSI Server
 Comment=The brain of the SUSI Personal Assistant system
-Exec=@SUSIDIR@/bin/susi-server-start
+Exec=@SUSIDIR@/bin/susi-server start
 Icon=susi-ai
 StartupNotify=false
 Terminal=false
