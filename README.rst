@@ -52,6 +52,31 @@ At this time, SUSI.AI is not provided in the compiled form, you easily build it 
 
     > sudo apt install openjdk-8-jdk-headless
 
+Mac users may use the following commands to install OpenJDK's Java 8 JRE and JDK:
+
+::
+
+    > brew tap AdoptOpenJDK/openjdk
+    > brew cask install adoptopenjdk8
+
+Mac users may need to follow additional steps to configure multiple java versions.
+
+::
+
+    > brew install jenv
+    > export PATH="$HOME/.jenv/bin:$PATH"
+    > eval "$(jenv init -)"
+    > #Add the required path to jenv
+    > jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
+    > #Check if jenv registered OK
+    > jenv versions
+    > #Set java version to use globally, where XX matches one of the items in the list above
+    > jenv global XX
+    > #For example
+    > jenv global openjdk64-1.8.0.265
+    > #Check if java version matches with the one set above
+    > java --version
+
 ::
 
     > git clone https://github.com/fossasia/susi_server.git
