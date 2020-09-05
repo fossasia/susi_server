@@ -83,7 +83,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
                         a.add(new Line(numberedLine.line.substring(1), numberedLine.number));
                     } else {
                         Line prevLine = a.get(a.size() - 1);
-                        a.set(a.size() - 1, new Line(prevLine.line + ' ' + numberedLine.line.substring(1), prevLine.number));
+                        a.set(a.size() - 1, new Line(prevLine.line + ' ' + numberedLine.line.substring(1).trim(), prevLine.number));
                     }
                 } else {
                     if (a.size() == 0) {
@@ -92,7 +92,7 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
                         Line prevLine = a.get(a.size() - 1);
                         String lasta = prevLine.line;
                         if (lasta.charAt(lasta.length() - 1) == '\\') {
-                            a.set(a.size() - 1, new Line(lasta.substring(0, lasta.length() - 1) + ' ' + numberedLine.line, prevLine.number));
+                            a.set(a.size() - 1, new Line(lasta.substring(0, lasta.length() - 1) + ' ' + numberedLine.line.trim(), prevLine.number));
                         } else {
                             a.add(numberedLine);
                         }

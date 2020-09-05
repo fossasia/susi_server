@@ -66,6 +66,11 @@ public class EtherpadClient {
         }
     }
 
+    public static boolean localEtherpadExists() {
+        File local_etherpad_apikey_file = new File(new File(DAO.data_dir, "etherpad-lite"), "APIKEY.txt");
+        return local_etherpad_apikey_file.exists();
+    }
+
     public void dirtyDBHealthCheck() {
         if (!this.dirtyDB.exists()) return;
         try {
@@ -285,7 +290,8 @@ public class EtherpadClient {
         if (end < start) return m; // may happen if head = -1 (no messages exist)
         Map<String, String> request_header = new HashMap<>();
         request_header.put("Accept","application/json");
-        String createurl = this.etherpadUrlstub + "/api/1.2.7/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID + "&start=" + start + "&end=" + end; // probably bug in etherpad parsing the url: 0 required in front of start, the number is otherwise truncated
+        //String createurl = this.etherpadUrlstub + "/api/1.2.7/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID + "&start=" + start + "&end=" + end; // probably bug in etherpad parsing the url: 0 required in front of start, the number is otherwise truncated
+        String createurl = this.etherpadUrlstub + "/api/1.2.7/getChatHistory?apikey=" + this.etherpadApikey + "&padID=" + padID;
         JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(HttpClient.loadGet(createurl, request_header)));
         JSONObject json = new JSONObject(serviceResponse);
         /* i.e. json = 
@@ -297,6 +303,8 @@ public class EtherpadClient {
         JSONObject data = json.optJSONObject("data");
         if (data == null || !data.has("messages")) throw new IOException("no messages in chat history");
         JSONArray messages = data.getJSONArray("messages");
+        int length = end - start + 1;
+        while (messages.length() > length) messages.remove(0);
         for (int i = 0; i < messages.length(); i++) m.add(new Message(messages.getJSONObject(i)));
         return m;
     }

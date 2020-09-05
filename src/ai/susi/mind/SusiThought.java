@@ -37,7 +37,8 @@ import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiPattern.SusiMatcher;
 
 /**
- * A thought is a piece of data that can be remembered. The structure or the thought can be
+ * A thought are ranked alternatives of answers to a question as semantic properties;
+ * a piece of data that can be remembered. The structure or the thought can be
  * modeled as a table which may be created using the retrieval of information from elsewhere
  * of the current argument.
  */

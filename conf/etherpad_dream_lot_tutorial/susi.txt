@@ -17,7 +17,8 @@
 # - Skills can be hosted as an etherpad page
 # - The Susi Smart Speaker (hostname "susi") hosts an etherpad at http://susi.local:9001
 # - By default the skill at http://susi.local:9001/p/susi is always loaded
-
+# - the language of thought is translated internally into JSON, you can find the translation
+#   for this skill at http://127.0.0.1:4000/susi/mind.json?dream=susi
 
 
 ### START OF SUSI TUTORIAL BELOW:

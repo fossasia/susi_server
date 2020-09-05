@@ -184,43 +184,17 @@ public class SusiFace implements Callable<SusiCognition> {
         // This cannot be activated, its always reading a dream named "susi"
         // We consider two location options for the etherpad,
         // either ~/SUSI.AI/etherpad-lite or data/etherpad-lite
-        EtherpadClient etherpad = new EtherpadClient();
-        if (etherpad.isPrivate()) try {
-            String content = ensure_susi_pad_exist(etherpad);
-            if (EtherpadClient.padContainsSkill(content)) {
-                // fill an empty mind with the dream
-                SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                SusiSkill.ID skillid = new SusiSkill.ID(susi_language, "susi");
-                SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
-                dreamMind.learn(skill, skillid, true);
-                SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
-                dreamMind.setActiveSkill(activeskill);
-                minds.add(dreamMind);
-            }
-        } catch (JSONException | IOException | SusiActionException e) {
-            // ignore silently if pad is not available
-            //DAO.severe(e.getMessage(), e);
+        if (EtherpadClient.localEtherpadExists()) {
+            SusiMind dreamMind = getLocalSusiDream();
+            if (dreamMind != null) minds.add(dreamMind);
         }
 
         // global etherpad dreaming, reading from http://dream.susi.ai
-        if (dream != null && dream.length() > 0) try {
+        if (dream != null && dream.length() > 0) {
             // read the pad for the dream
-            String text = etherpad.getText(dream);
-            // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
-            text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
-            text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
-            // fill an empty mind with the dream
-            SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-            SusiSkill.ID skillid = new SusiSkill.ID(susi_language, dream);
-            SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
-            dreamMind.learn(skill, skillid, true);
-            SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
-            dreamMind.setActiveSkill(activeskill);
+            SusiMind dreamMind = getDream(dream, susi_language, true);
+            if (dreamMind != null) minds.add(dreamMind);
             // susi is now dreaming.. Try to find an answer out of the dream
-            minds.add(dreamMind);
-        } catch (JSONException | IOException | SusiActionException e) {
-            // ignore silently if pad is not available
-            //DAO.severe(e.getMessage(), e);
         }
 
         // on-skills: if a user has switched on a skill with "run skill" of a skill which has the "on"-property
@@ -313,20 +287,64 @@ public class SusiFace implements Callable<SusiCognition> {
         return cognition;
     }
 
-    /**
-     * if called, the pad "susi" is read and it is made sure that it containes the default pad if it did
-     * not exist before
-     * @param etherpad
-     * @return the pad content of pad "susi"
-     * @throws IOException
-     */
-    public static String ensure_susi_pad_exist(EtherpadClient etherpad) throws IOException {
-        if (etherpad.isPrivate()) {
-            File f = etherpad.backupFile("susi");
-            if (!f.exists()) f = new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt");
-            String content = etherpad.setTextIfEmpty("susi", f);
-            return content;
+    public static SusiMind getLocalSusiDream() {
+        return getDream("susi", null, false);
+    }
+
+    public static SusiMind getDream(String dream, SusiLanguage susi_language, boolean addStopIntents) {
+        if (dream == null || dream.length() == 0) return null;
+        if (susi_language == null) susi_language = SusiLanguage.unknown;
+
+        // Local etherpad dreaming, reading from http://localhost:9001
+        // This cannot be activated, its always reading a dream named "susi"
+        // We consider two location options for the etherpad,
+        // either ~/SUSI.AI/etherpad-lite or data/etherpad-lite
+        try {
+            EtherpadClient etherpad = new EtherpadClient();
+            String text = ensure_pad_exist(etherpad, dream);
+            if (!EtherpadClient.padContainsSkill(text)) return null;
+            if (addStopIntents) {
+                // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
+                text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
+                text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
+            }
+            // fill an empty mind with the dream
+            SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+            SusiSkill.ID skillid = new SusiSkill.ID(susi_language, dream);
+            SusiSkill skill = new SusiSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), skillid, true);
+            dreamMind.learn(skill, skillid, true);
+            SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
+            dreamMind.setActiveSkill(activeskill);
+            return dreamMind;
+        } catch (JSONException | IOException | SusiActionException e) {
+            // ignore silently if pad is not available
+            DAO.severe(e.getMessage(), e);
         }
         return null;
+    }
+
+    /**
+     * If called, the pad is read
+     * In case that the pad name is "susi" it is also ensured that it contains the default content
+     * if it was empty or it did not exist before
+     * @param etherpad
+     * @param dream the pad name
+     * @return the pad content of pad
+     * @throws IOException
+     */
+    public static String ensure_pad_exist(EtherpadClient etherpad, String dream) throws IOException {
+        if (etherpad.isPrivate()) {
+            File f = etherpad.backupFile(dream);
+            String content = "";
+            if (!f.exists() && "susi".contentEquals(dream)) {
+                f = new File(new File(DAO.conf_dir, "etherpad_dream_lot_tutorial"), "susi.txt");
+                content = etherpad.setTextIfEmpty("susi", f);
+            } else {
+                content = etherpad.getText(dream);
+            }
+            return content;
+        } else {
+            return etherpad.getText(dream);
+        }
     }
 }

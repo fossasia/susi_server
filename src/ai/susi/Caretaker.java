@@ -79,7 +79,7 @@ public class Caretaker extends Thread {
             if (!etherpad.isPrivate()) return; // we check only local etherpads
 
             // initialize susi pad if it does not exist
-            try {SusiFace.ensure_susi_pad_exist(etherpad);} catch (IOException e) {}
+            try {SusiFace.ensure_pad_exist(etherpad, "susi");} catch (IOException e) {}
 
             // check the chat history
             List<EtherpadClient.Message> messages = etherpad.getChatHistory("susi", 10);
@@ -149,7 +149,7 @@ public class Caretaker extends Thread {
             }
         } catch (IOException e) {
             // this simply means that the pad is not available. Thats ok, the pad is optional.
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
