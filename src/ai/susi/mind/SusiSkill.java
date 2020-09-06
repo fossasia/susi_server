@@ -207,7 +207,7 @@ public class SusiSkill {
         this.id = skillid;
         // read the text file and turn it into a intent json; then learn that
         boolean prior = false, dynamicContent = false, protectedSkill = false;
-        //int indentStep = 4; // like in python
+        int indentStep = 4; // like in python
         intentloop: for (IntentBlock block: skillFile) {
 
             // we have intents without any model; these are 'single lines' and may contain configuration settings
@@ -291,6 +291,14 @@ public class SusiSkill {
                 SusiSkillFile.Line numberedLine = block.model.get(blockNr++);
                 String line = numberedLine.line;
                 int lineNumber = numberedLine.number;
+
+                // normalize line indenting
+                int sc = 0;
+                for (int i = 0; i < line.length(); i++) {
+                    if (line.charAt(i) == ' ') sc++; else break;
+                }
+                int indentLevel = sc % indentStep;
+                line = line.trim();
 
                 // parse bang types and answer lines
                 int thenpos;
