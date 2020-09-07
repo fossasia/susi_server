@@ -53,7 +53,9 @@ public class SusiSkill {
     private final static Pattern pathseparator = Pattern.compile("/");
     private final static Pattern commaseparator = Pattern.compile(",");
     private final static Pattern pipeseparator = Pattern.compile("\\|");
-    
+
+    private final static int INDENT_STEP = 4; // like in python
+
     private String skillName, description, author, authorURL, authorEmail, image;
     private String termsOfUse, kickoff, developerPrivacyPolicy;
     private String[] on;
@@ -61,7 +63,7 @@ public class SusiSkill {
     private Set<String> examples, tags;
     private List<SusiIntent> skillIntents = new ArrayList<>();
     private SusiSkill.ID id;
-    
+
     public static class ID implements Comparable<ID> {
         private String skillpath;
         private final String[] possible_path_prefixes = new String[] {
@@ -207,7 +209,6 @@ public class SusiSkill {
         this.id = skillid;
         // read the text file and turn it into a intent json; then learn that
         boolean prior = false, dynamicContent = false, protectedSkill = false;
-        int indentStep = 4; // like in python
         intentloop: for (IntentBlock block: skillFile) {
 
             // we have intents without any model; these are 'single lines' and may contain configuration settings
@@ -283,8 +284,9 @@ public class SusiSkill {
 
             // parse model
             String bang_type = "", bang_answers = "";
-            List<SusiIntent> fileIntents = new ArrayList<>();
-            fileIntents.add(new SusiIntent(utterances, prior, 0, skillid));
+            List<SusiIntent> blockIntents = new ArrayList<>();
+            SusiIntent initialintent = new SusiIntent(utterances, prior, 0, skillid);
+            blockIntents.add(initialintent);
             StringBuilder bang_bag = new StringBuilder();
             int blockNr = 0;
             readloop: while (blockNr < block.model.size()) {
@@ -297,7 +299,11 @@ public class SusiSkill {
                 for (int i = 0; i < line.length(); i++) {
                     if (line.charAt(i) == ' ') sc++; else break;
                 }
-                int indentLevel = sc % indentStep;
+                int indentLevel = sc % INDENT_STEP;
+                blockIntents.forEach(intent -> {
+                    intent.setDepth(indentLevel);
+                    //intent.addInference(new SusiInference("SET _node=" + block.getUtteranceFingerprint(), SusiInference.Type.memory, 0));
+                });
                 line = line.trim();
 
                 // parse bang types and answer lines
@@ -310,19 +316,19 @@ public class SusiSkill {
                     if (paramspace >= 0) head = head.substring(0, paramspace).trim();
                     // test bang type
                     if (head.equals("example")) {
-                        fileIntents.forEach(intent -> intent.setExample(tail));
+                        blockIntents.forEach(intent -> intent.setExample(tail));
                     } else if (head.equals("expect")) {
-                        fileIntents.forEach(intent -> intent.setExpect(tail));
+                        blockIntents.forEach(intent -> intent.setExpect(tail));
                     } else if (head.equals("label")) {
-                        fileIntents.forEach(intent -> intent.setLabel(tail));
+                        blockIntents.forEach(intent -> intent.setLabel(tail));
                     } else if (head.equals("implication")) {
-                        fileIntents.forEach(intent -> intent.setImplication(tail));
+                        blockIntents.forEach(intent -> intent.setImplication(tail));
                     } else if (head.equals("first")) {
-                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("FIRST", SusiInference.Type.flow, lineNumber)));
+                        blockIntents.forEach(intent -> intent.addInference(new SusiInference("FIRST", SusiInference.Type.flow, lineNumber)));
                     } else if (head.equals("rest")) {
-                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("REST", SusiInference.Type.flow, lineNumber)));
+                        blockIntents.forEach(intent -> intent.addInference(new SusiInference("REST", SusiInference.Type.flow, lineNumber)));
                     } else if (head.equals("plan")) {
-                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("PLAN " + param + ":" + tail, SusiInference.Type.flow, lineNumber)));
+                        blockIntents.forEach(intent -> intent.addInference(new SusiInference("PLAN " + param + ":" + tail, SusiInference.Type.flow, lineNumber)));
                     } else {
                         // start multi-line bang
                         bang_type = head;
@@ -350,7 +356,7 @@ public class SusiSkill {
                         // answers; must contain $!$
                         SusiAction action = new SusiAction(SusiAction.answerAction(lineNumber, this.id.language(), pipeseparator.split(bang_answers)));
 
-                        fileIntents.forEach(intent -> {
+                        blockIntents.forEach(intent -> {
                             intent.addInference(inference);
                             intent.addAction(action);
                             extendParentWithAnswer(this.skillIntents, intent);
@@ -369,7 +375,7 @@ public class SusiSkill {
                         } catch (JSONException e) {
                             throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
                         }
-                        fileIntents.forEach(intent -> intent.addInference(inference));
+                        blockIntents.forEach(intent -> intent.addInference(inference));
 
                         // actions; we may have several actions here
 
@@ -377,7 +383,7 @@ public class SusiSkill {
                         if (definition.has("actions")) {
                             JSONArray bo_actions = definition.getJSONArray("actions");
                             bo_actions.forEach(action -> {
-                                fileIntents.forEach(intent -> {
+                                blockIntents.forEach(intent -> {
                                     try {
                                         intent.addAction(new SusiAction((JSONObject) action));
                                     } catch (SusiActionException e) {
@@ -396,11 +402,11 @@ public class SusiSkill {
                         // answers; must contain names from the console result array
                         if (bang_answers.length() > 0) try {
                             SusiAction action = new SusiAction(SusiAction.answerAction(lineNumber, this.id.language(), pipeseparator.split(bang_answers)));
-                            fileIntents.forEach(intent -> intent.addAction(action));
+                            blockIntents.forEach(intent -> intent.addAction(action));
                         } catch (SusiActionException e) {
                             DAO.severe(e.getMessage());
                         }
-                        fileIntents.forEach(intent -> {
+                        blockIntents.forEach(intent -> {
                             extendParentWithAnswer(this.skillIntents, intent);
                             this.skillIntents.add(intent);
                         });
@@ -423,33 +429,33 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = pipeseparator.split(ifsubstring);
-                            fileIntents.forEach(intent -> {
+                            blockIntents.forEach(intent -> {
                                 try {
                                     intent.addAction(new SusiAction(SusiAction.answerAction(lineNumber, skillid.language(), answers)));
                                 } catch (SusiActionException e) {
                                     e.printStackTrace();
                                 }
                             });
-                            fileIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory, lineNumber)));
+                            blockIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory, lineNumber)));
                             continue readloop;
                         }
                     } else {
                         // here we must clone all current intents
                         final List<SusiIntent> clonedIntents = new ArrayList<>();
-                        fileIntents.forEach(intent -> clonedIntents.add((SusiIntent) intent.clone()));
+                        blockIntents.forEach(intent -> clonedIntents.add((SusiIntent) intent.clone()));
 
                         // "? if : then : else"
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = pipeseparator.split(ifsubstring);
-                            fileIntents.forEach(intent -> {
+                            blockIntents.forEach(intent -> {
                                 try {
                                     intent.addAction(new SusiAction(SusiAction.answerAction(lineNumber, skillid.language(), answers)));
                                 } catch (SusiActionException e) {
                                     e.printStackTrace();
                                 }
                             });
-                            fileIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory, lineNumber)));
+                            blockIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory, lineNumber)));
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
@@ -463,13 +469,13 @@ public class SusiSkill {
                             });
                             clonedIntents.forEach(intent -> intent.addInference(new SusiInference("NOT " + condition, SusiInference.Type.memory, lineNumber)));
                             // attach the clones intents to the list of intents
-                            clonedIntents.forEach(intent -> fileIntents.add(intent));
+                            clonedIntents.forEach(intent -> blockIntents.add(intent));
                         }
                         continue readloop;
                     }
                 } else {
                     String[] answers = pipeseparator.split(line);
-                    fileIntents.forEach(intent -> {
+                    blockIntents.forEach(intent -> {
                         try {
                             intent.addAction(new SusiAction(SusiAction.answerAction(lineNumber, skillid.language(), answers)));
                         } catch (SusiActionException e) {
@@ -479,7 +485,7 @@ public class SusiSkill {
                     continue readloop;
                 }
             }
-            fileIntents.forEach(intent -> {
+            blockIntents.forEach(intent -> {
                 extendParentWithAnswer(this.skillIntents, intent);
                 this.skillIntents.add(intent);
             });
@@ -529,7 +535,7 @@ public class SusiSkill {
         int parent_id = parent_intent.hashCode();
 
         // - set an invisible assignment in parent for linking variable to ID
-        parent_intent.addInferences(new SusiInference("SET ", SusiInference.Type.memory, 0));
+        parent_intent.addInferences(new SusiInference("SET ", SusiInference.Type.memory, 0)); // TODO: this SET is incomplete!
 
         // - add a check rule in child so a child fires only if linking ID is set correctly
 

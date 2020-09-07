@@ -115,6 +115,21 @@ public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Itera
             this.utterance = impl;
         }
 
+        public String getUtteranceFingerprint() {
+            String l = this.utterance.toLowerCase();
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < l.length(); i++) {
+                char c = l.charAt(i);
+                if (c >= 'a' && c <= 'z') s.append(c);
+                if (s.length() > 21) break;
+            }
+            while (s.length() <= 21) s.append('x');
+            StringBuilder h = new StringBuilder(8);
+            h.append(s.charAt(0)); h.append(s.charAt(1)); h.append(s.charAt(2)); h.append(s.charAt(3));
+            h.append(s.charAt(5)); h.append(s.charAt(8)); h.append(s.charAt(13)); h.append(s.charAt(21));
+            return h.toString();
+        }
+
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(utterance).append("\n");

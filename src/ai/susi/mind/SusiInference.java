@@ -126,6 +126,7 @@ public class SusiInference {
     private final static SusiProcedures memoryProcedures = new SusiProcedures();
     private final static SusiProcedures javascriptProcedures = new SusiProcedures();
     private final static SusiProcedures prologProcedures = new SusiProcedures();
+    private final static Pattern CATCHALL_GROUP = Pattern.compile("(.*)");
     static {
         flowProcedures.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
@@ -182,7 +183,7 @@ public class SusiInference {
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String remember = flow.unify(matcher.group(1)), matching = flow.unify(matcher.group(2));
-            return see(flow, "%1% AS " + remember, matching, Pattern.compile("(.*)"));
+            return see(flow, "%1% AS " + remember, matching, CATCHALL_GROUP);
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*?)\\h+?MATCHING\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String remember = flow.unify(matcher.group(1)), matching = flow.unify(matcher.group(2)), pattern = flow.unify(matcher.group(3));
@@ -190,7 +191,7 @@ public class SusiInference {
         });
         memoryProcedures.put(Pattern.compile("CLEAR\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String clear = matcher.group(1);
-            return see(flow, "%1% AS " + flow.unify(clear), "", Pattern.compile("(.*)"));
+            return see(flow, "%1% AS " + flow.unify(clear), "", CATCHALL_GROUP);
         });
         memoryProcedures.put(Pattern.compile("IF\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String expect = flow.unify(matcher.group(1));
@@ -204,7 +205,7 @@ public class SusiInference {
             return t;
         });
         memoryProcedures.put(Pattern.compile("NOT\\h*"), (flow, matcher) -> {
-            //SusiThought t = see(flow, "%1% AS EXPECTED", "", Pattern.compile("(.*)"));
+            //SusiThought t = see(flow, "%1% AS EXPECTED", "", CATCHALL_GROUP);
             // This is a NOT of nothing. This represents therefore a success. Thus we return a non-empty thought.
             return new SusiThought().addObservation("REJECTED", "");
         });
