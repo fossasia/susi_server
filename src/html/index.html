@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="en" ng-app="susi">
+
+<head>
+  <!--#include file="../../ssi/common_head_front.include" -->
+  <meta name="description" content="Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval">
+  <meta name="author" content="Michael Peter Christen, @0rb1t3r">
+  <link rel="canonical" href="http://api.susi.ai" />
+  <title>api.susi.ai - Software and Rules for Personal Assistants</title>
+
+  <meta property="og:title" content="api.susi.ai - Software and Rules for Personal Assistants">
+  <meta property="og:type" content="Website">
+  <meta property="og:url" content="http://susi.ai">
+  <meta property="og:image" content="http://susi.ai/artwork/susi_org_sticker.png">
+  <meta property="og:description" content="Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="api.susi.ai - Software and Rules for Personal Assistants">
+  <meta name="twitter:url" content="http://susi.ai">
+  <meta name="twitter:description" content="Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval">
+  <meta name="twitter:image" content="http://susi.ai/artwork/susi_org_sticker.png">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Your application bootstrap  -->
+  <script type="text/javascript">
+    /**
+       * You must include the dependency on 'ngMaterial' 
+       */
+    angular.module('BlankApp', ['ngMaterial']);
+  </script>
+
+  <script type="application/ld+json">
+    {
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name": "api.susi.ai - Software and Rules for Personal Assistants",
+  "alternateName": "Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval",
+  "url": "http://susi.ai",
+  "logo": "http://susi.ai/artwork/susi_org_sticker.png",
+  "sameAs": [
+  ],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "http://api.susi.ai/susi/chat.json?q={query}",
+    "query-input": "required name=query"
+  }
+}
+  </script>
+  <!--#include file="../../ssi/common_head_back.include" -->
+  <!--#include file="../../ssi/custom_head.include" -->
+  <style type = "text/css">
+    #dropbtn {
+      color: white;
+      border: none;
+      width: 17px;
+      border-radius: 40px;
+      cursor: pointer;
+      background: none;
+    }
+
+    #icons {
+      position: relative;
+      color: rgb(117, 117, 117);
+      float: right;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: rgb(255, 255, 255);
+      min-width: 130px;
+      overflow: auto;
+      box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+      border-radius: 2px;
+      top: 46px;
+      right: 8px;
+    }
+
+    .dropdown-content ul,
+    .dropdown-content ul li {
+      padding: 0;
+      list-style: none;
+      list-style-type: none;
+    }
+
+    .dropdown-content ul li a {
+      color: black;
+      padding: 13px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 16px;
+    }
+    .dropdown-content .glyphicon{
+      color: rgb(117, 117, 117);
+    }
+    .dropdown-content ul li a span{
+      float: right;
+    }
+
+    aside:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    }
+
+    .show {
+      display: block;
+    }
+
+    .optionMenu li a {
+      background: none;
+    }
+
+    .optionMenu {
+      margin-top: -4px;
+      margin-right: -3px;
+    }
+
+    .alignRight{
+      float: right;
+    }
+    .alignLeft li{
+      list-style: none;
+      float: left;
+      padding: 10px 0 10px 0;
+    }
+    .alignRight li{
+      list-style: none;
+      float: right;
+      padding: 10px 0 10px 0;
+    }
+    
+  </style>
+  <link rel="stylesheet" href="/css/susi.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+
+<body style="position: relative; margin-top: 0; min-height: 100;">
+  <!-- style woodoo is for footer line -->
+  <!--#include file="../../ssi/custom_body_front.include" -->
+  <!--#include file="../../ssi/common_body_front.include" -->
+  <nav class="navbar navbar-custom  navbar-fixed-top custom-app-bar" style="min-height:46px;">
+    <div class="container-fluid navbar-custom"
+	style="height:46px;box-shadow:0 0 4px rgba(0,0,0,.14),
+		0 4px 8px rgba(0,0,0,.28);">
+
+      <div id="">
+        <div class="navbar-header">
+
+          <div class="logo">
+            <a href="/"><img src="images/susi-logo-white.png" alt="logo" class="susiLogo"></a>
+          </div>
+        </div>
+        <ul class="nav navbar-nav navbar-right optionMenu">
+          <li><a><i class="material-icons" id="dropbtn" onclick="myFunction()">more_vert</i></a></li>
+          <div id="navbar" class="dropdown-content">
+            <ul></ul>
+          </div>
+          <!-- This will get populated -->
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+
+
+
+  <a href="https://github.com/fossasia/susi_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="susi server source code on github"></a>
+
+  <div class="jumbotron" style="margin-bottom:0px; background-color: white;">
+    <div class="container">
+      <h1><code style="color: #4285f4;background-color: #ebf1fd;"> api.susi.ai</code></h1>
+      <h2 style="font-weight: 300; font-size: 25px;">SUSI.AI API Server for Artificial Intelligence Personal Assistants, Robots, Help Desks and Chatbots</h2>
+      <span style="font-weight: 300;font-size: 20px;" class="subTopic">
+          This server provides an output of intelligent answers in JSON format for SUSI.AI clients.
+        </span>&nbsp;<br>
+
+
+      <br>
+      <br>
+      <form action="#" class="col-lg-12 hidden-xs">
+        <input id="timezoneOffset0" type="hidden" name="timezoneOffset" value="">
+        <script>
+          document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();
+        </script>
+        <div class="input-group input-group-lg col-sm-8" style="float:left">
+          <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Chat with SUSI" placeholder="Chat with SUSI" autofocus>
+          <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
+        </div><br/><br/><br/>
+        <input type="checkbox" name="debug" value="true">&nbsp;with&nbsp;debug&nbsp;data
+      </form>
+
+      <form action="#" class="col-lg-12 hidden-lg hidden-md hidden-sm row">
+        <input id="timezoneOffset1" type="hidden" name="timezoneOffset" value="">
+        <script>
+          document.getElementById("timezoneOffset1").value = new Date().getTimezoneOffset();
+        </script>
+        <div class="input-group input-group-lg row col-sm-12" style="float:left;display: flex;flex-wrap: wrap; padding:10px;">
+          <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Chat with SUSI"
+            placeholder="Chat with SUSI" style="border-bottom-width: 5px;padding-right: 12px;">
+          <span class="input-group-btn" style="padding:10px 0;" ><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
+        </div>
+        <br/>
+        <span style="font-size:7pt;" />
+          </form>
+      </div>
+    </div>
+    <script>
+          /* When the user clicks on the button, 
+          toggle between hiding and showing the dropdown content */
+          function myFunction() {
+            document.getElementById("navbar").classList.toggle("show");
+          }
+
+          // Close the dropdown if the user clicks outside of it
+          window.onclick = function (event) {
+            if (!event.target.matches('#dropbtn')) {
+              var dropdowns = document.getElementById("navbar");
+              dropdowns.classList.remove("show");
+              var i;
+              for (i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                  openDropdown.classList.remove('show');
+                }
+              }
+            }
+          }
+    </script>
+
+    <div class='footer-wrapper'>
+                
+    <div class="container-fluid">
+
+                      <div class='row footer-container'>
+                        <div class="col-md-1 col-sm-12 col-xs-12" >
+                        <a href='/' style="display:block">
+                          <img src="images/susi-logo.svg" alt='SUSI' class='susi-logo' style="height:30px;" />
+                        </a>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-12" id="footer-1" style="padding-top: 4px;">
+                        <ul class='alignLeft'>
+                          <li><a href='http://chat.susi.ai/overview'>Overview</a></li>
+                          <li><a href='http://chat.susi.ai/blog'>Blog</a></li>
+                          <li><a href='https://api.susi.ai'>API</a></li>
+                          <li><a href='https://dev.susi.ai/apidocs/'>Swagger</a></li>
+                          <li><a href='https://dev.susi.ai'>Development</a></li>
+                          <li><a href='https://github.com/fossasia?utf8=%E2%9C%93&q=susi'>Code</a></li>
+                        </ul>
+                        </div>
+                        <div class="col-md-5 col-sm-5 col-xs-12" id="footer-2" style="padding-top: 4px;">
+                        <ul class='alignRight'>
+                          <li><a href='http://chat.susi.ai/privacy'>Privacy</a></li>
+                          <li><a href='http://chat.susi.ai/terms'>Terms</a></li>
+                          <li><a href='http://chat.susi.ai/contact'>Contact</a></li>
+                        </ul>
+                        </div>
+                      </div>
+                    
+                  </div>
+    </div>
+  
+    <!-- /container -->
+
+    <!--#include file="../../ssi/common_body_back.include" -->
+    <!--#include file="../../ssi/custom_body_back.include" -->
+  </body>
+</html>
