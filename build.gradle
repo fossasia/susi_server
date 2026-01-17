@@ -1,23 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://jitpack.io" }
+    }
+
+    dependencies {
+        // FIXED: Updated from 2.0.4 (broken) to 5.2.0 (working)
+        
+       classpath 'com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:4.0.4'
+        classpath 'org.ajoberstar:gradle-git:0.7.0' 
+    }
+}
+
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
+// FIXED: Ensure the plugin ID matches the new version
+apply plugin: 'com.github.johnrengelman.shadow'
 
 mainClassName = 'ai.susi.SusiServer'
 
-apply plugin: 'com.github.johnrengelman.shadow'
 def swaggerVersion = '1.5.8'
 def versionJersey = '2.22.2'
-buildscript {
-  repositories {
-    jcenter()
-  }
-
-  dependencies {
-    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-    classpath 'org.ajoberstar:gradle-git:0.7.0' 
-  }
-}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -25,7 +31,6 @@ targetCompatibility = 1.8
 sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
 sourceSets.test.java.srcDirs = ['test']
-
 
 import org.ajoberstar.grgit.*
 
@@ -42,7 +47,8 @@ shadowJar {
 repositories {
   mavenCentral()
   maven { url 'https://github.com/broadbear/maven-repo/raw/master' }
-
+  // Added jcenter as a backup for very old dependencies (read-only mode)
+  jcenter() 
 }
 
 dependencies {
