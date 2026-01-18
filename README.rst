@@ -91,6 +91,32 @@ A self-upgrading process is available which must be triggered by a shell command
 
     > bin/upgrade.sh
 
+    ### 🪟 Setup on Windows
+
+**Prerequisites:**
+* **Git Bash** (Recommended terminal)
+* **Java 8 (JDK 1.8)** - *Strictly required. Newer versions will fail.*
+
+**Installation Steps:**
+1.  **Install Java 8:**
+    * Download [Eclipse Temurin JDK 8](https://adoptium.net/temurin/releases/?version=8).
+    * **Important:** During installation, select the feature **"Set JAVA_HOME variable"** (change the Red X to "Will be installed on local hard drive"). This saves you from editing Environment Variables manually.
+    
+2.  **Clone and Build:**
+    ```bash
+    git clone [https://github.com/fossasia/susi_server.git]
+             (https://github.com/fossasia/susi_server.git)
+    cd susi_server
+    ./gradlew.bat build -x test
+    ```
+    *(Note: We skip tests `-x test` for the initial build to avoid network timeouts)*
+
+3.  **Run the Server:**
+    ```bash
+    ./gradlew.bat start
+    ```
+    The server will start at `http://localhost:4000`.
+
 *********
 Where can I download ready-built releases of SUSI.AI?
 *********
