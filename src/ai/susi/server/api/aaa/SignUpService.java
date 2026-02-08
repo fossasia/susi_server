@@ -16,7 +16,6 @@
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
@@ -29,6 +28,7 @@ import ai.susi.tools.TimeoutMatcher;
 import ai.susi.tools.VerifyRecaptcha;
 import org.json.JSONObject;
 
+import javax.management.Query;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -55,7 +55,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         result.put("accepted", false);
         result.put("message", "Error: Unable to process you request");
 
-        switch(baseUserRole){
+        switch (baseUserRole) {
             case SUPERADMIN:
             case ADMIN:
             case OPERATOR:
@@ -105,10 +105,10 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         // is this a verification?
         if (post.get("validateEmail", null) != null) {
             ClientIdentity identity = auth.getIdentity();
-            if (
-                    (identity.getName().equals(post.get("validateEmail", null)) && identity.isEmail()) || // the user is logged in via an access token from the email
+            if ((identity.getName().equals(post.get("validateEmail", null)) && identity.isEmail())
+                    || // the user is logged in via an access token from the email
                     permissions.getBoolean("activate", false) // the user is allowed to activate other users
-                ) {
+                    ) {
 
                 ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, identity.getName());
 
@@ -133,15 +133,12 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
             throw new APIException(400, "Bad request"); // do not leak if user exists or not
         }
 
-
-
         boolean activated;
         boolean sendEmail;
         if (permissions.getBoolean("register", false)) { // if this registration is done by user that is allowed to register new users
             activated = true;
             sendEmail = false;
-        }
-        else{
+        } else {
             switch (DAO.getConfig("users.public.signup", "false")) {
                 case "false":
                     throw new APIException(403, "Public signup disabled");
@@ -162,13 +159,12 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
             }
         }
 
-        if (post.get("signup", null) == null || post.get("password", null) == null) {
+        String signup = post.get("signup", "").trim();
+        String password = post.get("password", "").trim();
+
+        if (signup.isEmpty() || password.isEmpty()) {
             throw new APIException(422, "signup or password empty");
         }
-
-        // get credentials
-        String signup = post.get("signup", null);
-        String password = post.get("password", null);
 
         // check email pattern
         Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
@@ -186,7 +182,6 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         }
 
         // check if id exists already
-
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
         Authentication authentication = DAO.getAuthentication(credential);
 
@@ -200,11 +195,11 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
         // check for recaptcha validation
         if (isSignUpCaptchaEnabled) {
-            String gRecaptchaResponse = post.get("g-recaptcha-response", null);
-            boolean isRecaptchaVerified = VerifyRecaptcha.verify(gRecaptchaResponse);
-            if (!isRecaptchaVerified) {
+            String gRecaptchaResponse = post.get("g-recaptcha-response", "");
+            if (gRecaptchaResponse.isEmpty() || !VerifyRecaptcha.verify(gRecaptchaResponse)) {
                 throw new APIException(422, "Please verify recaptcha");
             }
+
         }
 
         // create new id
@@ -223,7 +218,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         List<String> keysList = new ArrayList<String>();
         authorized.forEach(client -> keysList.add(client.toString()));
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
-        if(keysArray.length == 1) {
+        if (keysArray.length == 1) {
             authorization.setUserRole(UserRole.SUPERADMIN);
         } else {
             authorization.setUserRole(UserRole.USER);
@@ -262,15 +257,16 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     /**
      * Read Email template and insert variables
      *
-     * @param token
-     *            - login token
+     * @param token - login token
      * @return Email String
      */
     private String getVerificationMailContent(String token, String userId) throws APIException {
 
         String hostUrl = DAO.getConfig("host.url", null);
         String frontendUrl = DAO.getConfig("mail.frontendurl", "https://susi.ai");
-        if(hostUrl == null) throw new APIException(500, "No host url configured");
+        if (hostUrl == null) {
+            throw new APIException(500, "No host url configured");
+        }
 
         // redirect user to accounts verify-account route
         String verificationLink = frontendUrl + "/verify-account?access_token=" + token
