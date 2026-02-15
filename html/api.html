@@ -131,9 +131,9 @@
 </p>
 
 <ul class="request">
-  <li><div class="tabcol1">client.apiUrl</div><div class="tabcol2">:&nbsp;http://localhost:9000/aaa/</div>&nbsp;</li>
+  <li><div class="tabcol1">client.apiUrl</div><div class="tabcol2">:&nbsp;/aaa/</div>&nbsp;</li>
   <li><div class="tabcol1">client.domain</div><div class="tabcol2">:&nbsp;http://localhost:3001</div>&nbsp;</li>
-  <li><div class="tabcol1">client.twitterCallbackUrl</div><div class="tabcol2">:&nbsp;http://localhost:3000/auth/twitter/callback</div>&nbsp;</li>
+  <li><div class="tabcol1">client.twitterCallbackUrl</div><div class="tabcol2">:&nbsp;/auth/twitter/callback</div>&nbsp;</li>
 </ul><br/>
 
 <p>
@@ -463,7 +463,7 @@
   aggregation search request sets the count of search results to
   zero. Example:</p>
 <ul class="request">
-  <li>url&nbsp;:&nbsp;<a href="http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</a></li>
+  <li>url&nbsp;:&nbsp;<a href="/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6" target="_blank">/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</a></li>
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
@@ -506,7 +506,7 @@
 }</pre>
 <p>Loklak can also suggest what's trending and can give you the list of trending hashtags using the same search aggregations method. To find out the most trending hashtags on loklak since a particular date. Other filters like <code>until</code> can also be applied, here is a sample request</p>
 <ul class="request">
-  <li>url&nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
+  <li>url&nbsp;&nbsp;: <a href="/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
   </li>
 </ul><br>
 <pre>{
@@ -551,7 +551,7 @@
   the time frame is below three hours, hours if the time frame is
   below seven days and days otherwise. Example:
 <ul class="request">
-  <li>url&nbsp;:&nbsp;<a href="http://susi.ai/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
+  <li>url&nbsp;:&nbsp;<a href="/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
@@ -594,8 +594,8 @@
 </pre>
 <p>It is also possible to specify the order in descending order for the following filter options <code>favourites_count</code>, <code>retweet_count</code> and the default being <code>created_at</code>. Here are the examples of the different queries which make this happen.</p>
 <ul class="request">
-  <li>retweet count: &nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
-  <li>favorites count: &nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
+  <li>retweet count: &nbsp;&nbsp;: <a href="/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
+  <li>favorites count: &nbsp;&nbsp;: <a href="/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
 </ul>
 <pre>
   {
@@ -832,12 +832,12 @@ query, number of Tweets per day estimated by the latest query result and
 much more. Examples:
 </p>
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/suggest.json?q=soj&orderby=query_count">http://localhost:9000/aaa/suggest.json?q=soj&orderby=query_count</a></li>
-  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&order=asc">http://localhost:9000/aaa/suggest.json?count=20&order=asc</a></li>
-  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&order=desc">http://localhost:9000/aaa/suggest.json?count=20&order=desc</a></li>
-  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc">http://localhost:9000/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
-  <li><a href="http://localhost:9000/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
-  <li><a href="http://localhost:9000/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous">http://localhost:9000/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous</a></li>
+  <li><a href="/aaa/suggest.json?q=soj&orderby=query_count">/aaa/suggest.json?q=soj&orderby=query_count</a></li>
+  <li><a href="/aaa/suggest.json?count=20&order=asc">/aaa/suggest.json?count=20&order=asc</a></li>
+  <li><a href="/aaa/suggest.json?count=20&order=desc">/aaa/suggest.json?count=20&order=desc</a></li>
+  <li><a href="/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc">/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
+  <li><a href="/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
+  <li><a href="/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous">/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous</a></li>
 </ul><br/>
 <p>
 Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.
@@ -1022,11 +1022,11 @@ fuzziness). location coordinates are given as [lon,lat]
 Example usage:
 </p>
 <ul class="request">
-<li><a href="http://susi.ai/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
+<li><a href="/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
 </a></li>
-<li> Other languages: <br> <a href="http://susi.ai/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
-<li> Multiple Cities: <br><a href="http://susi.ai/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
-http://susi.ai/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
+<li> Other languages: <br> <a href="/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
+<li> Multiple Cities: <br><a href="/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
+/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
 </a></li>
 </ul>
 <p>
@@ -1153,7 +1153,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>Retrieval of the image</p>
    <ul class="request">
 
-  <li><a href="http://localhost:9000/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">http://localhost:9000/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
+  <li><a href="/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
 
   </ul><br/>
 
@@ -1280,12 +1280,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>Here is an example:</p>
 <ul class="request">
   <li><a
-    href="http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test">http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test</a></li>
+    href="/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test">/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test</a></li>
 </ul><br/>
 <p>Another example, with 3 field mapping rules:</p>
 <ul class="request">
   <li><a
-    href="http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
+    href="/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
 </ul><br/>
 </section>
 <!-- ===================================================================== -->
@@ -1427,7 +1427,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 </pre>
 <p>Here is an example :</p>
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/settings.json">http://localhost:9000/aaa/settings.json</a></li>
+  <li><a href="/aaa/settings.json">/aaa/settings.json</a></li>
 </ul><br/>
 </section>
 
@@ -1486,13 +1486,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 </pre>
 <p>You can set such a record i.e. with the call
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
+  <li><a href="/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
 </ul><br/>
 </p>
 
 <p>It can then be retrieved again with
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/account.json?screen_name=test">http://localhost:9000/aaa/account.json?screen_name=test</a></li>
+  <li><a href="/aaa/account.json?screen_name=test">http://localhost:9000/aaa/account.json?screen_name=test</a></li>
 </ul><br/>
 </p>
 
@@ -1502,7 +1502,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   settings, simply omit the OAuth details and just set apps
 <ul class="request">
   <li><a
-    href="http://localhost:9000/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
+    href="/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">/aaa/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1519,7 +1519,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>This servlet provides the retrieval of user followers and the accounts which the user is following.
    Just submit the <code>screen_name</code> as GET http attribute. Example:
    <ul class="request">
-  <li><a href="http://susi.ai/aaa/user.json?screen_name=loklak_app">http://susi.ai/aaa/user.json?screen_name=loklak_app</a></li>
+  <li><a href="/aaa/user.json?screen_name=loklak_app">/aaa/user.json?screen_name=loklak_app</a></li>
    </ul><br/>
 </p>
 <pre>{
@@ -1608,7 +1608,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
    This will produce a list of
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
-  <li><a href="http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000">http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
+  <li><a href="/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000">/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
    </ul><br/>
 </p>
 
@@ -1715,14 +1715,14 @@ the same servlet /aaa/asset.</p>
 </ul></p>
 <p>For example,</p>
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
+  <li><a href="/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
 <p>... with data in POST parameter stores the file from /Users/admin/Desktop/wall0.png as attachment
 for a message with id 608991531941425153 assigned to user
 loklak_messages under the name image0.png</p>
 <p>Retrieval of this file with the browser you can do with GET request to:
 <ul class="request">
-  <li><a href="http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
+  <li><a href="/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1735,8 +1735,8 @@ loklak_messages under the name image0.png</p>
   <code>/aaa/threaddump.txt</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
-<p>Simply download <a href="http://localhost:9000/aaa/threaddump.txt">http://localhost:9000/aaa/threaddump.txt</a> file. Either <strong>GET</strong> or <strong>POST</strong> request is valid for thread dump api. <strong>No parameter is needed in this api</strong>.</p>
-<p><a href="http://localhost:9000/aaa/threaddump.txt.">http://localhost:9000/aaa/threaddump.txt</a> contains the real-time information about loklak in JVM, including:</p>
+<p>Simply download <a href="/aaa/threaddump.txt">/aaa/threaddump.txt</a> file. Either <strong>GET</strong> or <strong>POST</strong> request is valid for thread dump api. <strong>No parameter is needed in this api</strong>.</p>
+<p><a href="/aaa/threaddump.txt.">/aaa/threaddump.txt</a> contains the real-time information about loklak in JVM, including:</p>
 <ul>
   <li>Memory usage</li>
   <li>Total running time</li>
@@ -1746,7 +1746,7 @@ loklak_messages under the name image0.png</p>
 </ul>
 <p>Thread dump can be used to track the memory use of loklak, and it helps developers to discover potential problems like memory leaks. There are six states that has been assigned to a thread, see further reading: <a href="https://docs.oracle.com/javase/7/docs/aaa/java/lang/Thread.State.html">Enum Thread.State</a></p>
 <p>At the end of the thread dump is a list of running thread. This list may indicate the load of the server.</p>
-<p>Here is some example of <a href="http://localhost:9000/aaa/threaddump.txt">threaddump.txt</a>(The following example has been delibrately cut to fit in the document):</p>
+<p>Here is some example of <a href="/aaa/threaddump.txt">threaddump.txt</a>(The following example has been delibrately cut to fit in the document):</p>
 <pre>
   ************* Start Thread Dump Thu Dec 31 07:51:47 CET 2015 *******************
 
@@ -1943,7 +1943,7 @@ loklak_messages under the name image0.png</p>
 
 <p>Here is an example :
 <ul class="request">
-  <li><a href="http://susi.ai/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://susi.ai/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+  <li><a href="/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1963,7 +1963,7 @@ loklak_messages under the name image0.png</p>
 }
   </pre>
   <ul class="request">
-    <li><a href="http://susi.ai/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000">http://susi.ai/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000</a></li>
+    <li><a href="/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000">/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000</a></li>
     <br>
     <li>
     <div class="tabcol0">data</div>
@@ -2146,7 +2146,7 @@ loklak_messages under the name image0.png</p>
     &lt;/target&gt;
 &lt;/project&gt;
 </pre>
-<li>Query String: <a>http://localhost:9000/aaa/xml2json.json?data=&lt;xml&gt;</a></li>
+<li>Query String: <a>/aaa/xml2json.json?data=&lt;xml&gt;</a></li>
 <p>Resulting JSON
 <pre>
   {"project": {
@@ -2344,13 +2344,13 @@ loklak_messages under the name image0.png</p>
       // This is the field which takes data=&lt;CSV,CSV,CSV%0ACSV,CSV,CSV&gt;
     </li>
   </ul>
-  <li>Query String: <a>http://localhost:9000/aaa/xml2json.json?data=&lt;csv&gt;</a></li>
+  <li>Query String: <a>/aaa/xml2json.json?data=&lt;csv&gt;</a></li>
   <pre>
   twittername,name,org
   0rb1t3r, Michael Peter Christen, FOSSASIA
   sudheesh001, Sudheesh Singanamalla, FOSSASIA
   </pre>
-  <p>Sample Query: <a href="http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A">http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A</a></p>
+  <p>Sample Query: <a href="/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A">/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A</a></p>
   <p>Output
   <pre>
 [
