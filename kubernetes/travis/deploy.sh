@@ -39,3 +39,25 @@ docker push fossasia/susi_server
 
 echo ">>> Updating deployment"
 kubectl set image deployment/susi-server --namespace=web susi-server=fossasia/susi_server:$TRAVIS_COMMIT
+
+echo ">>> Waiting for Kubernetes rollout to complete"
+
+set -e
+DEPLOYMENT=susi-server
+NAMESPACE=web
+TIMEOUT=300   # seconds
+INTERVAL=5
+
+SECONDS_WAITED=0
+until kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE; do
+  sleep $INTERVAL
+  SECONDS_WAITED=$((SECONDS_WAITED + INTERVAL))
+  if [ "$SECONDS_WAITED" -ge "$TIMEOUT" ]; then
+    echo "Rollout timeout exceeded"
+    kubectl get pods -n $NAMESPACE
+    kubectl describe deployment $DEPLOYMENT -n $NAMESPACE
+    exit 1
+  fi
+done
+
+echo "Rollout successful"
