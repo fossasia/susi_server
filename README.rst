@@ -42,7 +42,7 @@ How do I install Susi: Download, Build, Run
 
 |Deploy on Scalingo| |Deploy to Docker Cloud| |Deploy to Azure|
 
-At this time, SUSI.AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run SUSI.AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
+At this time, SUSI.AI is not provided in compiled form, so you can easily build it yourself.. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run SUSI.AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 .. note::
     - For Armv6 processors (e.g. Raspberry Pi Zero / Zero W/ Zero WH/ 1A / 1B), please make sure that your system is using Java 8 (Oracle or OpenJDK) as there are some compatibility issues for Armv6 processors.
@@ -79,7 +79,7 @@ For Windows Users (who are using GitBash/Cygwin or any terminal):
 
 After all server processes are running, SUSI.AI tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
-To stop SUSI.AI, run: (this will block until the server has actually terminated)
+To stop SUSI.AI, run the following command (this will block until the server has terminated):
 
 ::
 
@@ -256,7 +256,7 @@ javadoc'
 Where can I report bugs and make feature requests?
 *********
 
-This project is considered a community work. The development team consists of you too. We are very thankful for the pull request. So if you discovered that something can be enhanced, please do it yourself and make a pull request. If you find a bug, please try to fix it. If you report a bug to us, We will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself. Our `issue tracker is
+This project is considered a community work. The development team consists of you too. We are very thankful for the pull request. So if you discovered that something can be enhanced, please do it yourself and make a pull request. If you find a bug, please try to fix it. If you report a bug to us, we will possibly consider it, but it may take time due to the large and constantly growing workload. The best chance for you to get things done is to try it yourself. Our `issue tracker is
 here <https://github.com/fossasia/susi_server/issues>`__.
 
 *********
