@@ -16,9 +16,9 @@ SUSI.AI is an intelligent Open Source personal assistant. It is capable of chat 
 
 **Deployment branches**
 
-There are two branches targetting deployment, "dev-dist" and "stable-dist".
+There are two branches targeting deployment, "dev-dist" and "stable-dist".
 The former is intended to be used in conjunction with the development versions
-of "susi_linux", while the later with the stable (from the "master" branch).
+of "susi_linux", while the latter with the stable (from the "master" branch).
 These two branches are currently updated manually from "susi_server_binary_latest.tar.gz"
 (see below), but future integration will update "dev-dist" regularly.
 
@@ -42,7 +42,7 @@ How do I install Susi: Download, Build, Run
 
 |Deploy on Scalingo| |Deploy to Docker Cloud| |Deploy to Azure|
 
-At this time, SUSI.AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run SUSI.AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
+At this time, SUSI.AI is not provided in the compiled form; you can easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, and you can download it and run SUSI.AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 .. note::
     - For Armv6 processors (e.g. Raspberry Pi Zero / Zero W/ Zero WH/ 1A / 1B), please make sure that your system is using Java 8 (Oracle or OpenJDK) as there are some compatibility issues for Armv6 processors.
